@@ -81,11 +81,9 @@ await page.getByRole("button", { name: "face on screen" }).click();
 await page.waitForTimeout(700); // the pill words slide in
 const sentence = (await page.locator("#ch3 p").first().innerText()).replace(/\s+/g, " ");
 check(/a music video/.test(sentence) && /a face on screen/.test(sentence), `sentence builder → "${sentence}"`);
-const eps = page.locator("#ch4 button[aria-pressed]");
-await eps.nth(1).click();
-check((await page.locator("#ch4").getByText("Now playing").count()) === 1, "episode 2 shows Now playing");
-await eps.nth(0).click();
-check((await eps.nth(1).getAttribute("aria-pressed")) === "false", "playing another episode stops the first");
+const ch4 = page.locator("#ch4");
+check((await ch4.getByText("Coming", { exact: false }).count()) > 0 && (await ch4.getByText("On air soon").isVisible()), "podcast chapter shows Coming soon");
+check(/^mailto:/.test((await ch4.getByRole("link", { name: /Say hello/ }).getAttribute("href")) ?? "") && !(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: email CTA, no episode placeholders");
 
 console.log("Theme picker");
 const bg = () => root(page).evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -146,11 +144,9 @@ check((await page.locator('a[href^="/work/mercedes-benz-global-star"]').count())
 
 console.log("Originals");
 await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
-const rows = page.locator('section[aria-label="All episodes"] button');
-await page.getByRole("button", { name: "Play the latest episode" }).click();
-check((await rows.nth(0).getAttribute("aria-pressed")) === "true", "featured player lights up episode row 1");
-await rows.nth(2).click();
-check((await page.getByRole("button", { name: "Play the latest episode" }).getAttribute("aria-pressed")) === "false" && (await rows.nth(2).getAttribute("aria-pressed")) === "true", "playing row 3 pauses the featured player");
+const pod = page.locator("#podcast");
+check((await pod.getByRole("heading", { name: /Coming\s+soon/ }).isVisible()) && (await pod.locator("li").count()) === 3, "Originals podcast: Coming soon heading and what-to-expect list");
+check((await pod.locator("button").count()) === 0 && !(await page.getByText(/Latest episode|Every episode|\[Guest\]/).count()), "Originals podcast: no player or episode placeholders");
 
 console.log("Start a project");
 await page.goto(`${base}/`, { waitUntil: "networkidle" });

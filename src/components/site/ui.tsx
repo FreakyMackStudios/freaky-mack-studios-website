@@ -110,13 +110,6 @@ export function PlayIcon({ size, className = "" }: { size: number; className?: s
   );
 }
 
-export function PauseIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-      <path d="M3 1.5h2v9H3zM7 1.5h2v9H7z" />
-    </svg>
-  );
-}
 
 /** Four-bar equaliser for "now playing" states (inherits the text colour). */
 export function Eq({ height }: { height: number }) {

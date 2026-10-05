@@ -59,14 +59,8 @@ Source: `src/app/_components/Testimonials.tsx`
 | 2.9 | `[Role], [Brand]` | `:25`, `:41` | Their job title and company | CLIENT | |
 | 2.10 | Avatar (empty grey circle) | `:22`, `:38` | Headshot or brand logo, square, at least 200px | CLIENT | |
 
-### Chapter 04: Podcast (3 cards)
-Source: `src/app/_components/Podcast.tsx`. These should be the 3 newest episodes from `/originals` (section 6).
-
-| # | Placeholder | Where | Purpose | Supplied by | Answer |
-|---|---|---|---|---|---|
-| 2.11 | `[ EPISODE ART ]` ×3 | `:47` | 16:9 episode thumbnails (the YouTube thumbnail is fine) | CLIENT | |
-| 2.12 | `Episode [NN] · [DURATION]` ×3 | `:61` | Episode number and length | CLIENT | |
-| 2.13 | `[Episode title]` ×3 | `:62` | Episode titles | CLIENT | |
+### Chapter 04: Podcast
+**Done (coming soon):** the podcast hasn't launched, so Chapter 04 is now a type-only "Coming soon." block with an "On air soon" sticker and a "Want to be on it? Say hello" email link. No episode art, titles or player. **Nothing needed until the podcast launches.**
 
 ### Chapter 05: People (4 faces)
 Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
@@ -137,11 +131,11 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `ptron` | pTron | Ad film | pTron | `[Year]` | 1:00 | 16:9 | `[Name]` | `Ad. Films/p tron (aparshakti)_ FINAL FULL VIDEO.MP4` |
 | `film-for-ace` | Film for Ace | Ad film | `[Client]` | `[Year]` | 1:11 | 16:9 | `[Name]` | `Ad. Films/Film for Ace.mp4` |
 | `jaldi-bidai` | Jaldi Bidai | Ad film | `[Client]` | `[Year]` | 1:18 | 16:9 | `[Name]` | `Ad. Films/Jaldi Bidai_Film.mov.mp4` |
-| `falaknama` | Falaknama | Ad film | `[Client]` | `[Year]` | 0:39 | 9:16 | `[Name]` | `Ad. Films/Falaknama_Couple-esv2-90p-bg-0p.MOV` |
+| `falaknama` | Falaknama — Film 01 | Ad film | `[Client]` | `[Year]` | 0:39 | 9:16 | `[Name]` | `Ad. Films/Falaknama_Couple-esv2-90p-bg-0p.MOV` |
+| `falaknama-02` | Falaknama — Film 02 | Ad film | `[Client]` | `[Year]` | 0:30 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4` |
+| `falaknama-03` | Falaknama — Film 03 | Ad film | `[Client]` | `[Year]` | 0:23 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33.mp4` |
 | `zykaz-cafe` | Zykaz Cafe | Ad film | Zykaz | `[Year]` | 0:35 | 4:3 | `[Name]` | `Ad. Films/Zykaz_Cafe_Square.mov.mp4` |
 | `zykaz-interview` | Zykaz Interview | Ad film | Zykaz | `[Year]` | 0:32 | 16:9 | `[Name]` | `Ad. Films/Zykaz_Interview_FinalCut.mov` |
-| `ad-film-vertical-01` | [Project title] | Ad film | `[Client]` | `[Year]` | 0:30 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4` |
-| `ad-film-vertical-02` | [Project title] | Ad film | `[Client]` | `[Year]` | 0:23 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33.mp4` |
 | `bharatbenz-dhingra-trucking` | BharatBenz × Dhingra Trucking | Corporate film | Dhingra Trucking | `[Year]` | 7:42 | 16:9 | `[Name]` | `Corporate Videos/Bharat Benz   Dhingra Trucking - DHINGRA TRUCKING (1080p, h264).mp4` |
 | `soanbhadra` | Soanbhadra | Documentary | `[Client]` | `[Year]` | 9:45 | 16:9 | `[Name]` | `Documentaries/DA_Soanbhadra.mp4` |
 | `bombay-times-fashion-week` | Bombay Times Fashion Week — Green Room | Event film | Bombay Times | 2020 | 3:13 | 16:9 | `[Name]` | `Event Films/Bombay Times Fashion Week  I  March 2020  I  Green Room  I  Film by Freaky Mack_720p.mp4` |
@@ -152,9 +146,9 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `harshita-gaur` | Harshita Gaur | Fashion film | Harshita Gaur | `[Year]` | 0:52 | 9:16 | `[Name]` | `Fashion Films/Film Harshita Gaur.mp4` |
 | `fabindia-01` | Fabindia — Film 01 | Fashion film | Fabindia | `[Year]` | 1:00 | 16:9 | `[Name]` | `Fashion Films/Fabindia.mp4` |
 | `fabindia-02` | Fabindia — Film 02 | Fashion film | Fabindia | `[Year]` | 0:58 | 16:9 | `[Name]` | `Fashion Films/Fabindia 2.mp4` |
-| `sex-sorted` | Sex Sorted | Govt. ad | `[Client]` | `[Year]` | 2:32 | 16:9 | `[Name]` | `Govt. Ads/SEX SORTED whats app file_1080p.mp4` |
+| `sex-sorted` | Sex Sorted | Govt. ad | Haryana Government | `[Year]` | 2:32 | 16:9 | `[Name]` | `Govt. Ads/SEX SORTED whats app file_1080p.mp4` |
 | `sexual-harassment-haryana` | Sexual Harassment | Govt. ad | Haryana Government | `[Year]` | 2:49 | 2.35:1 | `[Name]` | `Govt. Ads/Saxual Harrasment for Haryana Govt.mov` |
-| `voting-campaign` | Voting Campaign | Govt. ad | `[Client]` | `[Year]` | 1:41 | 16:9 | `[Name]` | `Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4` |
+| `voting-campaign` | Voting Campaign | Govt. ad | Haryana Government | `[Year]` | 1:41 | 16:9 | `[Name]` | `Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4` |
 | `happy-republic-day` | Happy Republic Day | Short film | `[Client]` | `[Year]` | 2:19 | 16:9 | Izaan Khan | `Short Films/Happy Republic Day  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4` |
 | `nayi-soch-wali-azadi` | Nayi Soch Wali Azadi | Short film | `[Client]` | `[Year]` | 3:58 | 4:3 | `[Name]` | `Short Films/Nayi Soch Wali Azadi_Final Cut.mp4` |
 | `s-and-s-trailer` | S&S — Trailer | Short film | `[Client]` | `[Year]` | 1:00 | 16:9 | `[Name]` | `Short Films/S&S_Trailer.mov` |
@@ -162,7 +156,9 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 
 **Please confirm (CLIENT):**
 - **Titles to check:** Rudraprayag (file `Renew_Rudraprayag`: is the client "Renew"?), Soanbhadra (file `DA_Soanbhadra`: what does "DA" stand for, and is the spelling "Sonbhadra"?), Sexual Harassment (the file name misspells it; is there a proper campaign title?), Film for Ace, Jaldi Bidai, PKCC, Sex Sorted, S&S — Trailer, TLP — Teaser.
-- **Untitled films:** the two vertical cuts `VIDEO-2026-02-26-21-26-33` (`ad-film-vertical-01` / `-02`) need titles and a client. Are they separate projects, or two cuts of one?
+- ~~**Untitled films**~~ **Answered on the form:** the two vertical cuts are more Falaknama films, now "Falaknama — Film 02/03". Falaknama's client is still `[Client]`.
+- **Film 39, Nayi Soch Wali Azadi:** the form says "As same as above" (Happy Republic Day). Same director (Izaan Khan)? Same client? Not changed until confirmed.
+- **Govt. ads:** answered. Sex Sorted, Sexual Harassment and Voting Campaign are all for the Haryana Government.
 - **Clients:** India Fashion Awards, TOIFA Aftermovie, Albela, Kashi, The Midnight Hour, Happy Republic Day, Nayi Soch Wali Azadi and the Govt. ads. Which are Freaky Mack's own films (these would feed the Originals slate)?
 - **Low-resolution masters:** Fabindia ×2 (406p), Voting Campaign (480p), Sexual Harassment (362p) and the two vertical cuts (480p). Higher-resolution files would look much better on the site.
 - **Vertical films (9:16):** Falaknama, Harshita Gaur, NoughtOne Show and the two vertical cuts. I'll give these a vertical player when the videos go in.
@@ -181,27 +177,8 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 
 ## 7. Originals `/originals`
 
-### Featured (latest) episode
-Source: `src/app/(site)/originals/_components/Podcast.tsx`
-
-| # | Placeholder | Where | Purpose | Supplied by | Answer |
-|---|---|---|---|---|---|
-| 7.1 | `[ Latest episode — YouTube embed ]` | `:43` | YouTube link of the newest episode | CLIENT | |
-| 7.2 | `[Latest episode title]` | `src/content/originals.ts:6` | Title | CLIENT | |
-| 7.3 | `Episode [NN] · with [Guest] · [Duration]` | `Podcast.tsx:66`, `originals.ts:7-8` | Number, guest name and length | CLIENT | |
-| 7.4 | `[Two lines on what this episode is about.]` | `Podcast.tsx:68` | Short summary | CLIENT | |
-
-### Episode list (6)
-Source: `src/content/originals.ts:4-9`. Episodes are numbered Ep. 06 down to Ep. 01. The count can change.
-
-| Ep. | Title (`[Episode title]`) | Guest (`[Guest]`) | Duration (`[Duration]`) | YouTube link |
-|---|---|---|---|---|
-| 06 (latest) | | | | |
-| 05 | | | | |
-| 04 | | | | |
-| 03 | | | | |
-| 02 | | | | |
-| 01 | | | | |
+### The podcast
+**Done (coming soon):** the featured player and the "Every episode" list are replaced by a type-only "Coming soon." section (kicker "The Freaky Mack Podcast", a "What to expect" list and the email link). The Thanks page card now says "Coming soon". **Nothing needed until launch**; when it launches the studio sends the YouTube channel link, episode titles, guests and lengths.
 
 ### The slate (3 upcoming originals)
 Source: `src/content/originals.ts` and the posters in `src/app/(site)/originals/page.tsx:62`. The cards link to `/work` until these films have their own pages.

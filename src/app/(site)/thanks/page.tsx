@@ -4,7 +4,7 @@ import { BTN_INVERSE, BTN_OUTLINE } from "@/components/site/buttons";
 import { DraggableMark } from "@/components/motion/DraggableMark";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
-import { AccentWord, H1, Intro, Label, PlayIcon, PX } from "@/components/site/ui";
+import { AccentWord, H1, Intro, Label, PX } from "@/components/site/ui";
 
 export const metadata: Metadata = {
   title: "Brief received",
@@ -56,11 +56,11 @@ export default function ThanksPage() {
             className={`${s.card} flex items-center justify-between gap-[24px] rounded-[28px] bg-[var(--inv-bg)] p-[28px] text-[var(--inv-ink)] [transform:rotate(-1deg)] lg:p-[40px]`}
           >
             <div className="flex flex-col gap-[10px]">
-              <span className={`${s.it} text-[20px] text-[var(--inv-muted)]`}>Listen</span>
+              <span className={`${s.it} text-[20px] text-[var(--inv-muted)]`}>Coming soon</span>
               <span className="text-[24px] font-bold tracking-[-0.02em] lg:text-[30px]">The Freaky Mack Podcast</span>
             </div>
-            <span className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--on-accent)]">
-              <PlayIcon size={16} />
+            <span aria-hidden="true" className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[22px] text-[var(--on-accent)]">
+              →
             </span>
           </Link>
           </RevealItem>
