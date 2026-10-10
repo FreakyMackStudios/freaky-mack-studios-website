@@ -6,10 +6,10 @@ import s from "../home.module.css";
 import { CHAPTER, H2, PB, PX } from "@/shared/ui";
 
 const FACES = [
-  { label: "Izaan Khan · Founder", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -3, mb: 0 },
-  { label: "[Name] · [Role]", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 2, mb: 40 },
-  { label: "[Name] · [Role]", radius: "120px", bg: "var(--surface-2)", rot: -2, mb: 0 },
-  { label: "[Name] · [Role]", radius: "24px", bg: "var(--surface-3)", rot: 4, mb: 24 },
+  { label: "Izaan Khan · Founder & Producer", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -3, mb: 0 },
+  { label: "AB Rahim Shah · Director & CBO", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 2, mb: 40 },
+  { label: "Ashok Kumar Naik · Director & COO", radius: "120px", bg: "var(--surface-2)", rot: -2, mb: 0 },
+  { label: "Tridip K Maity · Editor", radius: "24px", bg: "var(--surface-3)", rot: 4, mb: 24 },
 ];
 
 export function People() {

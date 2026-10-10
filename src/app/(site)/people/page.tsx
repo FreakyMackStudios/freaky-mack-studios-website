@@ -6,7 +6,7 @@ import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, PX } from "@/components/site/ui";
-import { COLLABORATORS, CREW } from "@/content/people";
+import { COLLABORATORS, CREW, FOUNDER_BIO } from "@/content/people";
 
 export const metadata: Metadata = {
   title: "People",
@@ -64,7 +64,7 @@ export default function PeoplePage() {
             className="absolute right-[-8px] bottom-[40px] lg:right-[-20px] lg:bottom-[48px]"
           >
             <span className="block rounded-full bg-[var(--accent)] px-[18px] py-[8px] text-[14px] font-semibold text-[var(--on-accent)] [transform:rotate(5deg)] lg:px-[22px] lg:py-[10px] lg:text-[16px]">
-              Founder &amp; Creative Producer
+              Founder &amp; Producer
             </span>
           </Reveal>
         </div>
@@ -77,18 +77,13 @@ export default function PeoplePage() {
             Izaan Khan
           </h2>
           </RevealItem>
-          <RevealItem>
-          <blockquote className={`${s.serif} m-0 text-[26px] leading-[1.25] tracking-[-0.01em] lg:text-[34px]`}>
-            “[A line from Izaan on why he started Freaky Mack Studios.]”
-          </blockquote>
-          </RevealItem>
-          <RevealItem as="p" className="m-0 text-[17px] leading-[1.65] text-[var(--ink-2)] lg:text-[18px]">
-            [Two or three lines of bio — how he got into film, six years at Freaky Mack, what he wants the studio to
-            make next.]
-          </RevealItem>
+          {FOUNDER_BIO.map((para) => (
+            <RevealItem key={para.slice(0, 24)} as="p" className="m-0 text-[17px] leading-[1.65] text-[var(--ink-2)] lg:text-[18px]">
+              {para}
+            </RevealItem>
+          ))}
           <RevealItem className="flex gap-[20px] text-[15px] font-semibold">
             <a href={SOCIAL.founderInstagram} className={`${s.link} border-b border-[var(--ink)] pb-[3px]`}>Instagram ↗</a>
-            <a href={SOCIAL.founderLinkedin} className={`${s.link} border-b border-[var(--ink)] pb-[3px]`}>LinkedIn ↗</a>
           </RevealItem>
         </Reveal>
       </section>
@@ -114,14 +109,15 @@ export default function PeoplePage() {
                 [ Photo ]
               </div>
               <span
-                className={`rounded-full border px-[14px] py-[8px] text-[13px] font-semibold whitespace-nowrap lg:px-[16px] lg:text-[15px] ${
+                className={`flex flex-col items-center gap-[2px] rounded-[20px] border px-[14px] py-[8px] text-center text-[13px] leading-[1.3] font-semibold lg:px-[18px] lg:py-[10px] lg:text-[15px] ${
                   c.highlight
                     ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--on-accent)]"
                     : "border-[var(--ink)] bg-[var(--pill-bg)]"
                 }`}
                 style={{ transform: `rotate(${c.tilt}deg)` }}
               >
-                {c.name} · {c.role}
+                <span>{c.name}</span>
+                <span className="text-[12px] font-medium lg:text-[13px]">{c.role}</span>
               </span>
             </RevealItem>
           ))}
@@ -134,9 +130,6 @@ export default function PeoplePage() {
           <h2 className="m-0 text-[34px] leading-[1.08] font-extrabold tracking-[-0.03em] md:text-[42px] lg:text-[48px]">
             Every film brings its own crew.
           </h2>
-          <p className="m-0 text-[17px] leading-[1.65] text-[var(--ink-2)] lg:text-[18px]">
-            [One line on the directors, cinematographers and editors Freaky Mack works with project by project.]
-          </p>
         </Reveal>
         {/* The role chips pop in one after another; each chip keeps its tilt inside the animated item. */}
         <Reveal

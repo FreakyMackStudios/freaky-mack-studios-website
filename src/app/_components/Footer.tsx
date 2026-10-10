@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
 import { Lockup } from "@/components/site/Logo";
-import { CONTACT } from "@/shared/config";
+import { CONTACT, SOCIAL, STUDIO } from "@/shared/config";
 import s from "../home.module.css";
 import { PX } from "@/shared/ui";
 
@@ -32,17 +32,15 @@ export function Footer() {
           </div>
           <div className="flex flex-col gap-[12px] text-[15px]">
             <div className={`${s.it} ${HEAD}`}>Follow</div>
-            <a href="https://instagram.com" className={s.link}>Instagram</a>
-            <a href="https://youtube.com" className={s.link}>YouTube</a>
-            <a href="https://vimeo.com" className={s.link}>Vimeo</a>
-            <a href="https://linkedin.com" className={s.link}>LinkedIn</a>
+            <a href={SOCIAL.instagram} className={s.link}>Instagram</a>
+            <a href={SOCIAL.youtube} className={s.link}>YouTube</a>
           </div>
           <div className="col-span-2 flex flex-col gap-[12px] text-[15px]">
             <div className={`${s.it} ${HEAD}`}>Say hello</div>
             <a href={`mailto:${CONTACT.email}`} className={s.link}>{CONTACT.email}</a>
             <a href={CONTACT.phoneHref} className={s.link}>{CONTACT.phone}</a>
-            <a href={CONTACT.whatsapp} className={s.link}>WhatsApp</a>
-            <span className="text-[var(--muted)]">[STUDIO ADDRESS], [CITY]</span>
+            <a href={CONTACT.whatsapp} className={s.link}>WhatsApp · {CONTACT.whatsappNumber}</a>
+            <span className="text-[var(--muted)]">{STUDIO.address.join(", ")}</span>
           </div>
         </div>
       </Reveal>

@@ -5,7 +5,8 @@ import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { Label, MX, PX } from "@/components/site/ui";
-import { PROJECTS, getProject, nextProject, projectHref, projectNumber } from "@/content/projects";
+import { PROJECTS, getProject, nextProject, projectHref, projectNumber, whoAndYear } from "@/content/projects";
+import { Still } from "@/components/site/Still";
 import { FilmPlayer } from "./FilmPlayer";
 
 export const dynamicParams = false;
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!p) return {};
   return {
     title: `${p.title} · ${p.category}`,
-    description: `${p.category} for ${p.who}. ${p.logline}`,
+    description: [p.who ? `${p.category} for ${p.who}.` : `${p.category}.`, p.logline].filter(Boolean).join(" "),
     alternates: { canonical: projectHref(p.slug) },
   };
 }
@@ -30,6 +31,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   if (!p) notFound();
   const next = nextProject(p.slug);
   const [wide, left, right] = p.stills;
+  const story = [
+    { label: "The brief", text: p.brief, lead: true },
+    { label: "The idea", text: p.idea, lead: false },
+    { label: "On screen", text: p.onScreen, lead: false },
+  ].filter((x): x is { label: string; text: string; lead: boolean } => !!x.text);
 
   return (
     <>
@@ -53,29 +59,33 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <span className="rounded-full bg-[var(--accent)] px-[18px] py-[8px] text-[14px] font-semibold text-[var(--on-accent)] [transform:rotate(-3deg)]">
             {p.category}
           </span>
-          <span className={`${s.it} text-[17px] tracking-[0.08em] text-[var(--muted-2)] uppercase lg:text-[22px]`}>
-            {p.who} · {p.year}
-          </span>
+          {whoAndYear(p) && (
+            <span className={`${s.it} text-[17px] tracking-[0.08em] text-[var(--muted-2)] uppercase lg:text-[22px]`}>
+              {whoAndYear(p)}
+            </span>
+          )}
         </RevealItem>
         <RevealItem from={{ y: 60, blur: 8 }} duration={1.1}>
         <h1 className="m-0 max-w-[1150px] text-[clamp(44px,6.667vw,96px)] leading-[0.98] font-extrabold tracking-[-0.03em] text-balance uppercase">
           {p.title}
         </h1>
         </RevealItem>
-        <RevealItem as="p" className="m-0 max-w-[720px] text-[18px] leading-[1.5] text-[var(--ink-2)] lg:text-[22px]">
-          {p.logline}
-        </RevealItem>
+        {p.logline && (
+          <RevealItem as="p" className="m-0 max-w-[720px] text-[18px] leading-[1.5] text-[var(--ink-2)] lg:text-[22px]">
+            {p.logline}
+          </RevealItem>
+        )}
       </Reveal>
 
       <section aria-label="Film" className={`pb-[96px] lg:pb-[140px] ${PX}`}>
         {/* The player grows and straightens into place as it scrolls in. */}
         <ScrollIn scale={0.88} rotate={-2} y={70}>
-          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} />
+          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} poster={p.stills[0]} />
         </ScrollIn>
       </section>
 
       <section className={`grid grid-cols-1 gap-y-[56px] pb-[96px] lg:grid-cols-12 lg:gap-x-[32px] lg:pb-[160px] ${PX}`}>
-        <Reveal stagger={0.05} amount={0.15} className="flex flex-col gap-[20px] lg:col-span-4">
+        <Reveal stagger={0.05} amount={0.15} className={`flex flex-col gap-[20px] ${story.length ? "lg:col-span-4" : "lg:col-span-6"}`}>
           <RevealItem>
             <Label>Credits</Label>
           </RevealItem>
@@ -88,54 +98,57 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             ))}
           </dl>
         </Reveal>
-        <Reveal stagger={0.15} amount={0.2} className="flex flex-col gap-[40px] lg:col-span-7 lg:col-start-6 lg:gap-[56px]">
-          <RevealItem className="flex flex-col gap-[16px]">
-            <Label>The brief</Label>
-            <p className="m-0 text-[21px] leading-[1.45] font-medium tracking-[-0.01em] lg:text-[26px]">{p.brief}</p>
-          </RevealItem>
-          <RevealItem className="flex flex-col gap-[16px]">
-            <Label>The idea</Label>
-            <p className="m-0 text-[17px] leading-[1.6] text-[var(--ink-2)] lg:text-[20px]">{p.idea}</p>
-          </RevealItem>
-          <RevealItem className="flex flex-col gap-[16px]">
-            <Label>On screen</Label>
-            <p className="m-0 text-[17px] leading-[1.6] text-[var(--ink-2)] lg:text-[20px]">{p.onScreen}</p>
-          </RevealItem>
-        </Reveal>
+        {/* Only the parts of the story the studio has given; a film with none keeps just its credits. */}
+        {story.length > 0 && (
+          <Reveal stagger={0.15} amount={0.2} className="flex flex-col gap-[40px] lg:col-span-7 lg:col-start-6 lg:gap-[56px]">
+            {story.map(({ label, text, lead }) => (
+              <RevealItem key={label} className="flex flex-col gap-[16px]">
+                <Label>{label}</Label>
+                <p
+                  className={`m-0 ${lead ? "text-[21px] leading-[1.45] font-medium tracking-[-0.01em] lg:text-[26px]" : "text-[17px] leading-[1.6] text-[var(--ink-2)] lg:text-[20px]"}`}
+                >
+                  {text}
+                </p>
+              </RevealItem>
+            ))}
+          </Reveal>
+        )}
       </section>
 
-      <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>
-        <Reveal>
-          <Label>Frames from the film</Label>
-        </Reveal>
-        {/* Stills settle in with a little depth: the wide frame grows, the pair comes in from each side. */}
-        <ScrollIn scale={0.92} y={90}>
-        <div
-          className={`${s.still} flex h-[240px] items-center justify-center rounded-[20px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:h-[420px] lg:h-[620px] lg:rounded-[28px]`}
-          style={{ background: wide.bg, transform: "rotate(-0.8deg)" }}
-        >
-          {wide.label}
-        </div>
-        </ScrollIn>
-        <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
-          <Reveal from={{ x: -70, y: 30 }} duration={1}>
-          <div
-            className={`${s.still} flex h-[300px] items-center justify-center rounded-[24px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:h-[420px] lg:h-[520px]`}
-            style={{ background: left.bg, transform: "rotate(1.2deg)" }}
-          >
-            {left.label}
-          </div>
+      {wide && (
+        <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>
+          <Reveal>
+            <Label>Frames from the film</Label>
           </Reveal>
-          <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
-          <div
-            className={`${s.still} flex h-[260px] items-center justify-center rounded-[24px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:mt-[64px] md:h-[340px] lg:mt-[80px] lg:h-[400px]`}
-            style={{ background: right.bg, transform: "rotate(-1.4deg)" }}
-          >
-            {right.label}
-          </div>
-          </Reveal>
-        </div>
-      </section>
+          {/* Stills settle in with a little depth: the wide frame grows, the pair comes in from each side. */}
+          <ScrollIn scale={0.92} y={90}>
+            <Still
+              still={wide}
+              sizes="100vw"
+              className={`${s.still} h-[240px] rounded-[20px] md:h-[420px] lg:h-[620px] lg:rounded-[28px]`}
+              style={{ transform: "rotate(-0.8deg)" }}
+            />
+          </ScrollIn>
+          {left && right && (
+            <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
+              <Reveal from={{ x: -70, y: 30 }} duration={1}>
+                <Still
+                  still={left}
+                  className={`${s.still} h-[300px] rounded-[24px] md:h-[420px] lg:h-[520px]`}
+                  style={{ transform: "rotate(1.2deg)" }}
+                />
+              </Reveal>
+              <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
+                <Still
+                  still={right}
+                  className={`${s.still} h-[260px] rounded-[24px] md:mt-[64px] md:h-[340px] lg:mt-[80px] lg:h-[400px]`}
+                  style={{ transform: "rotate(-1.4deg)" }}
+                />
+              </Reveal>
+            </div>
+          )}
+        </section>
+      )}
 
       <Reveal from={{ y: 60 }}>
       <Link

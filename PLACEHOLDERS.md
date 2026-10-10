@@ -13,6 +13,10 @@ Paths are relative to the repo root.
 
 > **Heads-up:** the homepage has its own copies of the projects, people, podcast episodes, client list and social links. When the content comes in, I'll point the homepage at the same data as the inner pages so every value only has to be entered once.
 
+> **Content form applied (Oct 2026).** The client's filled-in form is now on the site: every film's client, credits and story (the form printed each film's answers under the *next* film's heading, so answers were matched by the details in each box), the homepage's six films, the address, WhatsApp, Instagram/YouTube links, the 24-hour reply time, the crew and Izaan's bio. Films the client filled in completely show their full story; partly filled and blank films show only what was given, with no placeholders. **Still open:** Kara Feel (asked for on the homepage, but no file), Film 39's "same as above" (read as the Republic Day team), "The Last Precence" (shown as "The Last Presence"), Studio timeline years, the founder quote, Vimeo/LinkedIn, budget ranges ("no fixed budget"), the legal details in section 1, stills and film links. Rows 1.1, 1.2, 1.4, 1.5, 1.7 and 1.8 (Instagram) below are done.
+
+> **Stills and publishing (Oct 2026).** Three stills per film came in for 28 films (`public/work/<slug>/`, data in `src/content/stills.ts`, taken at each film's own resolution; burnt-in letterbox bars trimmed). A film is **published** only when it has both stills and written content: 26 films are live. The rest are listed by name only under **"Publishing soon"** on /work, with no page: 12 have content but no stills (their source files weren't on the Mac when the stills were pulled: pTron, India Fashion Awards, Albela, TOIFA Aftermovie, The Midnight Hour, Rudraprayag, Kashi, Falaknama — Film 01, BharatBenz × Dhingra Trucking, Soanbhadra, Nayi Soch Wali Azadi, The Last Presence — Teaser), 2 have stills but no written content (Changa, PC Jeweller × Sonalika Sahay), and Zykaz Interview has neither. Each one goes live by itself once the missing piece arrives.
+
 ---
 
 ## 1. Fill once, used everywhere
@@ -50,14 +54,14 @@ Paths are relative to the repo root.
 - **2.6 `[ STILL — {title} ]`** (`src/app/_components/WorkPreview.tsx`): the preview image that changes on hover. The first project still is reused here. **Supplied by:** CLIENT (covered by section 5).
 
 ### Chapter 03: Testimonials (×2)
-Source: `src/app/_components/Testimonials.tsx`
+Source: `src/content/testimonials.ts` (shown by `src/app/_components/Testimonials.tsx`)
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 2.7 | `"[Client testimonial — two or three lines in their own words.]"` | `:7`, shown twice | Real quotes from clients, used **with their written permission** | CLIENT | 1: <br> 2: |
-| 2.8 | `[Name]` | `:24`, `:40` | Person quoted | CLIENT | |
-| 2.9 | `[Role], [Brand]` | `:25`, `:41` | Their job title and company | CLIENT | |
-| 2.10 | Avatar (empty grey circle) | `:22`, `:38` | Headshot or brand logo, square, at least 200px | CLIENT | |
+| 2.7 | `"[Client testimonial — two or three lines in their own words.]"` | 2 cards | Real quotes from clients, used **with their written permission** | CLIENT | 1: **Done** (Abhishek Patni, NoughtOne) <br> 2: still open |
+| 2.8 | `[Name]` | card 2 | Person quoted | CLIENT | 1: Abhishek Patni <br> 2: |
+| 2.9 | `[Role], [Brand]` | card 2 | Their job title and company | CLIENT | 1: NoughtOne (job title not given, so none shown) <br> 2: |
+| 2.10 | Avatar | both cards | Headshot or brand logo, square, at least 200px | CLIENT | 1: shows initials "AP" until a photo or logo arrives <br> 2: |
 
 ### Chapter 04: Podcast
 **Done (coming soon):** the podcast hasn't launched, so Chapter 04 is now a type-only "Coming soon." block with an "On air soon" sticker and a "Want to be on it? Say hello" email link. No episode art, titles or player. **Nothing needed until the podcast launches.**
