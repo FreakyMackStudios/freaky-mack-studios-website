@@ -55,23 +55,32 @@ export function FullReelPlayer({ className }: { className?: string }) {
   useEffect(() => {
     ref.current?.play().catch(() => {});
   }, []);
-  const { hosts, mobile, main, original, poster } = REEL.full;
-  const at = (path: string) => hosts.map((h) => `${h}/${path}`);
   return (
     <video
       ref={ref}
       className={className}
-      poster={poster}
+      poster={REEL.full.poster}
       controls
       playsInline
       preload="auto"
       controlsList="nodownload"
       aria-label="Freaky Mack Studios showreel"
     >
+      <FullReelSources />
+    </video>
+  );
+}
+
+/** The full reel's <source> list: 720p on phones, then full quality, each from CloudFront then S3. */
+export function FullReelSources() {
+  const { hosts, mobile, main, original } = REEL.full;
+  const at = (path: string) => hosts.map((h) => `${h}/${path}`);
+  return (
+    <>
       {mobile && at(mobile).map((src) => <source key={src} src={src} type="video/mp4" media="(max-width: 899px)" />)}
       {main && at(main).map((src) => <source key={src} src={src} type="video/mp4" />)}
       {original && at(original).map((src) => <source key={src} src={src} type="video/quicktime" />)}
-    </video>
+    </>
   );
 }
 

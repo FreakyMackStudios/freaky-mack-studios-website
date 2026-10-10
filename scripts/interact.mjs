@@ -80,8 +80,7 @@ check(
     /cloudfront\.net\/.*Showreel\.mp4\|$/.test(fullSrcs[2]) && /amazonaws\.com\/.*Showreel\.mp4\|$/.test(fullSrcs[3]),
   `full reel: CloudFront first, S3 fallback, 720p on phones, then full quality (${fullSrcs.length} sources)`,
 );
-check(await page.getByRole("button", { name: "Close the reel" }).first().isVisible(), "hero button label → Close the reel");
-await page.getByRole("button", { name: "Close the reel" }).last().click();
+await page.getByRole("button", { name: "Close the reel" }).click();
 check(await shows(page.getByRole("button", { name: "Open the showreel" })), "band closes back to the reel card");
 await page.getByRole("button", { name: "Open the showreel" }).click();
 await shows(full);
@@ -93,6 +92,37 @@ const loopState = await loop.evaluate((v) => ({ muted: v.muted, loop: v.loop, in
 check(!!loopState && loopState.muted && loopState.loop && loopState.inline && /reel-loop-720\.(webm|mp4)$/.test(loopState.src) && /reel-poster\.jpg$/.test(loopState.poster), `homepage reel plays the silent 720p loop at 1440px (${loopState ? loopState.src.split("/").pop() : "no video"})`);
 await page.waitForTimeout(1200);
 check(await loop.evaluate((v) => !v.paused && v.currentTime > 0.3).catch(() => false), "the loop is actually playing");
+// TEST FEATURE: hero "Press play" → hero leaves, screen goes black, 3-2-1, then the full reel plays full screen.
+await page.evaluate(() => window.scrollTo(0, 0));
+await page.getByRole("button", { name: "Press play" }).click();
+const dialog = page.getByRole("dialog", { name: "Freaky Mack Studios showreel" });
+await page.waitForTimeout(1000);
+const away = await page.evaluate(() => {
+  const op = (sel) => Number(getComputedStyle(document.querySelector(sel)).opacity);
+  const x = (sel) => document.querySelector(sel).getBoundingClientRect().left;
+  return { text: op('#top [data-exit="fade"]'), logo: x('header [data-exit="left"]'), cta: x('header [data-exit="right"]'), scroll: getComputedStyle(document.documentElement).overflow };
+});
+check(away.text < 0.05 && away.logo < -1000 && away.cta > 1440 && away.scroll === "hidden", `Press play: hero text fades, logo exits left, CTA exits right, scroll locked (${JSON.stringify(away)})`);
+const counted = [];
+for (let i = 0; i < 16 && counted.length < 3; i++) {
+  const n = await dialog.locator("span").filter({ hasText: /^[123]$/ }).first().textContent({ timeout: 300 }).catch(() => null);
+  if (n && counted.at(-1) !== n) counted.push(n);
+  await page.waitForTimeout(250);
+}
+check(counted.join("") === "321", `countdown runs 3 → 2 → 1 (${counted.join(",")})`);
+const cinemaVideo = dialog.locator("video");
+await page.waitForFunction(() => document.querySelector('[role="dialog"] video')?.dataset.on === "true", null, { timeout: 3000 }).catch(() => {});
+const cv = await cinemaVideo.evaluate((v) => ({ on: v.dataset.on, controls: v.controls, sources: v.querySelectorAll("source").length, op: getComputedStyle(v).opacity }));
+check(cv.on === "true" && cv.controls && cv.sources === 4, `full reel takes the screen with controls after the countdown (${JSON.stringify(cv)})`);
+await page.keyboard.press("Escape");
+await page.waitForTimeout(1600);
+const back = await page.evaluate(() => ({
+  cinema: document.querySelector("[data-cinema]") !== null,
+  text: Number(getComputedStyle(document.querySelector('#top [data-exit="fade"]')).opacity),
+  focus: document.activeElement?.textContent?.trim(),
+  scroll: getComputedStyle(document.documentElement).overflow,
+}));
+check(!back.cinema && back.text > 0.95 && back.focus === "Press play" && back.scroll !== "hidden", `Escape ends the reel, the hero comes back and focus returns (${JSON.stringify(back)})`);
 await page.locator("#ch1 li").nth(2).hover();
 check((await page.locator("#ch1").getByText("PC Jeweller · Ad film").count()) === 2, "hovering row 03 swaps preview meta");
 await page.getByRole("button", { name: "music video", exact: true }).click();
@@ -271,7 +301,7 @@ console.log("Motion (homepage)");
   await mp.goto(`${base}/`, { waitUntil: "networkidle" });
   await mp.waitForTimeout(1500);
   // Drag the blob mark far across the page; it follows, then springs back on release.
-  const mark = mp.locator("section#top > div.cursor-grab").first();
+  const mark = mp.locator("section#top div.cursor-grab").first();
   const home = await mark.boundingBox();
   await mp.mouse.move(home.x + home.width / 2, home.y + home.height / 2);
   await mp.mouse.down();
@@ -312,7 +342,7 @@ console.log("Motion (homepage)");
   check(before === "0" && after === "1", `below-the-fold heading reveals on scroll (opacity ${before} → ${after})`);
   // Scroll-linked: the hero text drifts away; there is no progress bar across the top.
   const bar = await mp.evaluate(() => [...document.querySelectorAll("body *")].some((el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.position === "fixed" && r.top === 0 && r.height <= 4 && r.width > 200; }));
-  const heroY = await mp.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector("section#top > div.flex")).transform).m42);
+  const heroY = await mp.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector("section#top > [data-exit=\"fade\"] > div.flex")).transform).m42);
   check(!bar && heroY > 20, `no top progress bar, and hero text drifts (${Math.round(heroY)}px)`);
   await ctx.close();
   // Without JavaScript nothing is left hidden.
