@@ -50,14 +50,14 @@ Paths are relative to the repo root.
 - **2.6 `[ STILL — {title} ]`** (`src/app/_components/WorkPreview.tsx`): the preview image that changes on hover. The first project still is reused here. **Supplied by:** CLIENT (covered by section 5).
 
 ### Chapter 03: Testimonials (×2)
-Source: `src/app/_components/Testimonials.tsx`
+Source: `src/content/testimonials.ts` (shown by `src/app/_components/Testimonials.tsx`)
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 2.7 | `"[Client testimonial — two or three lines in their own words.]"` | `:7`, shown twice | Real quotes from clients, used **with their written permission** | CLIENT | 1: <br> 2: |
-| 2.8 | `[Name]` | `:24`, `:40` | Person quoted | CLIENT | |
-| 2.9 | `[Role], [Brand]` | `:25`, `:41` | Their job title and company | CLIENT | |
-| 2.10 | Avatar (empty grey circle) | `:22`, `:38` | Headshot or brand logo, square, at least 200px | CLIENT | |
+| 2.7 | `"[Client testimonial — two or three lines in their own words.]"` | 2 cards | Real quotes from clients, used **with their written permission** | CLIENT | 1: **Done** (Abhishek Patni, NoughtOne) <br> 2: still open |
+| 2.8 | `[Name]` | card 2 | Person quoted | CLIENT | 1: Abhishek Patni <br> 2: |
+| 2.9 | `[Role], [Brand]` | card 2 | Their job title and company | CLIENT | 1: NoughtOne (job title not given, so none shown) <br> 2: |
+| 2.10 | Avatar | both cards | Headshot or brand logo, square, at least 200px | CLIENT | 1: shows initials "AP" until a photo or logo arrives <br> 2: |
 
 ### Chapter 04: Podcast
 **Done (coming soon):** the podcast hasn't launched, so Chapter 04 is now a type-only "Coming soon." block with an "On air soon" sticker and a "Want to be on it? Say hello" email link. No episode art, titles or player. **Nothing needed until the podcast launches.**
