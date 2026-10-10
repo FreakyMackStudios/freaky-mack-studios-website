@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Eq, PlayIcon } from "@/components/site/ui";
 import { Still } from "@/components/site/Still";
 import type { Still as StillData } from "@/content/stills";
 
-const FRAME = "relative block aspect-[1248/702] w-full overflow-hidden rounded-[20px] bg-[#0d0d0d] text-left text-white lg:rounded-[28px]";
+const FRAME = "relative block overflow-hidden rounded-[20px] bg-[#0d0d0d] text-left text-white lg:rounded-[28px]";
 
 /**
  * Project board film: play toggle (paused → big accent play button; playing → "Now playing" + equaliser).
@@ -13,10 +13,19 @@ const FRAME = "relative block aspect-[1248/702] w-full overflow-hidden rounded-[
  */
 export function FilmPlayer({ videoUrl, duration, poster }: { videoUrl: string; duration: string; poster?: StillData }) {
   const [playing, setPlaying] = useState(false);
+  // The player takes the film's own shape (from its poster frame), so nothing is cropped. A vertical film
+  // is capped at 80% of the window height and centred.
+  const shape: CSSProperties = poster
+    ? {
+        aspectRatio: `${poster.width} / ${poster.height}`,
+        width: poster.height > poster.width ? `min(100%, ${((80 * poster.width) / poster.height).toFixed(2)}vh)` : "100%",
+        marginInline: "auto",
+      }
+    : { aspectRatio: "1248 / 702", width: "100%" };
 
   if (playing && videoUrl) {
     return (
-      <div className={FRAME}>
+      <div className={FRAME} style={shape}>
         <iframe
           className="absolute inset-0 h-full w-full"
           src={`${videoUrl}${videoUrl.includes("?") ? "&" : "?"}autoplay=1`}
@@ -35,10 +44,11 @@ export function FilmPlayer({ videoUrl, duration, poster }: { videoUrl: string; d
       aria-label={playing ? "Pause the film" : "Play the film"}
       aria-pressed={playing}
       className={`${FRAME} border-0 p-0`}
+      style={shape}
     >
       {poster ? (
         <>
-          <Still still={poster} sizes="100vw" priority className="absolute! inset-0" />
+          <Still still={poster} fit="contain" sizes="100vw" priority className="absolute! inset-0" />
           <div aria-hidden="true" className="absolute inset-0 bg-black/25" />
         </>
       ) : (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { HAS_FULL_REEL } from "@/shared/reel";
+import { CinemaOverlay, useCinema } from "./Cinema";
 import { enterFullscreen } from "@/shared/reel-lock";
 import s from "../home.module.css";
 import { ClientScatter } from "./ClientScatter";
@@ -29,13 +30,21 @@ export function Home() {
     if (!reelOpen && HAS_FULL_REEL) enterFullscreen();
     setReelOpen((o) => !o);
   };
+  // The hero's "Press play" runs the cinema intro (3-2-1 countdown) into the complete showreel, full screen.
+  const cinema = useCinema();
+  const pressPlay = HAS_FULL_REEL ? cinema.start : toggleReel;
 
   return (
-    <div className={`${s.root} min-h-screen overflow-x-clip transition-colors duration-300`}>
+    <div
+      data-cinema={cinema.active ? "away" : undefined}
+      className={`${s.root} min-h-screen overflow-x-clip transition-colors duration-300`}
+    >
       <div className="relative mx-auto flex max-w-[1440px] flex-col">
         <Nav />
-        <Hero reelOpen={reelOpen} onToggleReel={toggleReel} />
-        <Reel open={reelOpen} onToggle={toggleReel} />
+        <Hero reelOpen={reelOpen} onPressPlay={pressPlay} cinema={HAS_FULL_REEL} />
+        <div data-exit="down">
+          <Reel open={reelOpen} onToggle={toggleReel} />
+        </div>
         <WorkPreview />
         <ClientScatter />
         <Testimonials />
@@ -47,6 +56,7 @@ export function Home() {
         <Contact />
         <Footer />
       </div>
+      <CinemaOverlay cinema={cinema} />
     </div>
   );
 }

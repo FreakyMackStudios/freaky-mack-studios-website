@@ -60,6 +60,23 @@
 .eq span:nth-child(3) { animation-delay: 0.3s; }
 .eq span:nth-child(4) { animation-delay: 0.45s; }
 
+/* "Press play" cinema intro: first-screen elements leave left/right, the hero text fades. */
+.root [data-exit] {
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease, filter 0.7s ease;
+}
+.root[data-cinema="away"] [data-exit] {
+  pointer-events: none;
+  transition: transform 0.8s cubic-bezier(0.6, 0, 0.8, 0.2) var(--exit-delay, 0s),
+    opacity 0.55s ease var(--exit-delay, 0s), filter 0.55s ease var(--exit-delay, 0s);
+}
+.root[data-cinema="away"] [data-exit="left"] { transform: translateX(-110vw) rotate(-6deg); }
+.root[data-cinema="away"] [data-exit="right"] { transform: translateX(110vw) rotate(6deg); }
+.root[data-cinema="away"] [data-exit="up"] { transform: translateY(-120px); opacity: 0; }
+.root[data-cinema="away"] [data-exit="down"] { transform: translateY(120px); opacity: 0; }
+.root[data-cinema="away"] [data-exit="fade"] { transform: scale(0.96); opacity: 0; filter: blur(8px); }
+
 @media (prefers-reduced-motion: reduce) {
   .blob, .spin, .marquee, .eq span { animation: none; }
+  .root[data-cinema="away"] [data-exit] { transform: none; filter: none; opacity: 0; transition: opacity 0.2s ease; }
+  .root [data-exit] { transition: opacity 0.2s ease; }
 }

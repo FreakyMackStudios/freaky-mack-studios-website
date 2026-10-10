@@ -1,12 +1,19 @@
 import Image from "next/image";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Still as StillData } from "@/content/stills";
 
+/** A still's shape as a CSS aspect-ratio, e.g. "1920 / 1080". */
+export const ratioOf = (s: StillData) => `${s.width} / ${s.height}`;
+export const isTall = (s: StillData) => s.height > s.width;
+
 /**
- * A film still filling its box (the box sets size, radius and tilt through `className`/`style`).
- * Landscape frames cover the box. Vertical (9:16) frames are shown whole over a blurred copy of
- * themselves, so a phone-shot film isn't cropped to a sliver in a wide box; pass `portrait="cover"`
- * where the box is itself tall.
+ * A film still, never cropped.
+ *
+ * - `fit="natural"` (default): the box takes the still's own shape (16:9 stays 16:9, 9:16 stays 9:16,
+ *   1:1 stays 1:1) and the frame fills it exactly. `className` sets width, radius and tilt, not height.
+ *   `maxVh` caps how tall it gets (tall frames shrink in width and centre, keeping their shape).
+ * - `fit="contain"`: for a box whose size is fixed elsewhere: the whole frame shows, centred, over a
+ *   blurred copy of itself that fills the rest.
  */
 export function Still({
   still,
@@ -14,30 +21,34 @@ export function Still({
   style,
   sizes = "(min-width: 1024px) 50vw, 100vw",
   priority = false,
-  portrait = "contain",
+  fit = "natural",
+  maxVh,
+  children,
 }: {
   still: StillData;
   className?: string;
   style?: CSSProperties;
   sizes?: string;
   priority?: boolean;
-  portrait?: "contain" | "cover";
+  fit?: "natural" | "contain";
+  maxVh?: number;
+  children?: ReactNode;
 }) {
-  const tall = still.height > still.width;
-  const contain = tall && portrait === "contain";
+  const natural = fit === "natural";
+  const box: CSSProperties = natural
+    ? {
+        aspectRatio: ratioOf(still),
+        ...(maxVh ? { width: `min(100%, ${((maxVh * still.width) / still.height).toFixed(2)}vh)`, marginInline: "auto" } : {}),
+        ...style,
+      }
+    : { ...style };
   return (
-    <div className={`relative overflow-hidden bg-black ${className}`} style={style}>
-      {contain && (
+    <div className={`relative overflow-hidden bg-black ${natural && !maxVh ? "w-full" : ""} ${className}`} style={box}>
+      {!natural && (
         <Image src={still.src} alt="" aria-hidden fill sizes={sizes} className="scale-125 object-cover opacity-60 blur-2xl" />
       )}
-      <Image
-        src={still.src}
-        alt={still.alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        className={contain ? "object-contain" : "object-cover"}
-      />
+      <Image src={still.src} alt={still.alt} fill sizes={sizes} priority={priority} className={natural ? "object-cover" : "object-contain"} />
+      {children}
     </div>
   );
 }

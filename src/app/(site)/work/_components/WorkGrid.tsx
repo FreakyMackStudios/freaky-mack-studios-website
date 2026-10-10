@@ -7,7 +7,7 @@ import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import s from "@/components/site/site.module.css";
 import { Label, PX } from "@/components/site/ui";
-import { Still } from "@/components/site/Still";
+import { Still, isTall } from "@/components/site/Still";
 import { FILTERS, PROJECTS, PUBLISHING_SOON, projectHref, whoAndYear, type Project } from "@/content/projects";
 
 const TILTS = [-1.2, 1, -0.6, 1.4];
@@ -19,18 +19,12 @@ function Card({ p, i }: { p: Project; i: number }) {
       className={`${s.card} flex flex-col gap-[18px]`}
       style={{ transform: `rotate(${TILTS[i % 4]}deg)` }}
     >
-      <div className="relative h-[300px] overflow-hidden rounded-[24px] md:h-[380px] lg:h-[460px]" style={{ background: p.bg }}>
-        {p.stills[0] ? (
-          <Still still={p.stills[0]} sizes="(min-width: 768px) 50vw, 100vw" className="absolute! inset-0" />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-[12px] tracking-[0.2em] text-white/80 uppercase">
-            [ STILL ]
-          </div>
-        )}
+      {/* The cover keeps the film's own shape (16:9, 9:16, 4:3…); vertical films are capped in height. */}
+      <Still still={p.stills[0]} maxVh={isTall(p.stills[0]) ? 72 : undefined} sizes="(min-width: 768px) 50vw, 100vw" className="rounded-[24px]">
         <span className="absolute top-[20px] left-[20px] rounded-full bg-[var(--accent)] px-[16px] py-[7px] text-[13px] font-semibold text-[var(--on-accent)] [transform:rotate(-4deg)]">
           {p.category}
         </span>
-      </div>
+      </Still>
       <div className="flex items-baseline justify-between gap-[24px] px-[6px]">
         <span className="text-[22px] font-semibold tracking-[-0.02em] lg:text-[28px]">{p.title}</span>
         <span className="max-w-[48%] text-right text-[13px] text-[var(--muted)] lg:max-w-[45%] lg:text-[14px]">{whoAndYear(p)}</span>
