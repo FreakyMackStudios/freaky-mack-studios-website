@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Reveal, RevealItem } from "@/components/motion/Reveal";
+import { motion } from "framer-motion";
+import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { useState } from "react";
 import { Still } from "@/components/site/Still";
 import { PROJECTS as ALL_PROJECTS, projectHref } from "@/content/projects";
@@ -16,6 +17,9 @@ const PROJECTS = ALL_PROJECTS.slice(0, 6).map((p) => ({
   bg: p.bg,
   still: p.stills[0],
 }));
+
+/** The preview card's shape: the film's own (a tall film is shown whole inside a 4:5 card). */
+const ratio = (s?: { width: number; height: number }) => (s ? Math.max(0.8, s.width / s.height) : 16 / 9);
 
 /** Chapter 01: hover (or focus / tap) a title to swap the tilted preview. */
 export function WorkPreview() {
@@ -64,11 +68,16 @@ export function WorkPreview() {
           from={{ x: 80, y: 0 }}
           duration={1.1}
           delay={0.15}
-          className="relative order-first flex flex-col gap-[18px] lg:order-none lg:col-span-5 lg:col-start-8"
+          className="relative order-first flex flex-col gap-[18px] lg:order-none lg:col-span-6 lg:col-start-7 lg:self-center"
         >
           {/* All six previews are stacked; the active one cross-fades in, so a swap never cuts. */}
-          <div
-            className="relative h-[340px] overflow-hidden rounded-[24px] shadow-[0_30px_70px_rgba(0,0,0,0.14)] [transform:rotate(2deg)] md:h-[460px] lg:h-[560px]"
+          {/* The card takes the hovered film's own shape (easing between shapes), so no frame is cropped. */}
+          <motion.div
+            className="relative w-full overflow-hidden rounded-[24px] shadow-[0_30px_70px_rgba(0,0,0,0.14)] [transform:rotate(2deg)]"
+            initial={false}
+            animate={{ aspectRatio: ratio(preview.still) }}
+            transition={{ duration: 0.6, ease: EASE }}
+            style={{ aspectRatio: ratio(PROJECTS[0].still) }}
             aria-live="polite"
           >
             {PROJECTS.map((p, i) => (
@@ -79,7 +88,7 @@ export function WorkPreview() {
                 style={{ background: p.bg }}
               >
                 {p.still ? (
-                  <Still still={p.still} portrait="cover" sizes="(min-width: 1024px) 40vw, 100vw" className="absolute! inset-0" />
+                  <Still still={p.still} fit="contain" sizes="(min-width: 1024px) 40vw, 100vw" className="absolute! inset-0" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center px-[24px] text-center text-[12px] tracking-[0.2em] text-white uppercase">
                     [ STILL — {p.title} ]
@@ -90,7 +99,7 @@ export function WorkPreview() {
                 </div>
               </div>
             ))}
-          </div>
+          </motion.div>
           <div className="flex items-baseline justify-between gap-[16px] px-[8px]">
             <span className="grid min-w-0">
               {PROJECTS.map((p, i) => (

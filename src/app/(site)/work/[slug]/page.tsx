@@ -6,7 +6,7 @@ import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { Label, MX, PX } from "@/components/site/ui";
 import { PROJECTS, getProject, nextProject, projectHref, projectNumber, whoAndYear } from "@/content/projects";
-import { Still } from "@/components/site/Still";
+import { Still, isTall } from "@/components/site/Still";
 import { FilmPlayer } from "./FilmPlayer";
 
 export const dynamicParams = false;
@@ -35,6 +35,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   // The first still is the film's poster; with more than three, the frames below start from the second.
   const frames = p.stills.length > 3 ? p.stills.slice(1) : p.stills;
   const [wide, left, right, ...more] = frames;
+  const tall = !!wide && isTall(wide);
   const story = [
     { label: "The brief", text: p.brief, lead: true },
     { label: "The idea", text: p.idea, lead: false },
@@ -124,46 +125,51 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <Reveal>
             <Label>Frames from the film</Label>
           </Reveal>
-          {/* Stills settle in with a little depth: the wide frame grows, the pair comes in from each side. */}
-          <ScrollIn scale={0.92} y={90}>
-            <Still
-              still={wide}
-              sizes="100vw"
-              className={`${s.still} h-[240px] rounded-[20px] md:h-[420px] lg:h-[620px] lg:rounded-[28px]`}
-              style={{ transform: "rotate(-0.8deg)" }}
-            />
-          </ScrollIn>
-          {left && right && (
-            <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
-              <Reveal from={{ x: -70, y: 30 }} duration={1}>
-                <Still
-                  still={left}
-                  className={`${s.still} h-[300px] rounded-[24px] md:h-[420px] lg:h-[520px]`}
-                  style={{ transform: "rotate(1.2deg)" }}
-                />
-              </Reveal>
-              <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
-                <Still
-                  still={right}
-                  className={`${s.still} h-[260px] rounded-[24px] md:mt-[64px] md:h-[340px] lg:mt-[80px] lg:h-[400px]`}
-                  style={{ transform: "rotate(-1.4deg)" }}
-                />
-              </Reveal>
-            </div>
-          )}
-          {more.length > 0 && (
-            <Reveal stagger={0.08} amount={0.1} className="grid grid-cols-1 items-start gap-[24px] pt-[8px] sm:grid-cols-2 lg:grid-cols-3 lg:gap-[32px] lg:pt-[24px]">
-              {more.map((f, i) => (
+          {tall ? (
+            // Vertical films: every frame side by side at its own 9:16 shape.
+            <Reveal stagger={0.08} amount={0.1} className="grid grid-cols-2 items-start gap-[20px] md:grid-cols-3 lg:gap-[32px]">
+              {frames.map((f, i) => (
                 <RevealItem key={f.src} from={{ y: 50 }}>
                   <Still
                     still={f}
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className={`${s.still} h-[220px] rounded-[20px] md:h-[260px] lg:h-[280px]`}
+                    sizes="(min-width: 768px) 33vw, 50vw"
+                    className={`${s.still} rounded-[20px]`}
                     style={{ transform: `rotate(${GALLERY_TILT[i % GALLERY_TILT.length]}deg)` }}
                   />
                 </RevealItem>
               ))}
             </Reveal>
+          ) : (
+            <>
+              {/* Every frame keeps its own shape. The wide frame grows in, the pair comes in from each side. */}
+              <ScrollIn scale={0.92} y={90}>
+                <Still still={wide} sizes="100vw" className={`${s.still} rounded-[20px] lg:rounded-[28px]`} style={{ transform: "rotate(-0.8deg)" }} />
+              </ScrollIn>
+              {left && right && (
+                <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
+                  <Reveal from={{ x: -70, y: 30 }} duration={1}>
+                    <Still still={left} className={`${s.still} rounded-[24px]`} style={{ transform: "rotate(1.2deg)" }} />
+                  </Reveal>
+                  <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
+                    <Still still={right} className={`${s.still} rounded-[24px] md:mt-[64px] lg:mt-[80px]`} style={{ transform: "rotate(-1.4deg)" }} />
+                  </Reveal>
+                </div>
+              )}
+              {more.length > 0 && (
+                <Reveal stagger={0.08} amount={0.1} className="columns-1 gap-[24px] pt-[8px] sm:columns-2 lg:columns-3 lg:gap-[32px] lg:pt-[24px]">
+                  {more.map((f, i) => (
+                    <RevealItem key={f.src} from={{ y: 50 }} className="mb-[24px] break-inside-avoid lg:mb-[32px]">
+                      <Still
+                        still={f}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className={`${s.still} rounded-[20px]`}
+                        style={{ transform: `rotate(${GALLERY_TILT[i % GALLERY_TILT.length]}deg)` }}
+                      />
+                    </RevealItem>
+                  ))}
+                </Reveal>
+              )}
+            </>
           )}
         </section>
       )}
