@@ -94,6 +94,17 @@ await page.waitForTimeout(1200);
 check(await loop.evaluate((v) => !v.paused && v.currentTime > 0.3).catch(() => false), "the loop is actually playing");
 // TEST FEATURE: hero "Press play" → hero leaves, screen goes black, 3-2-1, then the full reel plays full screen.
 await page.evaluate(() => window.scrollTo(0, 0));
+await page.evaluate(() => {
+  // Record each countdown beep's pitch.
+  window.__beeps = [];
+  const create = AudioContext.prototype.createOscillator;
+  AudioContext.prototype.createOscillator = function () {
+    const o = create.call(this);
+    const start = o.start.bind(o);
+    o.start = (...a) => (window.__beeps.push(o.frequency.value), start(...a));
+    return o;
+  };
+});
 await page.getByRole("button", { name: "Press play" }).click();
 const dialog = page.getByRole("dialog", { name: "Freaky Mack Studios showreel" });
 await page.waitForTimeout(1000);
@@ -110,6 +121,9 @@ for (let i = 0; i < 16 && counted.length < 3; i++) {
   await page.waitForTimeout(250);
 }
 check(counted.join("") === "321", `countdown runs 3 → 2 → 1 (${counted.join(",")})`);
+await page.waitForTimeout(400);
+const beeps = await page.evaluate(() => window.__beeps.map(Math.round));
+check(beeps.join() === "880,880,1760", `countdown beeps on 3, 2 and 1, higher on 1 (${beeps.join(", ")} Hz)`);
 const cinemaVideo = dialog.locator("video");
 await page.waitForFunction(() => document.querySelector('[role="dialog"] video')?.dataset.on === "true", null, { timeout: 3000 }).catch(() => {});
 const cv = await cinemaVideo.evaluate((v) => ({ on: v.dataset.on, controls: v.controls, sources: v.querySelectorAll("source").length, op: getComputedStyle(v).opacity }));

@@ -8,7 +8,7 @@ import c from "./cinema.module.css";
 /**
  * TEST FEATURE: "Press play" cinema intro.
  * The hero text fades, the first-screen elements slide off left and right, the screen goes black,
- * a 3-2-1 film-leader countdown runs and the complete showreel plays full screen.
+ * a 3-2-1 film-leader countdown runs (with beeps) and the complete showreel plays full screen.
  * Close (✕ or Escape) or the reel ending reverses it.
  *
  * idle → exit (elements leave, black fades in) → count (3, 2, 1) → play → return → idle
@@ -17,12 +17,32 @@ export type CinemaPhase = "idle" | "exit" | "count" | "play" | "return";
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/** Countdown beeps (film-leader style): a short tone on 3 and 2, a higher, longer one on 1. */
+const BEEP = { 3: [880, 0.16], 2: [880, 0.16], 1: [1760, 0.32] } as const;
+
+function beep(ctx: AudioContext | null, freq: number, dur: number) {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.18, t + 0.008);
+  gain.gain.setValueAtTime(0.18, t + dur - 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
 export function useCinema() {
   const [phase, setPhase] = useState<CinemaPhase>("idle");
   const [count, setCount] = useState(3);
   const [muted, setMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const audio = useRef<AudioContext | null>(null);
   const active = phase !== "idle";
 
   const start = useCallback(() => {
@@ -36,6 +56,13 @@ export function useCinema() {
       v.muted = false;
       v.play().catch(() => {});
       v.pause();
+    }
+    // The beeps need an audio context started from the click too.
+    try {
+      audio.current ??= new AudioContext();
+      audio.current.resume().catch(() => {});
+    } catch {
+      audio.current = null;
     }
     setMuted(false);
     setCount(3);
@@ -63,6 +90,15 @@ export function useCinema() {
     else if (phase === "return") t = window.setTimeout(() => setPhase("idle"), reducedMotion() ? 200 : 650);
     return () => window.clearTimeout(t);
   }, [phase, count]);
+
+  // Beep on each number.
+  useEffect(() => {
+    if (phase !== "count") return;
+    const [freq, dur] = BEEP[count as 1 | 2 | 3];
+    beep(audio.current, freq, dur);
+  }, [phase, count]);
+
+  useEffect(() => () => void audio.current?.close().catch(() => {}), []);
 
   // Roll the reel from the top, with sound; if the browser refuses sound, play muted with a "Tap for sound" pill.
   useEffect(() => {
