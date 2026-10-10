@@ -64,7 +64,7 @@ export default function PeoplePage() {
             className="absolute right-[-8px] bottom-[40px] lg:right-[-20px] lg:bottom-[48px]"
           >
             <span className="block rounded-full bg-[var(--accent)] px-[18px] py-[8px] text-[14px] font-semibold text-[var(--on-accent)] [transform:rotate(5deg)] lg:px-[22px] lg:py-[10px] lg:text-[16px]">
-              Founder &amp; Creative Producer
+              Founder &amp; Producer
             </span>
           </Reveal>
         </div>
@@ -109,14 +109,15 @@ export default function PeoplePage() {
                 [ Photo ]
               </div>
               <span
-                className={`rounded-full border px-[14px] py-[8px] text-center text-[13px] font-semibold md:whitespace-nowrap lg:px-[16px] lg:text-[15px] ${
+                className={`flex flex-col items-center gap-[2px] rounded-[20px] border px-[14px] py-[8px] text-center text-[13px] leading-[1.3] font-semibold lg:px-[18px] lg:py-[10px] lg:text-[15px] ${
                   c.highlight
                     ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--on-accent)]"
                     : "border-[var(--ink)] bg-[var(--pill-bg)]"
                 }`}
                 style={{ transform: `rotate(${c.tilt}deg)` }}
               >
-                {c.name} · {c.role}
+                <span>{c.name}</span>
+                <span className="text-[12px] font-medium lg:text-[13px]">{c.role}</span>
               </span>
             </RevealItem>
           ))}

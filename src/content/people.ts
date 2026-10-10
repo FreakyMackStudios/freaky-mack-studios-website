@@ -6,8 +6,8 @@ const LIFT = [0, 40, 0, 24, 32, 0, 40, 0];
 
 /** Izaan (the founder) has his own section above the grid. The studio will add two more people later. */
 const PEOPLE = [
-  { name: "AB Rahim Shah", role: "Sales & Marketing Head" },
-  { name: "Ashok Naik", role: "Creative Director" },
+  { name: "AB Rahim Shah", role: "Director & Chief Business Officer (CBO)" },
+  { name: "Ashok Kumar Naik", role: "Director & Chief Operating Officer (COO)" },
   { name: "Tridip K Maity", role: "Editor" },
   { name: "Salan Lamare", role: "Cinematographer" },
 ];
@@ -24,7 +24,7 @@ export const CREW = PEOPLE.map((p, i) => ({
 /** The founder's bio (content form, section 8). */
 export const FOUNDER_BIO = [
   "Izaan Khan is a filmmaker and director with over a decade of experience across fashion, advertising and visual storytelling. He has directed and created work for brands including McDonald’s, Google, Adidas Originals, Mercedes-Benz, Fila, Times of India and PC Jeweller, while working with leading names across the fashion and entertainment industry.",
-  "As the Creative Producer at Freaky Mack Studios, Izaan leads the creative vision across commercials, fashion films, branded content and narrative projects, bringing together strong visual language, storytelling and production.",
+  "As Founder and Producer at Freaky Mack Studios, Izaan leads the creative vision across commercials, fashion films, branded content and narrative projects, bringing together strong visual language, storytelling and production.",
 ];
 
 export const COLLABORATORS: { label: string; tilt: number; style?: "accent" | "inverse" | "open" }[] = [
