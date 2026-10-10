@@ -10,8 +10,8 @@ import { CHAPTER, H2, PB, PX } from "@/shared/ui";
 const FACES: { label: string; radius: string; bg: string; rot: number; mb: number; photo?: Portrait }[] = [
   { label: "Izaan Khan · Founder & Producer", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -3, mb: 0, photo: PORTRAITS.izaan },
   { label: "AB Rahim Shah · Director & CBO", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 2, mb: 40, photo: PORTRAITS.rahim },
-  { label: "Ashok Kumar Naik · Director & COO", radius: "120px", bg: "var(--surface-2)", rot: -2, mb: 0, photo: PORTRAITS.ashok },
-  { label: "Tridip K Maity · Editor", radius: "24px", bg: "var(--surface-3)", rot: 4, mb: 24 },
+  { label: "Ashok Kumar Naik · Director & COO", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -2, mb: 0, photo: PORTRAITS.ashok },
+  { label: "Tridip K Maity · Editor", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 4, mb: 24 },
 ];
 
 export function People() {

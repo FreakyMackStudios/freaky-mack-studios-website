@@ -1,5 +1,6 @@
 /** People board: the crew grid and collaborator roles. Names and roles come from the content form. */
-const SHAPES = ["140px 140px 24px 24px", "24px", "24px 24px 140px 140px", "160px"];
+// Team portraits alternate between two arches: curved on top, then curved at the bottom.
+const SHAPES = ["140px 140px 24px 24px", "24px 24px 140px 140px"];
 const TONES = ["var(--surface-2)", "var(--surface-3)", "var(--surface-2)", "var(--surface-4)"];
 const TILT = [-3, 2, -2, 4, 2, -3, 3, -2];
 const LIFT = [0, 40, 0, 24, 32, 0, 40, 0];
@@ -22,7 +23,7 @@ const PEOPLE: { name: string; role: string; photo?: Portrait }[] = [
 
 export const CREW = PEOPLE.map((p, i) => ({
   ...p,
-  shape: SHAPES[i % 4],
+  shape: SHAPES[i % 2],
   tone: TONES[i % 4],
   tilt: TILT[i],
   lift: LIFT[i],
