@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { CONTACT, SOCIAL } from "@/shared/config";
 import { InverseSlab, pillAccent } from "@/components/site/blocks";
 import { DraggableMark } from "@/components/motion/DraggableMark";
@@ -6,7 +7,7 @@ import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, PX } from "@/components/site/ui";
-import { COLLABORATORS, CREW, FOUNDER_BIO } from "@/content/people";
+import { COLLABORATORS, CREW, FOUNDER_BIO, PORTRAITS } from "@/content/people";
 
 export const metadata: Metadata = {
   title: "People",
@@ -51,10 +52,17 @@ export default function PeoplePage() {
           {/* The portrait straightens and grows into place; the role sticker pops on after it. */}
           <ScrollIn scale={0.88} rotate={-5} y={70}>
           <div
-            className="flex h-[440px] items-center justify-center rounded-[200px_200px_28px_28px] text-[12px] tracking-[0.2em] text-[var(--muted)] uppercase [transform:rotate(-2deg)] md:h-[540px] lg:h-[620px] lg:rounded-[260px_260px_32px_32px]"
+            className="relative h-[440px] overflow-hidden rounded-[200px_200px_28px_28px] [transform:rotate(-2deg)] md:h-[540px] lg:h-[620px] lg:rounded-[260px_260px_32px_32px]"
             style={{ background: "var(--portrait)" }}
           >
-            [ Portrait — Izaan ]
+            <Image
+              src={PORTRAITS.izaan.src}
+              alt={PORTRAITS.izaan.alt}
+              fill
+              sizes="(min-width: 1024px) 40vw, 480px"
+              className="object-cover"
+              style={{ objectPosition: PORTRAITS.izaan.position }}
+            />
           </div>
           </ScrollIn>
           <Reveal
@@ -103,10 +111,21 @@ export default function PeoplePage() {
               style={{ ["--lift" as string]: `${c.lift}px` }}
             >
               <div
-                className="flex h-[220px] w-full items-center justify-center text-[12px] tracking-[0.2em] text-[var(--ink-2)] uppercase md:h-[260px] lg:h-[320px]"
+                className="relative flex h-[220px] w-full items-center justify-center overflow-hidden text-[12px] tracking-[0.2em] text-[var(--ink-2)] uppercase md:h-[260px] lg:h-[320px]"
                 style={{ borderRadius: c.shape, background: c.tone }}
               >
-                [ Photo ]
+                {c.photo ? (
+                  <Image
+                    src={c.photo.src}
+                    alt={c.photo.alt}
+                    fill
+                    sizes="(min-width: 768px) 25vw, 50vw"
+                    className="object-cover"
+                    style={{ objectPosition: c.photo.position }}
+                  />
+                ) : (
+                  "[ Photo ]"
+                )}
               </div>
               <span
                 className={`flex flex-col items-center gap-[2px] rounded-[20px] border px-[14px] py-[8px] text-center text-[13px] leading-[1.3] font-semibold lg:px-[18px] lg:py-[10px] lg:text-[15px] ${

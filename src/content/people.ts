@@ -4,10 +4,18 @@ const TONES = ["var(--surface-2)", "var(--surface-3)", "var(--surface-2)", "var(
 const TILT = [-3, 2, -2, 4, 2, -3, 3, -2];
 const LIFT = [0, 40, 0, 24, 32, 0, 40, 0];
 
+/** Team portraits (public/people). `position` keeps the face in frame when the photo fills a shaped box. */
+export type Portrait = { src: string; alt: string; position: string };
+export const PORTRAITS = {
+  izaan: { src: "/people/izaan-khan.webp", alt: "Izaan Khan, founder and producer of Freaky Mack Studios", position: "50% 38%" },
+  rahim: { src: "/people/ab-rahim-shah.webp", alt: "AB Rahim Shah, Director & Chief Business Officer", position: "50% 18%" },
+  ashok: { src: "/people/ashok-kumar-naik.webp", alt: "Ashok Kumar Naik, Director & Chief Operating Officer", position: "50% 20%" },
+} satisfies Record<string, Portrait>;
+
 /** Izaan (the founder) has his own section above the grid. The studio will add two more people later. */
-const PEOPLE = [
-  { name: "AB Rahim Shah", role: "Director & Chief Business Officer (CBO)" },
-  { name: "Ashok Kumar Naik", role: "Director & Chief Operating Officer (COO)" },
+const PEOPLE: { name: string; role: string; photo?: Portrait }[] = [
+  { name: "AB Rahim Shah", role: "Director & Chief Business Officer (CBO)", photo: PORTRAITS.rahim },
+  { name: "Ashok Kumar Naik", role: "Director & Chief Operating Officer (COO)", photo: PORTRAITS.ashok },
   { name: "Tridip K Maity", role: "Editor" },
   { name: "Salan Lamare", role: "Cinematographer" },
 ];

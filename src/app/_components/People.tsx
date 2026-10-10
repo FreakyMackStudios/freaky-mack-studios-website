@@ -1,14 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { PORTRAITS, type Portrait } from "@/content/people";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "../home.module.css";
 import { CHAPTER, H2, PB, PX } from "@/shared/ui";
 
-const FACES = [
-  { label: "Izaan Khan · Founder & Producer", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -3, mb: 0 },
-  { label: "AB Rahim Shah · Director & CBO", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 2, mb: 40 },
-  { label: "Ashok Kumar Naik · Director & COO", radius: "120px", bg: "var(--surface-2)", rot: -2, mb: 0 },
+const FACES: { label: string; radius: string; bg: string; rot: number; mb: number; photo?: Portrait }[] = [
+  { label: "Izaan Khan · Founder & Producer", radius: "120px 120px 24px 24px", bg: "var(--surface-2)", rot: -3, mb: 0, photo: PORTRAITS.izaan },
+  { label: "AB Rahim Shah · Director & CBO", radius: "24px 24px 120px 120px", bg: "var(--surface-3)", rot: 2, mb: 40, photo: PORTRAITS.rahim },
+  { label: "Ashok Kumar Naik · Director & COO", radius: "120px", bg: "var(--surface-2)", rot: -2, mb: 0, photo: PORTRAITS.ashok },
   { label: "Tridip K Maity · Editor", radius: "24px", bg: "var(--surface-3)", rot: 4, mb: 24 },
 ];
 
@@ -27,10 +29,14 @@ export function People() {
             className={`${s.face} flex flex-col items-center gap-[16px] ${f.mb === 40 ? "md:mb-[40px]" : f.mb === 24 ? "md:mb-[24px]" : ""}`}
           >
             <div
-              className="flex aspect-[200/240] w-full max-w-[160px] items-center justify-center text-center text-[12px] tracking-[0.2em] text-[var(--muted)] uppercase md:max-w-none lg:h-[240px] lg:w-[200px]"
+              className="relative flex aspect-[200/240] w-full max-w-[160px] items-center justify-center overflow-hidden text-center text-[12px] tracking-[0.2em] text-[var(--muted)] uppercase md:w-[160px] md:max-w-none lg:h-[240px] lg:w-[200px]"
               style={{ borderRadius: f.radius, background: f.bg }}
             >
-              [ PHOTO ]
+              {f.photo ? (
+                <Image src={f.photo.src} alt={f.photo.alt} fill sizes="200px" className="object-cover" style={{ objectPosition: f.photo.position }} />
+              ) : (
+                "[ PHOTO ]"
+              )}
             </div>
             <span
               className="rounded-full border border-[var(--ink)] bg-[var(--pill-bg)] px-[12px] py-[6px] text-center text-[13px] font-semibold lg:px-[16px] lg:py-[8px] lg:text-[15px]"
