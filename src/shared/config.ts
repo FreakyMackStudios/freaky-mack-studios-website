@@ -5,8 +5,12 @@ export const SITE_URL =
 
 export const CONTACT = {
   email: "freakymackstudios@gmail.com",
-  phone: "+91 97115 42274",
-  phoneHref: "tel:+919711542274",
+  /** The studio's three numbers (content form, section 1), in the order given. */
+  phones: [
+    { label: "+91 80561 88076", href: "tel:+918056188076" },
+    { label: "+91 88268 64052", href: "tel:+918826864052" },
+    { label: "+91 97115 42274", href: "tel:+919711542274" },
+  ],
   whatsappNumber: "+91 93184 65829",
   whatsapp: "https://wa.me/919318465829",
   /** "We'll be in touch within …" on Start a project and Thanks. */

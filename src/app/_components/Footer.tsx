@@ -38,7 +38,11 @@ export function Footer() {
           <div className="col-span-2 flex flex-col gap-[12px] text-[15px]">
             <div className={`${s.it} ${HEAD}`}>Say hello</div>
             <a href={`mailto:${CONTACT.email}`} className={s.link}>{CONTACT.email}</a>
-            <a href={CONTACT.phoneHref} className={s.link}>{CONTACT.phone}</a>
+            {CONTACT.phones.map((ph) => (
+              <a key={ph.href} href={ph.href} className={s.link}>
+                {ph.label}
+              </a>
+            ))}
             <a href={CONTACT.whatsapp} className={s.link}>WhatsApp · {CONTACT.whatsappNumber}</a>
             <span className="text-[var(--muted)]">{STUDIO.address.join(", ")}</span>
           </div>

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const NEXT_STEPS = [
   "We read your brief — every word of it.",
   `We set up a call to talk it through, within ${CONTACT.replyTime}.`,
-  "We come back with an approach and a quote.",
+  "We come back with an approach and a quote. There’s no fixed budget: every quote is built around your project.",
 ];
 
 /** design/boards/Contact.dc.html */
@@ -68,9 +68,11 @@ export default function StartAProjectPage() {
             <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
               WhatsApp · {CONTACT.whatsappNumber} ↗
             </a>
-            <a href={CONTACT.phoneHref} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
-              Call · {CONTACT.phone}
-            </a>
+            {CONTACT.phones.map((ph) => (
+              <a key={ph.href} href={ph.href} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
+                Call · {ph.label}
+              </a>
+            ))}
           </RevealItem>
           <RevealItem className="flex flex-col gap-[16px]">
             <Label size="text-[20px] lg:text-[24px]">The studio</Label>

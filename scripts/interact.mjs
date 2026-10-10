@@ -240,7 +240,9 @@ check(tb && tb.x + tb.width > 1440 - 40 && tb.y + tb.height > 900 - 40 && (await
 await toggle.click();
 await page.waitForTimeout(1000);
 check((await root(page).getAttribute("data-theme")) === "light" && (await bg()) === "rgb(255, 255, 255)" && (await toggle.getAttribute("aria-checked")) === "false", "switch → Light: data-theme=light on white");
-check(!(await root(page).getAttribute("data-vt")), "the circle transition finishes and cleans up");
+// On a cold start the transition's snapshot can take longer, so wait for it to finish rather than assume 1 s.
+const vtDone = await page.waitForFunction(() => !document.documentElement.hasAttribute("data-vt"), null, { timeout: 4000 }).then(() => true, () => false);
+check(vtDone, "the circle transition finishes and cleans up");
 await page.reload({ waitUntil: "networkidle" });
 check((await root(page).getAttribute("data-theme")) === "light", "reload keeps Light");
 await toggle.click();
@@ -337,6 +339,9 @@ await page.getByRole("button", { name: "agency", exact: true }).click();
 await page.getByRole("link", { name: /Tell us the rest/ }).click();
 await page.waitForURL(/start-a-project/);
 await page.waitForTimeout(300);
+// Content form: no budget bands (the studio quotes per project), and all three studio numbers.
+check(!(await page.getByText(/Budget range|\[Range/).count()) && (await page.getByText(/no fixed budget/).count()) === 1, "no budget question; the next steps say quotes are built per project");
+check((await page.locator('main a[href^="tel:"]').count()) === 3 && (await page.locator('a[href="https://wa.me/919318465829"]').count()) >= 1, "Start a project lists all three phone numbers and the WhatsApp number");
 check((await page.getByRole("radio", { name: "music video" }).getAttribute("aria-checked")) === "true" && (await page.getByRole("radio", { name: "agency" }).getAttribute("aria-checked")) === "true", `homepage sentence pre-fills the form (${new URL(page.url()).search})`);
 await page.waitForTimeout(700); // sentence words settle
 const summary = () => page.locator("form p").first().innerText().then((x) => x.replace(/\s+/g, " "));
@@ -347,12 +352,12 @@ check(/whenever it’s right\./.test(await summary()), "When chip updates the se
 await page.getByRole("radio", { name: "music video" }).focus();
 await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "fashion film" }).getAttribute("aria-checked")) === "true" && (await page.evaluate(() => document.activeElement?.textContent)) === "fashion film", "ArrowRight selects and focuses the next format");
-check((await page.locator('[role="radiogroup"]').count()) === 4 && (await page.locator('[role="radio"][tabindex="0"]').count()) === 4, "4 radio groups, one tab stop each");
+check((await page.locator('[role="radiogroup"]').count()) === 3 && (await page.locator('[role="radio"][tabindex="0"]').count()) === 3, "3 radio groups, one tab stop each");
 await page.locator("#c-fmt-other").fill("an animated explainer");
 await page.locator("#c-who-other").fill("a startup");
 await page.waitForTimeout(700);
 check(/You need an animated explainer for a startup,/.test(await summary()), `typed answers fill the sentence → "${await summary()}"`);
-check((await page.locator('[aria-labelledby="q-fmt"] [aria-checked="true"], [aria-labelledby="q-who"] [aria-checked="true"]').count()) === 0 && (await page.locator('[role="radio"][tabindex="0"]').count()) === 4, "typing un-checks the chips, tab stops stay");
+check((await page.locator('[aria-labelledby="q-fmt"] [aria-checked="true"], [aria-labelledby="q-who"] [aria-checked="true"]').count()) === 0 && (await page.locator('[role="radio"][tabindex="0"]').count()) === 3, "typing un-checks the chips, tab stops stay");
 await page.getByRole("radio", { name: "agency" }).click();
 await page.waitForTimeout(700);
 check((await page.locator("#c-who-other").inputValue()) === "" && /for an agency,/.test(await summary()) && /an animated explainer/.test(await summary()), "picking a chip clears only its typed answer");
