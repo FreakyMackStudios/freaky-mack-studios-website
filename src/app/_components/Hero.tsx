@@ -7,6 +7,7 @@ import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { useSmoothScrollValue } from "@/components/motion/useScrollMotion";
 import s from "../home.module.css";
 import { PlayIcon } from "./icons";
+import { scrollToReel } from "./Reel";
 import { PX } from "@/shared/ui";
 
 export function Hero({
@@ -102,7 +103,13 @@ export function Hero({
               </span>
               {reelOpen && !cinema ? "Close the reel" : "Press play"}
             </button>
-            <a href="#ch1" className={`${s.link} border-b-2 border-[var(--accent)] pb-[3px] text-[15px] font-medium`}>
+            <a
+              href="#reel"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToReel();
+              }}
+              className={`${s.link} border-b-2 border-[var(--accent)] pb-[3px] text-[15px] font-medium`}>
               or scroll the story ↓
             </a>
           </RevealItem>
