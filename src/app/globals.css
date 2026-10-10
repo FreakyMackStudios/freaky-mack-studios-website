@@ -82,7 +82,8 @@ button {
   animation: none;
   mix-blend-mode: normal;
 }
-html[data-vt="shrink"]::view-transition-old(root) { z-index: 2; }
+html[data-vt="shrink"]::view-transition-old(root) { z-index: 2; clip-path: var(--vt-small); }
+html[data-vt="grow"]::view-transition-new(root) { clip-path: var(--vt-small); }
 html[data-vt="shrink"]::view-transition-new(root) { z-index: 1; }
 [data-theme-toggle] { view-transition-name: theme-toggle; }
 ::view-transition-group(theme-toggle) { z-index: 3; animation: none; }

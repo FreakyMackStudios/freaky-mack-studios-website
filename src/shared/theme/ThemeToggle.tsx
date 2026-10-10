@@ -28,25 +28,33 @@ export function ThemeToggle() {
     const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
     const toLight = next === "light";
     const html = document.documentElement;
+    // The circle ends (or starts) exactly hidden behind the switch, which is opaque, so it slips under it
+    // smoothly instead of showing through or popping at the last moment.
+    const small = `circle(${box.height / 2}px at ${x}px ${y}px)`;
+    const big = `circle(${r}px at ${x}px ${y}px)`;
+    // The same end states in CSS (globals.css), so no frame ever shows the layer unclipped: not before the
+    // animation starts, and not in the frame between it ending and the transition being torn down (that
+    // frame was the white flash going to Dark).
+    html.style.setProperty("--vt-small", small);
     html.dataset.vt = toLight ? "grow" : "shrink";
     const t = document.startViewTransition(apply);
     t.ready
       .then(() => {
-        // The circle ends (or starts) exactly hidden behind the switch, which is opaque, so it slips
-        // under it smoothly instead of showing through or popping at the last moment.
-        const small = `circle(${box.height / 2}px at ${x}px ${y}px)`;
-        const big = `circle(${r}px at ${x}px ${y}px)`;
         html.animate(
           { clipPath: toLight ? [small, big] : [big, small] },
           {
             duration: toLight ? 750 : 650,
             easing: toLight ? "cubic-bezier(0.65, 0, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.45, 1)",
             pseudoElement: toLight ? "::view-transition-new(root)" : "::view-transition-old(root)",
+            fill: "forwards",
           },
         );
       })
       .catch(() => {});
-    t.finished.finally(() => delete html.dataset.vt);
+    t.finished.finally(() => {
+      delete html.dataset.vt;
+      html.style.removeProperty("--vt-small");
+    });
   };
 
   return (
