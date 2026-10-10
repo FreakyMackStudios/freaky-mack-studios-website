@@ -25,8 +25,10 @@
 .primary:hover { background: var(--inv-bg); color: var(--inv-ink); border-color: var(--inv-bg); }
 .tag { transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .tag:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 2; }
-.row { transition: padding-left 0.3s ease, color 0.3s ease; }
-.row:hover { padding-left: 20px; }
+/* Chapter 01 work list: the active row glides, the preview and caption cross-fade (WorkPreview.tsx). */
+.workRow { transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease; will-change: transform; }
+.workPreview { transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.workCaption { transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
 .chip { transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease; }
 .chip:hover { transform: translateY(-2px); }
 .ep { transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }

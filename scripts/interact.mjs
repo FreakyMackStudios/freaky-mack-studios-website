@@ -133,7 +133,18 @@ const framed = await page.evaluate(() => {
 check(framed.cover > 0.66 && Math.abs(framed.centre - 450) < 6 && framed.heroGone && framed.nextBelow, `scroll the story → reel fully grown and centred, nothing else in view (${JSON.stringify(framed)})`);
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 await page.locator("#ch1 li").nth(2).hover();
-check((await page.locator("#ch1").getByText("PC Jeweller · Ad film").count()) === 2, "hovering row 03 swaps preview meta");
+await page.waitForTimeout(800);
+const shownPreview = await page.evaluate(() => [...document.querySelectorAll('#ch1 [aria-hidden="false"]')].map((e) => e.textContent.trim()).filter((t) => /PC Jeweller/.test(t)).length);
+check(shownPreview >= 2, "hovering row 03 cross-fades the preview and caption to PC Jeweller");
+// Work list: every title on one line, at desktop and tablet widths, and the active row slides (transform) instead of re-flowing.
+for (const w of [1440, 1024, 768]) {
+  await page.setViewportSize({ width: w, height: 900 });
+  await page.waitForTimeout(300);
+  const lines = await page.evaluate(() => [...document.querySelectorAll("#ch1 li a > span > span:last-child > span:first-child")].map((t) => ({ h: t.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(t).lineHeight), cut: t.scrollWidth > t.clientWidth + 1 })));
+  check(lines.length === 6 && lines.every((l) => l.h < l.lh * 1.5 && !l.cut), `work titles fit on one line at ${w}px`);
+}
+await page.setViewportSize({ width: 1440, height: 900 });
+check(await page.evaluate(() => getComputedStyle(document.querySelector("#ch1 li a > span")).transitionProperty.includes("transform")), "active work row glides with a transform transition");
 await page.getByRole("button", { name: "music video", exact: true }).click();
 await page.getByRole("button", { name: "face on screen" }).click();
 await page.waitForTimeout(700); // the pill words slide in
