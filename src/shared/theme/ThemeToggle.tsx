@@ -33,15 +33,18 @@ export function ThemeToggle() {
     const small = `circle(${(box.height / 2).toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
     const big = `circle(${Math.ceil(r)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
     // Plain CSS keyframes with the exact circle, injected for this one transition. They apply from the very
-    // first frame the transition layers exist and hold their end state (forwards) until it is torn down, so
-    // no frame shows the new page unclipped (the light page popping in at once going to Light, in Safari)
-    // or the old one uncovered (the white flash going to Dark). No CSS variables or script-driven
-    // animations on the transition layers, which browsers support unevenly.
+    // first frame the transition layers exist, so the new page is never shown unclipped at the start (the
+    // light page popping in at once going to Light, in Safari). The layer's own clip-path is also set to
+    // the end state: a clip-path animation runs on the compositor, and in the frame between it finishing
+    // and the transition being torn down the fill can drop, which showed the old light page whole (the
+    // white flash going to Dark). No CSS variables or script-driven animations on the transition layers,
+    // which browsers support unevenly.
     const layer = toLight ? "new" : "old";
     const style = document.createElement("style");
     style.textContent = `
       html::view-transition-${layer}(root) {
         z-index: 2;
+        clip-path: ${toLight ? big : small};
         animation: fm-vt ${toLight ? 750 : 650}ms ${toLight ? "cubic-bezier(0.65, 0, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.45, 1)"} both;
       }
       html::view-transition-${toLight ? "old" : "new"}(root) { z-index: 1; }
