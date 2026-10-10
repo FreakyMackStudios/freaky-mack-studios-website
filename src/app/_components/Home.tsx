@@ -30,7 +30,7 @@ export function Home() {
     if (!reelOpen && HAS_FULL_REEL) enterFullscreen();
     setReelOpen((o) => !o);
   };
-  // TEST FEATURE: the hero's "Press play" runs the cinema intro into the complete showreel.
+  // The hero's "Press play" runs the cinema intro (3-2-1 countdown) into the complete showreel, full screen.
   const cinema = useCinema();
   const pressPlay = HAS_FULL_REEL ? cinema.start : toggleReel;
 

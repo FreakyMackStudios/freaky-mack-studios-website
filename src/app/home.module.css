@@ -60,7 +60,7 @@
 .eq span:nth-child(3) { animation-delay: 0.3s; }
 .eq span:nth-child(4) { animation-delay: 0.45s; }
 
-/* TEST FEATURE — "Press play" cinema intro: first-screen elements leave left/right, the hero text fades. */
+/* "Press play" cinema intro: first-screen elements leave left/right, the hero text fades. */
 .root [data-exit] {
   transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease, filter 0.7s ease;
 }

@@ -7,7 +7,7 @@ import { ScrollNudge, enterFullscreen, useReelLock } from "@/shared/reel-lock";
 import c from "./cinema.module.css";
 
 /**
- * TEST FEATURE: "Press play" cinema intro.
+ * "Press play" cinema intro.
  * The hero text fades, the first-screen elements slide off left and right, the screen goes black,
  * a 3-2-1 film-leader countdown runs (with beeps) and the complete showreel plays full screen.
  * Close (✕ or Escape) or the reel ending reverses it.

@@ -17,7 +17,7 @@ export function Hero({
 }: {
   reelOpen: boolean;
   onPressPlay: () => void;
-  /** TEST FEATURE: "Press play" opens the full-screen cinema intro instead of the reel band. */
+  /** "Press play" opens the full-screen cinema intro (countdown, then the reel) instead of the reel band. */
   cinema: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);

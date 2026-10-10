@@ -138,7 +138,7 @@ const framed = await page.evaluate(() => {
 });
 check(framed.cover > 0.66 && Math.abs(framed.centre - 450) < 6 && framed.heroGone && framed.nextBelow, `scroll the story → reel fully grown and centred, nothing else in view (${JSON.stringify(framed)})`);
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-// TEST FEATURE: hero "Press play" → hero leaves, screen goes black, 3-2-1, then the full reel plays full screen.
+// Hero "Press play" → hero leaves, screen goes black, 3-2-1, then the full reel plays full screen.
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.evaluate(() => {
   // Record each countdown beep's pitch.
