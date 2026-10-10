@@ -28,13 +28,6 @@ export const WHENS = [
   { id: "flexible", label: "Flexible", phrase: "whenever it’s right" },
 ] as const;
 
-export const BUDGETS = [
-  { id: "range-1", label: "[Range 1]" },
-  { id: "range-2", label: "[Range 2]" },
-  { id: "range-3", label: "[Range 3]" },
-  { id: "not-sure", label: "Not sure yet" },
-] as const;
-
 /** Chip label: the phrase without its article ("an ad film" → "ad film"). */
 export const bare = (phrase: string) => phrase.replace(/^an? /, "");
 

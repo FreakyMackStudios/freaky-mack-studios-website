@@ -12,7 +12,6 @@ export type Enquiry = {
   format?: string;
   audience?: string;
   timing?: string;
-  budget?: string;
   company?: string;
   phone?: string;
   links?: string;
@@ -25,7 +24,6 @@ const LABELS: [keyof Enquiry, string][] = [
   ["format", "Format"],
   ["audience", "Who it’s for"],
   ["timing", "When"],
-  ["budget", "Budget range"],
   ["name", "Name"],
   ["email", "Email"],
   ["company", "Brand, label or agency"],

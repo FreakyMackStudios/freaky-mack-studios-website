@@ -6,7 +6,7 @@ import { Swap } from "@/components/motion/Swap";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import { pillAccent } from "@/components/site/blocks";
 import s from "@/components/site/site.module.css";
-import { AUDIENCES, BUDGETS, FORMATS, WHENS, bare } from "@/content/enquiry-options";
+import { AUDIENCES, FORMATS, WHENS, bare } from "@/content/enquiry-options";
 import { useEnquiryForm } from "@/shared/enquiry";
 
 const FMT_OPTS = FORMATS.map((f) => ({ id: f.id, label: bare(f.phrase) }));
@@ -58,11 +58,10 @@ function OtherAnswer({ id, value, onChange, placeholder }: { id: string; value: 
 
 export function EnquiryForm() {
   const search = useSearch();
-  const [picked, setPicked] = useState<{ fmt?: string; who?: string; when?: string; budget?: string }>({});
+  const [picked, setPicked] = useState<{ fmt?: string; who?: string; when?: string }>({});
   const fmt = picked.fmt ?? fromQuery(search, "fmt", FORMATS) ?? FORMATS[0].id;
   const who = picked.who ?? fromQuery(search, "who", AUDIENCES) ?? AUDIENCES[0].id;
   const when = picked.when ?? WHENS[0].id;
-  const budget = picked.budget ?? BUDGETS[3].id;
   // Typed answers for the first two questions. While one has text it wins over the chips (which show
   // unselected); picking a chip clears it again.
   const [other, setOther] = useState({ fmt: "", who: "" });
@@ -77,13 +76,11 @@ export function EnquiryForm() {
   const f = FORMATS.find((x) => x.id === fmt)!;
   const a = AUDIENCES.find((x) => x.id === who)!;
   const w = WHENS.find((x) => x.id === when)!;
-  const b = BUDGETS.find((x) => x.id === budget)!;
 
   const { onSubmit, status, message, errors } = useEnquiryForm({
     format: fmtOther || bare(f.phrase),
     audience: whoOther || bare(a.phrase),
     timing: w.label,
-    budget: b.label,
     source: "Start a project",
   });
 
@@ -123,10 +120,6 @@ export function EnquiryForm() {
       <fieldset className="m-0 border-0 p-0">
         <legend id="q-when" className={LEGEND}>03 · When?</legend>
         <ChipGroup labelledBy="q-when" options={WHENS} value={when} onChange={pick("when")} gap="gap-[12px]" />
-      </fieldset>
-      <fieldset className="m-0 border-0 p-0">
-        <legend id="q-budget" className={LEGEND}>04 · Budget range</legend>
-        <ChipGroup labelledBy="q-budget" options={BUDGETS} value={budget} onChange={pick("budget")} gap="gap-[12px]" />
       </fieldset>
 
       {/* The contact fields sit apart from the questions above, below a hairline. */}

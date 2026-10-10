@@ -59,7 +59,7 @@ export function Contact() {
             required
             aria-invalid={!!errors.brief}
             aria-describedby={errors.brief ? "fm-brief-err" : undefined}
-            placeholder="Format, timeline, budget range — whatever you have."
+            placeholder="Format, timeline, references — whatever you have."
             className={`${FIELD} resize-y py-[14px]`}
           />
           {errors.brief && <p id="fm-brief-err" className={ERR}>{errors.brief}</p>}
