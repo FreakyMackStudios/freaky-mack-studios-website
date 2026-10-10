@@ -1,34 +1,19 @@
-import { PITCH_MODE } from "@/shared/config";
-import { ACCENTS, DARK_GROUND, DEFAULT_CHOICE, GROUNDS, STORAGE_KEY, resolveChoice } from "./theme";
+import { DEFAULT_THEME, STORAGE_KEY, resolveTheme } from "./theme";
 
 /**
- * Rendered in <head>. The <style> carries the default look (also the no-JS fallback);
- * the inline script applies a pitch choice (URL query first, then localStorage) before first paint.
+ * Rendered in <head>. The <style> carries the default look (also the no-JS fallback); the inline script
+ * applies the visitor's saved theme (or ?theme=light|dark, which is also saved) before first paint.
  */
 export function ThemeHead() {
-  const defaults = resolveChoice(DEFAULT_CHOICE);
-  const css = `:root{${Object.entries(defaults)
+  const css = `:root{${Object.entries(resolveTheme(DEFAULT_THEME))
     .map(([k, v]) => `${k}:${v}`)
     .join(";")}}`;
-  const cfg = JSON.stringify({
-    pitch: PITCH_MODE,
-    d: DEFAULT_CHOICE,
-    a: ACCENTS.map((x) => ({ id: x.id, accent: x.accent, on: x.onAccent, tod: "textOnDark" in x ? x.textOnDark : x.accent })),
-    g: GROUNDS,
-    dg: DARK_GROUND,
-    k: STORAGE_KEY,
-  });
-  const script = `(function(){try{var C=${cfg},c={theme:C.d.theme,accent:C.d.accent,ground:C.d.ground};
-var okA=function(v){for(var i=0;i<C.a.length;i++)if(C.a[i].id===v)return C.a[i];return null};
-var okT=function(v){return v==="light"||v==="dark"},okG=function(v){return C.g.indexOf(v)>=0};
-if(C.pitch){try{var s=JSON.parse(localStorage.getItem(C.k)||"null");if(s){if(okT(s.theme))c.theme=s.theme;if(okA(s.accent))c.accent=s.accent;if(okG(s.ground))c.ground=s.ground}}catch(e){}
-var q=new URLSearchParams(location.search),t=q.get("theme"),a=q.get("accent"),g=q.get("ground");
-if(okT(t))c.theme=t;if(okA(a))c.accent=a;if(g&&okG("#"+g))c.ground="#"+g;
-if(t||a||g){try{localStorage.setItem(C.k,JSON.stringify(c))}catch(e){}}}
-var x=okA(c.accent)||C.a[0],dark=c.theme==="dark",r=document.documentElement,bg=dark?C.dg:c.ground;
-r.setAttribute("data-theme",c.theme);r.setAttribute("data-accent",c.accent);r.setAttribute("data-ground",c.ground);
-r.style.setProperty("--accent",x.accent);r.style.setProperty("--on-accent",x.on);
-r.style.setProperty("--accent-text",dark?x.tod:x.accent);r.style.setProperty("--ground",bg);r.style.background=bg;
+  const cfg = JSON.stringify({ d: DEFAULT_THEME, k: STORAGE_KEY, v: { light: resolveTheme("light"), dark: resolveTheme("dark") } });
+  const script = `(function(){try{var C=${cfg},t=C.d,ok=function(v){return v==="light"||v==="dark"};
+try{var s=localStorage.getItem(C.k);if(ok(s))t=s}catch(e){}
+var q=new URLSearchParams(location.search).get("theme");if(ok(q)){t=q;try{localStorage.setItem(C.k,t)}catch(e){}}
+var r=document.documentElement,v=C.v[t];r.setAttribute("data-theme",t);
+for(var k in v)r.style.setProperty(k,v[k]);r.style.background=v["--ground"];
 }catch(e){}})();`;
   return (
     <>

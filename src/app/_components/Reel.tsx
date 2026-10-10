@@ -59,8 +59,9 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
 
   return (
     <section id="reel" aria-label="Showreel" className={`flex shrink-0 flex-col items-center pb-[96px] lg:pb-[160px] ${PX}`}>
-      <div ref={track} className="flex w-full flex-col items-center">
+      <div ref={track} data-reel-track className="flex w-full flex-col items-center">
         <div
+          data-reel-pin
           className={`flex w-full justify-center ${pin ? "sticky z-10" : ""}`}
           style={pin ? { top } : undefined}
         >
@@ -94,6 +95,28 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
       {pin && <div aria-hidden="true" style={{ height: Math.ceil(((maxScale - 1) * baseH) / 2) }} />}
     </section>
   );
+}
+
+/**
+ * "or scroll the story ↓": glide to the point where the reel has finished growing and holds the middle of
+ * the window, so only the loop is in view. Where the reel doesn't pin (phones, reduced motion, open band),
+ * centre it in the window instead.
+ */
+export function scrollToReel() {
+  const track = document.querySelector<HTMLElement>("[data-reel-track]");
+  const pin = document.querySelector<HTMLElement>("[data-reel-pin]");
+  if (!track || !pin) return;
+  const y = window.scrollY;
+  let top: number;
+  if (getComputedStyle(pin).position === "sticky") {
+    // The pinned stretch ends when the pinned box's bottom meets the track's bottom; stop just short of it.
+    top = track.getBoundingClientRect().bottom + y - parseFloat(pin.style.top || "0") - pin.offsetHeight - 2;
+  } else {
+    const r = pin.getBoundingClientRect();
+    top = r.top + y + r.height / 2 - window.innerHeight / 2;
+  }
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: reduced ? "auto" : "smooth" });
 }
 
 function OpenReel({ onToggle }: { onToggle: () => void }) {
@@ -153,12 +176,14 @@ function OpenReel({ onToggle }: { onToggle: () => void }) {
 }
 
 function ClosedReel({ onToggle }: { onToggle: () => void }) {
+  // The "new!" sticker hangs over the card's edge, so it sits outside the card's clipped box.
   return (
+    <div className={`${s.reelCard} relative w-full max-w-[760px]`}>
     <button
       type="button"
       onClick={onToggle}
       aria-label="Open the showreel"
-      className={`${s.reelCard} relative aspect-[760/428] w-full max-w-[760px] overflow-hidden rounded-[20px] border-0 bg-[#0d0d0d] p-0 text-left text-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] lg:rounded-[24px]`}
+      className={`relative block aspect-[760/428] w-full overflow-hidden rounded-[20px] border-0 bg-[#0d0d0d] p-0 text-left text-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] lg:rounded-[24px]`}
     >
       <div className="absolute inset-0" style={{ background: GRADIENT }} />
       <ReelLoop className="absolute inset-0 h-full w-full object-cover">
@@ -175,12 +200,14 @@ function ClosedReel({ onToggle }: { onToggle: () => void }) {
           <span className="text-[12px] text-white/65 lg:text-[13px]">tap to open · {REEL.duration}</span>
         </span>
       </div>
+    </button>
       <span
-        className={`${s.it} absolute top-[14px] right-[-6px] rounded-full bg-[var(--accent)] px-[14px] py-[4px] text-[16px] text-[var(--on-accent)] [transform:rotate(6deg)] lg:top-[22px] lg:px-[18px] lg:py-[6px] lg:text-[20px]`}
+        aria-hidden="true"
+        className={`${s.it} pointer-events-none absolute top-[14px] right-[-6px] rounded-full bg-[var(--accent)] px-[14px] py-[4px] text-[16px] text-[var(--on-accent)] [transform:rotate(6deg)] lg:top-[22px] lg:px-[18px] lg:py-[6px] lg:text-[20px]`}
       >
         new!
       </span>
-    </button>
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 // Full-page screenshots + layout checks with the preinstalled Chromium.
 // Usage: node scripts/shoot.mjs [route ...] [--out dir] [--seg 1500] [--widths 1440,390] [--base http://localhost:3000]
-//   With no routes it shoots every page. Routes may carry the pitch query, e.g. "/work/?theme=dark&accent=grey".
+//   With no routes it shoots every page. Routes may carry the pitch query, e.g. "/work/?theme=light".
 //   Fails on horizontal overflow or console errors.
 import { chromium } from "playwright";
 import fs from "node:fs";

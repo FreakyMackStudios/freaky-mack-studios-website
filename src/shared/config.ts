@@ -1,9 +1,3 @@
-/**
- * Pitch-only UI: the floating theme / accent picker on the homepage.
- * Set NEXT_PUBLIC_PITCH_MODE=off (or make this false) once the client has locked in a look.
- */
-export const PITCH_MODE = process.env.NEXT_PUBLIC_PITCH_MODE !== "off";
-
 /** Absolute site URL for metadata (Open Graph, sitemap). On Vercel the production domain is used automatically. */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
