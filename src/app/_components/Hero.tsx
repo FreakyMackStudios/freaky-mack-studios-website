@@ -1,17 +1,25 @@
 "use client";
 
 import { motion, useScroll } from "framer-motion";
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { DraggableMark } from "@/components/motion/DraggableMark";
 import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { useSmoothScrollValue } from "@/components/motion/useScrollMotion";
 import s from "../home.module.css";
 import { PlayIcon } from "./icons";
 import { scrollToReel } from "./Reel";
-import { HAS_FULL_REEL } from "@/shared/reel";
 import { PX } from "@/shared/ui";
 
-export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleReel: () => void }) {
+export function Hero({
+  reelOpen,
+  onPressPlay,
+  cinema,
+}: {
+  reelOpen: boolean;
+  onPressPlay: () => void;
+  /** TEST FEATURE: "Press play" opens the full-screen cinema intro instead of the reel band. */
+  cinema: boolean;
+}) {
   const ref = useRef<HTMLElement>(null);
   // As the hero scrolls away, its text drifts down a little and fades (spring-smoothed).
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -23,10 +31,13 @@ export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleRe
       id="top"
       className={`relative flex shrink-0 flex-col items-center pt-[128px] pb-[72px] text-center lg:pt-[140px] lg:pb-[120px] ${PX}`}
     >
-      <DraggableMark
-        className="absolute top-[24px] left-[12px] z-10 h-[56px] w-[84px] lg:top-[96px] lg:left-[148px] lg:h-[112px] lg:w-[168px]"
-        imgClassName={`${s.blob} opacity-90`}
-      />
+      <div data-exit="left" className="pointer-events-none absolute inset-0 z-10" style={{ "--exit-delay": "0.12s" } as CSSProperties}>
+        <DraggableMark
+          className="pointer-events-auto absolute top-[24px] left-[12px] h-[56px] w-[84px] lg:top-[96px] lg:left-[148px] lg:h-[112px] lg:w-[168px]"
+          imgClassName={`${s.blob} opacity-90`}
+        />
+      </div>
+      <div data-exit="right" className="pointer-events-none absolute inset-0" style={{ "--exit-delay": "0.12s" } as CSSProperties}>
       <Reveal
         onMount
         delay={0.5}
@@ -49,7 +60,9 @@ export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleRe
           </svg>
         </div>
       </Reveal>
+      </div>
       {/* The text block: plays in on load, then eases away as the page scrolls. */}
+      <div data-exit="fade" className="w-full">
       <motion.div style={{ y, opacity }} className="flex w-full flex-col items-center">
         <Reveal onMount stagger={0.12} delay={0.1} className="flex w-full flex-col items-center gap-[28px] lg:gap-[40px]">
           <RevealItem className={`${s.it} text-[17px] tracking-[0.08em] text-[var(--muted-2)] uppercase lg:text-[22px]`}>
@@ -81,14 +94,14 @@ export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleRe
           <RevealItem className="mt-[8px] flex flex-wrap items-center justify-center gap-[20px]">
             <button
               type="button"
-              onClick={onToggleReel}
-              {...(HAS_FULL_REEL ? { "aria-haspopup": "dialog" as const } : { "aria-expanded": reelOpen, "aria-controls": "reel" })}
+              onClick={onPressPlay}
+              {...(cinema ? { "aria-haspopup": "dialog" as const } : { "aria-expanded": reelOpen, "aria-controls": "reel" })}
               className={`${s.pill} ${s.primary} flex h-[60px] items-center gap-[14px] rounded-full border border-[var(--inv-bg)] bg-[var(--inv-bg)] pr-[30px] pl-[22px] text-[15px] font-semibold text-[var(--inv-ink)]`}
             >
               <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[var(--accent)]">
                 <PlayIcon size={11} fill="var(--on-accent)" />
               </span>
-              {reelOpen && !HAS_FULL_REEL ? "Close the reel" : "Press play"}
+              {reelOpen && !cinema ? "Close the reel" : "Press play"}
             </button>
             <a
               href="#reel"
@@ -102,6 +115,7 @@ export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleRe
           </RevealItem>
         </Reveal>
       </motion.div>
+      </div>
     </section>
   );
 }

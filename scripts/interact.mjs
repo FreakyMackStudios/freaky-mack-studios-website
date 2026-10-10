@@ -138,6 +138,54 @@ const framed = await page.evaluate(() => {
 });
 check(framed.cover > 0.66 && Math.abs(framed.centre - 450) < 6 && framed.heroGone && framed.nextBelow, `scroll the story → reel fully grown and centred, nothing else in view (${JSON.stringify(framed)})`);
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+// TEST FEATURE: hero "Press play" → hero leaves, screen goes black, 3-2-1, then the full reel plays full screen.
+await page.evaluate(() => window.scrollTo(0, 0));
+await page.evaluate(() => {
+  // Record each countdown beep's pitch.
+  window.__beeps = [];
+  const create = AudioContext.prototype.createOscillator;
+  AudioContext.prototype.createOscillator = function () {
+    const o = create.call(this);
+    const start = o.start.bind(o);
+    o.start = (...a) => (window.__beeps.push(o.frequency.value), start(...a));
+    return o;
+  };
+});
+await page.getByRole("button", { name: "Press play" }).click();
+const dialog = page.getByRole("dialog", { name: "Freaky Mack Studios showreel" });
+await page.waitForTimeout(1000);
+const away = await page.evaluate(() => {
+  const op = (sel) => Number(getComputedStyle(document.querySelector(sel)).opacity);
+  const x = (sel) => document.querySelector(sel).getBoundingClientRect().left;
+  return { text: op('#top [data-exit="fade"]'), logo: x('header [data-exit="left"]'), cta: x('header [data-exit="right"]'), scroll: getComputedStyle(document.documentElement).overflow };
+});
+check(away.text < 0.05 && away.logo < -1000 && away.cta > 1440 && away.scroll === "hidden", `Press play: hero text fades, logo exits left, CTA exits right, scroll locked (${JSON.stringify(away)})`);
+const counted = [];
+for (let i = 0; i < 16 && counted.length < 3; i++) {
+  const n = await dialog.locator("span").filter({ hasText: /^[123]$/ }).first().textContent({ timeout: 300 }).catch(() => null);
+  if (n && counted.at(-1) !== n) counted.push(n);
+  await page.waitForTimeout(250);
+}
+check(counted.join("") === "321", `countdown runs 3 → 2 → 1 (${counted.join(",")})`);
+await page.waitForTimeout(400);
+const beeps = await page.evaluate(() => window.__beeps.map(Math.round));
+check(beeps.join() === "880,880,1760", `countdown beeps on 3, 2 and 1, higher on 1 (${beeps.join(", ")} Hz)`);
+const cinemaVideo = dialog.locator("video");
+await page.waitForFunction(() => document.querySelector('[role="dialog"] video')?.dataset.on === "true", null, { timeout: 3000 }).catch(() => {});
+const cv = await cinemaVideo.evaluate((v) => ({ on: v.dataset.on, controls: v.controls, sources: v.querySelectorAll("source").length, op: getComputedStyle(v).opacity }));
+check(cv.on === "true" && cv.controls && cv.sources === 4, `full reel takes the screen with controls after the countdown (${JSON.stringify(cv)})`);
+await page.mouse.wheel(0, 500);
+await page.waitForTimeout(300);
+check((await dialog.getByText("Close the reel to keep scrolling").isVisible()) && (await page.evaluate(() => window.scrollY)) === 0, "scrolling during the reel is held and nudges to close it");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(1600);
+const back = await page.evaluate(() => ({
+  cinema: document.querySelector("[data-cinema]") !== null,
+  text: Number(getComputedStyle(document.querySelector('#top [data-exit="fade"]')).opacity),
+  focus: document.activeElement?.textContent?.trim(),
+  scroll: getComputedStyle(document.documentElement).overflow,
+}));
+check(!back.cinema && back.text > 0.95 && back.focus === "Press play" && back.scroll !== "hidden", `Escape ends the reel, the hero comes back and focus returns (${JSON.stringify(back)})`);
 await page.locator("#ch1 li").nth(2).hover();
 await page.waitForTimeout(800);
 const shownPreview = await page.evaluate(() => [...document.querySelectorAll('#ch1 [aria-hidden="false"]')].map((e) => e.textContent.trim()).filter((t) => /PC Jeweller/.test(t)).length);
@@ -369,7 +417,7 @@ console.log("Motion (homepage)");
   await mp.goto(`${base}/`, { waitUntil: "networkidle" });
   await mp.waitForTimeout(1500);
   // Drag the blob mark far across the page; it follows, then springs back on release.
-  const mark = mp.locator("section#top > div.cursor-grab").first();
+  const mark = mp.locator("section#top div.cursor-grab").first();
   const home = await mark.boundingBox();
   await mp.mouse.move(home.x + home.width / 2, home.y + home.height / 2);
   await mp.mouse.down();
@@ -410,7 +458,7 @@ console.log("Motion (homepage)");
   check(before === "0" && after === "1", `below-the-fold heading reveals on scroll (opacity ${before} → ${after})`);
   // Scroll-linked: the hero text drifts away; there is no progress bar across the top.
   const bar = await mp.evaluate(() => [...document.querySelectorAll("body *")].some((el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.position === "fixed" && r.top === 0 && r.height <= 4 && r.width > 200; }));
-  const heroY = await mp.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector("section#top > div.flex")).transform).m42);
+  const heroY = await mp.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector("section#top > [data-exit=\"fade\"] > div.flex")).transform).m42);
   check(!bar && heroY > 20, `no top progress bar, and hero text drifts (${Math.round(heroY)}px)`);
   await ctx.close();
   // Without JavaScript nothing is left hidden.
