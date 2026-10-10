@@ -108,6 +108,11 @@ await page.getByRole("button", { name: "Open the showreel" }).click();
 await shows(full);
 await page.keyboard.press("Escape");
 check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Escape closes the full reel");
+// When the reel finishes, the player closes by itself.
+await page.getByRole("button", { name: "Open the showreel" }).click();
+await shows(full);
+await full.evaluate((v) => v.dispatchEvent(new Event("ended")));
+check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "the full reel closes by itself when it ends");
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 const loop = page.locator('[aria-label="Open the showreel"] video');
 await loop.waitFor({ state: "attached", timeout: 5000 }).catch(() => {});
@@ -186,6 +191,18 @@ const back = await page.evaluate(() => ({
   scroll: getComputedStyle(document.documentElement).overflow,
 }));
 check(!back.cinema && back.text > 0.95 && back.focus === "Press play" && back.scroll !== "hidden", `Escape ends the reel, the hero comes back and focus returns (${JSON.stringify(back)})`);
+// And when the reel finishes, it takes the visitor straight back to the page.
+await page.getByRole("button", { name: "Press play" }).click();
+await page.waitForFunction(() => document.querySelector('[role="dialog"] video')?.dataset.on === "true", null, { timeout: 8000 }).catch(() => {});
+await page.evaluate(() => document.querySelector('[role="dialog"] video').dispatchEvent(new Event("ended")));
+await page.waitForTimeout(1600);
+const afterEnd = await page.evaluate(() => ({
+  cinema: document.querySelector("[data-cinema]") !== null,
+  text: Number(getComputedStyle(document.querySelector('#top [data-exit="fade"]')).opacity),
+  scroll: getComputedStyle(document.documentElement).overflow,
+  y: window.scrollY,
+}));
+check(!afterEnd.cinema && afterEnd.text > 0.95 && afterEnd.scroll !== "hidden" && afterEnd.y === 0, `when the reel ends, the visitor is back on the page automatically (${JSON.stringify(afterEnd)})`);
 await page.locator("#ch1 li").nth(2).hover();
 await page.waitForTimeout(800);
 const shownPreview = await page.evaluate(() => [...document.querySelectorAll('#ch1 [aria-hidden="false"]')].map((e) => e.textContent.trim()).filter((t) => /PC Jeweller/.test(t)).length);

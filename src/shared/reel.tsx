@@ -50,7 +50,7 @@ export const HAS_FULL_REEL = REEL.full.hosts.length > 0 && !!(REEL.full.main || 
  * fails the browser moves on to the next. It starts with sound (the visitor just pressed play); if the browser
  * blocks that, the controls stay up and one tap plays it.
  */
-export function FullReelPlayer({ className }: { className?: string }) {
+export function FullReelPlayer({ className, onEnded }: { className?: string; onEnded?: () => void }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     ref.current?.play().catch(() => {});
@@ -65,10 +65,24 @@ export function FullReelPlayer({ className }: { className?: string }) {
       preload="auto"
       controlsList="nodownload"
       aria-label="Freaky Mack Studios showreel"
+      onEnded={(e) => {
+        leaveVideoFullscreen(e.currentTarget);
+        onEnded?.();
+      }}
     >
       <FullReelSources />
     </video>
   );
+}
+
+/**
+ * When the reel ends inside the video's own full-screen player (iPhone's native player, or the
+ * controls' full-screen button), close that too, so the visitor isn't left on a finished video.
+ */
+export function leaveVideoFullscreen(v: HTMLVideoElement) {
+  const w = v as HTMLVideoElement & { webkitDisplayingFullscreen?: boolean; webkitExitFullscreen?: () => void };
+  if (w.webkitDisplayingFullscreen) w.webkitExitFullscreen?.();
+  if (document.fullscreenElement === v) document.exitFullscreen().catch(() => {});
 }
 
 /** The full reel's <source> list: 720p on phones, then full quality, each from CloudFront then S3. */
