@@ -40,7 +40,7 @@ Paths are relative to the repo root.
 |---|---|---|---|---|---|
 | 2.1 | ~~`[ 10–15 SEC LOOP, MUTED ]`~~ | `public/reel/`, `REEL.loop` in `src/shared/config.ts` | **Done:** `FM_Showreel_15Sec_V_01.mp4` (14.75s) plays silently on loop, re-encoded without audio (WebM + MP4, 720p ≈ 1.8 MB, 1080p for wide screens ≈ 3.1 MB). | — | Done |
 | 2.2 | ~~Loop poster~~ | `public/reel/reel-poster.jpg` | **Done:** a still from the loop, shown while it loads and for reduced-motion visitors. | — | Done |
-| 2.3 | `[ FULL SHOWREEL — EMBED, SOUND ON ]` | `src/app/_components/Reel.tsx:102`, set via `REEL.fullEmbedUrl` in `config.ts:26` | Full reel with sound, shown when the card is opened. **Client:** the reel film. **You:** upload it and give me the Stream (or YouTube) ID. | BOTH | |
+| 2.3 | ~~`[ FULL SHOWREEL — EMBED, SOUND ON ]`~~ | `REEL.full` in `src/shared/config.ts`, `FullReelPlayer` in `src/shared/reel.tsx` | **Done:** the complete showreel (1:29) plays from CloudFront (S3 bucket as fallback) with play/pause, a scrubbable timeline, volume and fullscreen. **To do (owner):** upload the two MP4s to `showreel/` in the bucket. Until then it falls back to the original .mov. | OWNER | |
 | 2.4 | ~~`tap to open · [DURATION]`~~ | `REEL.duration` in `src/shared/config.ts` | **Done: 1:30**, from `Freaky Mack_Showreel.mov` | — | 1:30 |
 | 2.5 | `Now playing · Showreel [YEAR]` | `src/app/_components/Reel.tsx:106` | Year of the reel | CLIENT | |
 

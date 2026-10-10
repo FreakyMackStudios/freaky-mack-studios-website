@@ -1,11 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { EASE, Reveal } from "@/components/motion/Reveal";
 import { useScrollMotionAllowed } from "@/components/motion/useScrollMotion";
 import { REEL } from "@/shared/config";
-import { ReelEmbed, ReelLoop } from "@/shared/reel";
+import { FullReelPlayer, HAS_FULL_REEL, ReelEmbed, ReelLoop } from "@/shared/reel";
 import s from "../home.module.css";
 import { Eq, PlayIcon } from "./icons";
 import { PX } from "@/shared/ui";
@@ -115,6 +115,24 @@ function OpenReel({ onToggle }: { onToggle: () => void }) {
   const closeLabel =
     "absolute top-[16px] right-[18px] text-[12px] text-white/70 lg:top-auto lg:right-[40px] lg:bottom-[36px] lg:text-[13px]";
 
+  // The full reel: the player owns play/pause, the timeline, volume and fullscreen along the bottom, so the
+  // close control sits top-right, clear of them. Escape closes it too.
+  if (HAS_FULL_REEL) {
+    return (
+      <div className={box}>
+        <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" />
+        <button
+          type="button"
+          onClick={onToggle}
+          className="absolute top-[12px] right-[12px] z-10 rounded-full border-0 bg-black/65 px-[14px] py-[8px] text-[12px] font-semibold text-white backdrop-blur-sm lg:top-[20px] lg:right-[20px] lg:text-[13px]"
+        >
+          Close the reel ✕
+        </button>
+        <CloseOnEscape onClose={onToggle} />
+      </div>
+    );
+  }
+
   // With an embed in place the band can't be one big button, so it gets its own close control.
   if (REEL.fullEmbedUrl) {
     return (
@@ -164,4 +182,14 @@ function ClosedReel({ onToggle }: { onToggle: () => void }) {
       </span>
     </button>
   );
+}
+
+/** Closes the open reel on Escape. */
+function CloseOnEscape({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return null;
 }
