@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CONTACT } from "@/shared/config";
+import { CONTACT, STUDIO } from "@/shared/config";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
 import { H1, Intro, Kicker, Label, PX } from "@/components/site/ui";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const NEXT_STEPS = [
   "We read your brief — every word of it.",
-  "We set up a call to talk it through, within [X] working days.",
+  `We set up a call to talk it through, within ${CONTACT.replyTime}.`,
   "We come back with an approach and a quote.",
 ];
 
@@ -66,7 +66,7 @@ export default function StartAProjectPage() {
               {CONTACT.email}
             </a>
             <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
-              WhatsApp · {CONTACT.phone} ↗
+              WhatsApp · {CONTACT.whatsappNumber} ↗
             </a>
             <a href={CONTACT.phoneHref} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
               Call · {CONTACT.phone}
@@ -75,9 +75,9 @@ export default function StartAProjectPage() {
           <RevealItem className="flex flex-col gap-[16px]">
             <Label size="text-[20px] lg:text-[24px]">The studio</Label>
             <address className="text-[17px] leading-[1.6] not-italic lg:text-[18px]">
-              [Studio address]
+              {STUDIO.address[0]}
               <br />
-              [City], India
+              {STUDIO.address[1]}, India
             </address>
           </RevealItem>
           <RevealItem from={{ y: 60 }} className="md:col-span-2 md:max-w-[520px] xl:max-w-none">

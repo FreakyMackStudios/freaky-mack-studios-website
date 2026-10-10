@@ -30,7 +30,7 @@ export function Contact() {
           {CONTACT.email}
         </a>
         <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[16px] text-[var(--ink-2)]`}>
-          or WhatsApp us · {CONTACT.phone} ↗
+          or WhatsApp us · {CONTACT.whatsappNumber} ↗
         </a>
       </Reveal>
       <Reveal from={{ y: 80 }} delay={0.12} className="mt-[48px] lg:col-span-5 lg:col-start-8 lg:mt-[96px]">

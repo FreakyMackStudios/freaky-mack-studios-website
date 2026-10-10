@@ -193,15 +193,23 @@ await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "Fashion films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
 await page.getByRole("radio", { name: "All work" }).click();
 await cards.first().click();
-await page.waitForURL(/\/work\/mercedes-benz-global-star\/?$/);
+await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
 check(await page.getByText(`Film 01 of ${allCount}`).isVisible(), `project counter reads Film 01 of ${allCount}`);
 const film = page.getByRole("button", { name: "Play the film" });
 await film.click();
 check((await page.getByRole("button", { name: "Pause the film" }).getAttribute("aria-pressed")) === "true" && (await page.getByText(/Now playing/).isVisible()), "project play toggle → Now playing");
-check((await page.locator('a[href="/work/changa/"], a[href="/work/changa"]').count()) > 0, "Next up links to the second film");
+check((await page.locator('a[href="/work/mcdonalds-veg-surprise/"], a[href="/work/mcdonalds-veg-surprise"]').count()) > 0, "Next up links to the second film");
+// A film the studio filled in completely shows every part of its story; one it left partly blank shows only what it gave.
+const storyOf = () => page.evaluate(() => ["The brief", "The idea", "On screen"].filter((l) => [...document.querySelectorAll("main *")].some((e) => e.children.length === 0 && e.textContent.trim() === l)));
+check((await storyOf()).length === 3, "a fully filled film shows its brief, idea and on-screen story");
+await page.goto(`${base}/work/zykaz-interview/`, { waitUntil: "networkidle" });
+const partial = await page.evaluate(() => document.querySelector("main").innerText);
+check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /Zykaz Clothing/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
+await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
+check(!/\[(Client|Year)\]/.test(await page.evaluate(() => document.querySelector("main").innerText)), "work cards show no [Client] or [Year] placeholders");
 check((await page.getByRole("link", { name: "Work" }).first().getAttribute("aria-current")) === "page", "nav marks Work active on a project page");
 await page.goto(`${base}/work/tlp-teaser/`, { waitUntil: "networkidle" });
-check((await page.locator('a[href^="/work/mercedes-benz-global-star"]').count()) > 0, "last project's Next up wraps to the first");
+check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
 
 console.log("Originals");
 await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
@@ -292,7 +300,7 @@ check(!(await menu.isVisible()), "navigating closes the menu");
 await phone.close();
 
 console.log("Contrast sweep · every page");
-const PAGES = ["/work/", "/work/mercedes-benz-global-star/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
+const PAGES = ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/zykaz-interview/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
 for (const [label, q] of [["Light", "theme=light"], ["Dark", "theme=dark"]]) {
   const bad = [];
   for (const r of PAGES) {
@@ -391,7 +399,7 @@ console.log("Motion (other pages)");
   const nojs = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
   const np = await nojs.newPage();
   const hiddenOn = [];
-  for (const r of ["/work/", "/work/mercedes-benz-global-star/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/missing-page/"]) {
+  for (const r of ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/zykaz-interview/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/missing-page/"]) {
     await np.goto(`${base}${r}`, { waitUntil: "load" });
     const n = await np.evaluate(() => [...document.querySelectorAll("[data-reveal]")].filter((el) => getComputedStyle(el).opacity !== "1").length);
     if (n) hiddenOn.push(`${r}: ${n}`);

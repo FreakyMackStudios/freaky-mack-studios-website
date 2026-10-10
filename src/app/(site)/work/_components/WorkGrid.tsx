@@ -7,7 +7,7 @@ import { EASE, Reveal } from "@/components/motion/Reveal";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import s from "@/components/site/site.module.css";
 import { PX } from "@/components/site/ui";
-import { FILTERS, PROJECTS, projectHref, type Project } from "@/content/projects";
+import { FILTERS, PROJECTS, projectHref, whoAndYear, type Project } from "@/content/projects";
 
 const TILTS = [-1.2, 1, -0.6, 1.4];
 
@@ -28,9 +28,7 @@ function Card({ p, i }: { p: Project; i: number }) {
       </div>
       <div className="flex items-baseline justify-between gap-[24px] px-[6px]">
         <span className="text-[22px] font-semibold tracking-[-0.02em] lg:text-[28px]">{p.title}</span>
-        <span className="text-[13px] whitespace-nowrap text-[var(--muted)] lg:text-[14px]">
-          {p.who} · {p.year}
-        </span>
+        <span className="max-w-[48%] text-right text-[13px] text-[var(--muted)] lg:max-w-[45%] lg:text-[14px]">{whoAndYear(p)}</span>
       </div>
     </Link>
   );

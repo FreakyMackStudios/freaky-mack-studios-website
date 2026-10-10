@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACT } from "@/shared/config";
 import Link from "next/link";
 import { BTN_INVERSE, BTN_OUTLINE } from "@/components/site/buttons";
 import { DraggableMark } from "@/components/motion/DraggableMark";
@@ -36,7 +37,7 @@ export default function ThanksPage() {
         </RevealItem>
         <RevealItem>
           <Intro className="max-w-[620px]">
-            Thanks for telling us your story. We’ll be in touch at the email you gave us, within [X] working days.
+            Thanks for telling us your story. We’ll be in touch at the email you gave us, within {CONTACT.replyTime}.
           </Intro>
         </RevealItem>
         <RevealItem className="mt-[8px] flex flex-wrap justify-center gap-[12px] sm:gap-[16px]">

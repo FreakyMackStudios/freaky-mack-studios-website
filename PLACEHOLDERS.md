@@ -13,6 +13,8 @@ Paths are relative to the repo root.
 
 > **Heads-up:** the homepage has its own copies of the projects, people, podcast episodes, client list and social links. When the content comes in, I'll point the homepage at the same data as the inner pages so every value only has to be entered once.
 
+> **Content form applied (Oct 2026).** The client's filled-in form is now on the site: every film's client, credits and story (the form printed each film's answers under the *next* film's heading, so answers were matched by the details in each box), the homepage's six films, the address, WhatsApp, Instagram/YouTube links, the 24-hour reply time, the crew and Izaan's bio. Films the client filled in completely show their full story; partly filled and blank films show only what was given, with no placeholders. **Still open:** Kara Feel (asked for on the homepage, but no file), Film 39's "same as above" (read as the Republic Day team), "The Last Precence" (shown as "The Last Presence"), AB Rahim Shah's title (form says both "Head of Business Development" and "Sales & Marketing Head"), Studio timeline years, the founder quote, Vimeo/LinkedIn, budget ranges ("no fixed budget"), the legal details in section 1, stills and film links. Rows 1.1, 1.2, 1.4, 1.5, 1.7 and 1.8 (Instagram) below are done.
+
 ---
 
 ## 1. Fill once, used everywhere

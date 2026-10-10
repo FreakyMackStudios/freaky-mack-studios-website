@@ -10,7 +10,7 @@ import { CHAPTER, H2, PB, PX } from "@/shared/ui";
 /** The first six films on /work. */
 const PROJECTS = ALL_PROJECTS.slice(0, 6).map((p) => ({
   title: p.title,
-  meta: `${p.who} · ${p.category}`,
+  meta: [p.who, p.category].filter(Boolean).join(" · "),
   href: projectHref(p.slug),
   bg: p.bg,
 }));

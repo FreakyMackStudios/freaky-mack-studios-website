@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Reveal } from "@/components/motion/Reveal";
 import { Lockup } from "./Logo";
-import { CONTACT, SOCIAL } from "@/shared/config";
+import { CONTACT, SOCIAL, STUDIO } from "@/shared/config";
 import s from "./site.module.css";
 import { PX } from "./ui";
 
@@ -37,15 +37,13 @@ export function SiteFooter() {
             <div className={HEAD}>Follow</div>
             <a href={SOCIAL.instagram} className={s.link}>Instagram</a>
             <a href={SOCIAL.youtube} className={s.link}>YouTube</a>
-            <a href={SOCIAL.vimeo} className={s.link}>Vimeo</a>
-            <a href={SOCIAL.linkedin} className={s.link}>LinkedIn</a>
           </div>
           <div className="col-span-2 flex flex-col gap-[12px] text-[15px]">
             <div className={HEAD}>Say hello</div>
             <a href={`mailto:${CONTACT.email}`} className={`${s.link} break-all md:break-normal`}>{CONTACT.email}</a>
             <a href={CONTACT.phoneHref} className={s.link}>{CONTACT.phone}</a>
-            <a href={CONTACT.whatsapp} className={s.link}>WhatsApp</a>
-            <span className="text-[var(--muted)]">[STUDIO ADDRESS], [CITY]</span>
+            <a href={CONTACT.whatsapp} className={s.link}>WhatsApp · {CONTACT.whatsappNumber}</a>
+            <span className="text-[var(--muted)]">{STUDIO.address.join(", ")}</span>
           </div>
         </div>
       </Reveal>

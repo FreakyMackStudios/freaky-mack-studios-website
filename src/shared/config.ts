@@ -7,7 +7,16 @@ export const CONTACT = {
   email: "freakymackstudios@gmail.com",
   phone: "+91 97115 42274",
   phoneHref: "tel:+919711542274",
-  whatsapp: "https://wa.me/919711542274",
+  whatsappNumber: "+91 93184 65829",
+  whatsapp: "https://wa.me/919318465829",
+  /** "We'll be in touch within …" on Start a project and Thanks. */
+  replyTime: "24 hours",
+};
+
+/** The studio (content form, section 1). */
+export const STUDIO = {
+  name: "Freaky Mack Studios Pvt. Ltd.",
+  address: ["1402, Arc One, Oshiwara", "Andheri West, Mumbai 400053"],
 };
 
 /**
@@ -41,12 +50,9 @@ export const REEL = {
   duration: "1:30",
 };
 
-/** Social profiles. The client still owes the real handles, so these point at the platforms for now. */
+/** Social profiles from the content form. Vimeo and LinkedIn weren't given, so they aren't linked. */
 export const SOCIAL = {
-  instagram: "https://instagram.com",
-  youtube: "https://youtube.com",
-  vimeo: "https://vimeo.com",
-  linkedin: "https://linkedin.com",
-  founderInstagram: "https://instagram.com",
-  founderLinkedin: "https://linkedin.com",
+  instagram: "https://www.instagram.com/freakymackstudios/",
+  youtube: "https://www.youtube.com/@FreakyMack",
+  founderInstagram: "https://www.instagram.com/izaankhan.official/",
 };
