@@ -24,7 +24,8 @@ export const CONTACT = {
  * full: the complete showreel (1:30, sound on), opened from the card or the hero's "Press play". Served from
  * the studio's S3 bucket through CloudFront, with the bucket itself as the fallback. Sources are tried in
  * order: the 720p MP4 on phones, then the full-quality MP4 (the original's video and audio, losslessly
- * repackaged with the index at the front so it starts and seeks quickly), then the original .mov.
+ * repackaged with the index at the front so it starts and seeks quickly). `original` (the source .mov) is
+ * only a fallback for when the MP4s aren't uploaded; they are, so it stays empty.
  * fullEmbedUrl: a YouTube/Vimeo embed instead, only used when `full` has no files.
  */
 export const REEL = {
@@ -38,7 +39,7 @@ export const REEL = {
     hosts: ["https://d12r07g6j7a5zr.cloudfront.net", "https://freaky-media-website-d621b1.s3.us-east-1.amazonaws.com"],
     mobile: "showreel/Freaky-Mack_Showreel_Complete_Showreel_720p.mp4",
     main: "showreel/Freaky-Mack_Showreel_Complete_Showreel.mp4",
-    original: "showreel/Freaky-Mack_Showreel_Complete_Showreel.mov",
+    original: "",
     poster: "/reel/full-poster.jpg",
   },
   fullEmbedUrl: "",

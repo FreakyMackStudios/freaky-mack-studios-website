@@ -74,12 +74,11 @@ const full = page.locator('#reel video[controls]');
 check(await shows(full), "reel card expands to the full showreel player");
 const fullSrcs = await full.evaluate((v) => [...v.querySelectorAll("source")].map((s) => s.getAttribute("src") + "|" + (s.getAttribute("media") ?? "")));
 check(
-  fullSrcs.length === 6 &&
+  fullSrcs.length === 4 &&
     /^https:\/\/d12r07g6j7a5zr\.cloudfront\.net\/showreel\/.*_720p\.mp4\|\(max-width: 899px\)$/.test(fullSrcs[0]) &&
     /s3\.us-east-1\.amazonaws\.com\/.*_720p\.mp4/.test(fullSrcs[1]) &&
-    /cloudfront\.net\/.*Showreel\.mp4\|$/.test(fullSrcs[2]) && /amazonaws\.com\/.*Showreel\.mp4\|$/.test(fullSrcs[3]) &&
-    /cloudfront\.net\/.*\.mov\|$/.test(fullSrcs[4]) && /amazonaws\.com\/.*\.mov\|$/.test(fullSrcs[5]),
-  `full reel: CloudFront first, S3 fallback, 720p on phones, MP4 then .mov (${fullSrcs.length} sources)`,
+    /cloudfront\.net\/.*Showreel\.mp4\|$/.test(fullSrcs[2]) && /amazonaws\.com\/.*Showreel\.mp4\|$/.test(fullSrcs[3]),
+  `full reel: CloudFront first, S3 fallback, 720p on phones, then full quality (${fullSrcs.length} sources)`,
 );
 check(await page.getByRole("button", { name: "Close the reel" }).first().isVisible(), "hero button label → Close the reel");
 await page.getByRole("button", { name: "Close the reel" }).last().click();
