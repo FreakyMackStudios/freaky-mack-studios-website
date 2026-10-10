@@ -6,6 +6,7 @@ import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { Label, MX, PX } from "@/components/site/ui";
 import { PROJECTS, getProject, nextProject, projectHref, projectNumber, whoAndYear } from "@/content/projects";
+import { Still } from "@/components/site/Still";
 import { FilmPlayer } from "./FilmPlayer";
 
 export const dynamicParams = false;
@@ -79,7 +80,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       <section aria-label="Film" className={`pb-[96px] lg:pb-[140px] ${PX}`}>
         {/* The player grows and straightens into place as it scrolls in. */}
         <ScrollIn scale={0.88} rotate={-2} y={70}>
-          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} />
+          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} poster={p.stills[0]} />
         </ScrollIn>
       </section>
 
@@ -114,38 +115,40 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         )}
       </section>
 
-      <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>
-        <Reveal>
-          <Label>Frames from the film</Label>
-        </Reveal>
-        {/* Stills settle in with a little depth: the wide frame grows, the pair comes in from each side. */}
-        <ScrollIn scale={0.92} y={90}>
-        <div
-          className={`${s.still} flex h-[240px] items-center justify-center rounded-[20px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:h-[420px] lg:h-[620px] lg:rounded-[28px]`}
-          style={{ background: wide.bg, transform: "rotate(-0.8deg)" }}
-        >
-          {wide.label}
-        </div>
-        </ScrollIn>
-        <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
-          <Reveal from={{ x: -70, y: 30 }} duration={1}>
-          <div
-            className={`${s.still} flex h-[300px] items-center justify-center rounded-[24px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:h-[420px] lg:h-[520px]`}
-            style={{ background: left.bg, transform: "rotate(1.2deg)" }}
-          >
-            {left.label}
-          </div>
+      {wide && (
+        <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>
+          <Reveal>
+            <Label>Frames from the film</Label>
           </Reveal>
-          <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
-          <div
-            className={`${s.still} flex h-[260px] items-center justify-center rounded-[24px] text-[12px] tracking-[0.2em] text-white/80 uppercase md:mt-[64px] md:h-[340px] lg:mt-[80px] lg:h-[400px]`}
-            style={{ background: right.bg, transform: "rotate(-1.4deg)" }}
-          >
-            {right.label}
-          </div>
-          </Reveal>
-        </div>
-      </section>
+          {/* Stills settle in with a little depth: the wide frame grows, the pair comes in from each side. */}
+          <ScrollIn scale={0.92} y={90}>
+            <Still
+              still={wide}
+              sizes="100vw"
+              className={`${s.still} h-[240px] rounded-[20px] md:h-[420px] lg:h-[620px] lg:rounded-[28px]`}
+              style={{ transform: "rotate(-0.8deg)" }}
+            />
+          </ScrollIn>
+          {left && right && (
+            <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
+              <Reveal from={{ x: -70, y: 30 }} duration={1}>
+                <Still
+                  still={left}
+                  className={`${s.still} h-[300px] rounded-[24px] md:h-[420px] lg:h-[520px]`}
+                  style={{ transform: "rotate(1.2deg)" }}
+                />
+              </Reveal>
+              <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
+                <Still
+                  still={right}
+                  className={`${s.still} h-[260px] rounded-[24px] md:mt-[64px] md:h-[340px] lg:mt-[80px] lg:h-[400px]`}
+                  style={{ transform: "rotate(-1.4deg)" }}
+                />
+              </Reveal>
+            </div>
+          )}
+        </section>
+      )}
 
       <Reveal from={{ y: 60 }}>
       <Link

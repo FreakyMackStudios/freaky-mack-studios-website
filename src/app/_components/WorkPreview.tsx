@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import { useState } from "react";
+import { Still } from "@/components/site/Still";
 import { PROJECTS as ALL_PROJECTS, projectHref } from "@/content/projects";
 import s from "../home.module.css";
 import { CHAPTER, H2, PB, PX } from "@/shared/ui";
@@ -13,6 +14,7 @@ const PROJECTS = ALL_PROJECTS.slice(0, 6).map((p) => ({
   meta: [p.who, p.category].filter(Boolean).join(" · "),
   href: projectHref(p.slug),
   bg: p.bg,
+  still: p.stills[0],
 }));
 
 /** Chapter 01: hover (or focus / tap) a title to swap the tilted preview. */
@@ -76,9 +78,13 @@ export function WorkPreview() {
                 className={`${s.workPreview} absolute inset-0 ${hovered === i ? "opacity-100" : "scale-[1.04] opacity-0"}`}
                 style={{ background: p.bg }}
               >
-                <div className="absolute inset-0 flex items-center justify-center px-[24px] text-center text-[12px] tracking-[0.2em] text-white uppercase">
-                  [ STILL — {p.title} ]
-                </div>
+                {p.still ? (
+                  <Still still={p.still} portrait="cover" sizes="(min-width: 1024px) 40vw, 100vw" className="absolute! inset-0" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center px-[24px] text-center text-[12px] tracking-[0.2em] text-white uppercase">
+                    [ STILL — {p.title} ]
+                  </div>
+                )}
                 <div className="absolute top-[24px] left-[24px] rounded-full bg-[var(--accent)] px-[16px] py-[8px] text-[13px] font-semibold text-[var(--on-accent)]">
                   {p.meta}
                 </div>

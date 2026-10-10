@@ -3,11 +3,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import { EASE, Reveal } from "@/components/motion/Reveal";
+import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import s from "@/components/site/site.module.css";
-import { PX } from "@/components/site/ui";
-import { FILTERS, PROJECTS, projectHref, whoAndYear, type Project } from "@/content/projects";
+import { Label, PX } from "@/components/site/ui";
+import { Still } from "@/components/site/Still";
+import { FILTERS, PROJECTS, PUBLISHING_SOON, projectHref, whoAndYear, type Project } from "@/content/projects";
 
 const TILTS = [-1.2, 1, -0.6, 1.4];
 
@@ -19,9 +20,13 @@ function Card({ p, i }: { p: Project; i: number }) {
       style={{ transform: `rotate(${TILTS[i % 4]}deg)` }}
     >
       <div className="relative h-[300px] overflow-hidden rounded-[24px] md:h-[380px] lg:h-[460px]" style={{ background: p.bg }}>
-        <div className="absolute inset-0 flex items-center justify-center text-[12px] tracking-[0.2em] text-white/80 uppercase">
-          [ STILL ]
-        </div>
+        {p.stills[0] ? (
+          <Still still={p.stills[0]} sizes="(min-width: 768px) 50vw, 100vw" className="absolute! inset-0" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-[12px] tracking-[0.2em] text-white/80 uppercase">
+            [ STILL ]
+          </div>
+        )}
         <span className="absolute top-[20px] left-[20px] rounded-full bg-[var(--accent)] px-[16px] py-[7px] text-[13px] font-semibold text-[var(--on-accent)] [transform:rotate(-4deg)]">
           {p.category}
         </span>
@@ -81,6 +86,35 @@ export function WorkGrid() {
         <Column items={left} shown={shown} className="flex flex-col gap-[56px] lg:gap-[72px]" />
         <Column items={right} shown={shown} className="flex flex-col gap-[56px] md:pt-[100px] lg:gap-[72px] lg:pt-[140px]" />
       </section>
+      {PUBLISHING_SOON.length > 0 && <PublishingSoon />}
     </>
+  );
+}
+
+const SOON_TILT = [-1.5, 1, -0.5, 2, -2, 0.8, -1, 1.6];
+
+/** Films still waiting on their stills or their write-up: listed by name only, not linked. */
+function PublishingSoon() {
+  return (
+    <section aria-label="Publishing soon" className={`flex flex-col gap-[28px] pb-[96px] lg:gap-[36px] lg:pb-[140px] ${PX}`}>
+      <Reveal className="flex flex-col gap-[12px]">
+        <Label>Publishing soon</Label>
+        <p className="m-0 max-w-[640px] text-[17px] leading-[1.6] text-[var(--ink-2)] lg:text-[18px]">
+          More of our films are on their way to this page.
+        </p>
+      </Reveal>
+      <Reveal as="ul" stagger={0.04} amount={0.2} className="m-0 flex list-none flex-wrap gap-[12px] p-0 lg:gap-[14px]">
+        {PUBLISHING_SOON.map((p, i) => (
+          <RevealItem as="li" key={p.slug} from={{ y: 20 }} duration={0.5} className="flex">
+            <span
+              className="rounded-full border border-dashed border-[var(--ink)] px-[18px] py-[10px] text-[15px] font-medium lg:px-[22px] lg:py-[12px] lg:text-[17px]"
+              style={{ transform: `rotate(${SOON_TILT[i % SOON_TILT.length]}deg)` }}
+            >
+              {p.title}
+            </span>
+          </RevealItem>
+        ))}
+      </Reveal>
+    </section>
   );
 }

@@ -8,6 +8,8 @@
  * `videoUrl`: a YouTube/Vimeo/Stream embed URL; empty shows the board's [ FILM ] placeholder.
  * `source`: the film's path in the content library, so each upload can be matched to its project.
  */
+import { STILLS, type Still } from "./stills";
+
 export type Category =
   | "Ad film"
   | "Music video"
@@ -36,7 +38,10 @@ export type Project = {
   idea?: string;
   onScreen?: string;
   credits: { role: string; who: string }[];
-  stills: { label: string; bg: string }[];
+  /** Three frames from the film (src/content/stills.ts); empty until the film's stills come in. */
+  stills: Still[];
+  /** On the site only once it has both stills and written content; otherwise it's listed as "Publishing soon". */
+  published: boolean;
 };
 
 const BGS = [
@@ -50,24 +55,26 @@ const BGS = [
   "linear-gradient(210deg,#6a6a66,#141414)",
 ];
 
-type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills"> & {
+type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills" | "published"> & {
   aspect?: string;
+  /** The studio left this film blank on the content form: only the file name is known, so no written content. */
+  blank?: true;
   /** [role, name] pairs, in the order they show. */
   credits: [string, string][];
 };
 
-const film = (f: Film, i: number): Project => ({
-  ...f,
-  bg: BGS[i % BGS.length],
-  videoUrl: "",
-  aspect: f.aspect ?? "16:9",
-  credits: f.credits.map(([role, who]) => ({ role, who })),
-  stills: [
-    { label: "[ STILL 01 — WIDE ]", bg: "linear-gradient(160deg,#4a4a48,#141414)" },
-    { label: "[ STILL 02 ]", bg: "linear-gradient(200deg,#5a5a58,#1a1a1a)" },
-    { label: "[ STILL 03 ]", bg: "linear-gradient(140deg,#2a2a2a,#6a6a66)" },
-  ],
-});
+const film = ({ blank, ...f }: Film, i: number): Project => {
+  const stills = STILLS[f.slug] ?? [];
+  return {
+    ...f,
+    bg: BGS[i % BGS.length],
+    videoUrl: "",
+    aspect: f.aspect ?? "16:9",
+    credits: f.credits.map(([role, who]) => ({ role, who })),
+    stills,
+    published: stills.length > 0 && !blank,
+  };
+};
 
 // People who recur across the credits.
 const IZAAN = "Izaan Khan";
@@ -210,6 +217,7 @@ const FILMS: Film[] = [
   },
   {
     slug: "changa",
+    blank: true,
     title: "Changa",
     category: "Music video",
     duration: "3:52",
@@ -514,6 +522,7 @@ const FILMS: Film[] = [
   },
   {
     slug: "zykaz-interview",
+    blank: true,
     title: "Zykaz Interview",
     category: "Ad film",
     duration: "0:32",
@@ -611,6 +620,7 @@ const FILMS: Film[] = [
   // Fashion films
   {
     slug: "pc-jeweller-sonalika-sahay",
+    blank: true,
     title: "PC Jeweller × Sonalika Sahay",
     category: "Fashion film",
     duration: "0:46",
@@ -793,7 +803,14 @@ const FILMS: Film[] = [
   },
 ];
 
-export const PROJECTS: Project[] = FILMS.map(film);
+const ALL_PROJECTS: Project[] = FILMS.map(film);
+/**
+ * The films on the site: only those with both stills and written content. Their pages, the Work grid,
+ * the homepage six, "Film 03 of N" and Next up all use this list.
+ */
+export const PROJECTS: Project[] = ALL_PROJECTS.filter((p) => p.published);
+/** Everything else waits, shown on /work by name only under "Publishing soon". */
+export const PUBLISHING_SOON = ALL_PROJECTS.filter((p) => !p.published).map(({ slug, title, category }) => ({ slug, title, category }));
 
 export const projectHref = (slug: string) => `/work/${slug}`;
 /** "Client · Year" (or whichever of the two the studio confirmed). */
@@ -808,7 +825,7 @@ export const nextProject = (slug: string) => {
 };
 
 /** Work filter chips: category → chip label (Work board `labels`). */
-export const FILTERS: { id: "All" | Category; label: string }[] = [
+const ALL_FILTERS: { id: "All" | Category; label: string }[] = [
   { id: "All", label: "All work" },
   { id: "Ad film", label: "Ad films" },
   { id: "Music video", label: "Music videos" },
@@ -819,3 +836,5 @@ export const FILTERS: { id: "All" | Category; label: string }[] = [
   { id: "Documentary", label: "Documentaries" },
   { id: "Short film", label: "Short films & series" },
 ];
+/** Only the formats that have a published film. */
+export const FILTERS = ALL_FILTERS.filter((f) => f.id === "All" || PROJECTS.some((p) => p.category === f.id));

@@ -195,13 +195,14 @@ await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
 const CARD = 'section a[href^="/work/"]:not([href="/work/"])';
 const cards = page.locator(CARD);
 const allCount = await cards.count();
-await page.getByRole("radio", { name: "Music videos" }).click();
+await page.getByRole("radio", { name: "Fashion films" }).click();
 await page.waitForTimeout(900); // leaving cards animate out, the rest glide into place
 const settled = await page.evaluate(() => [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')].map((a) => getComputedStyle(a.parentElement).opacity));
 check(settled.every((o) => o === "1"), `filtered cards settle fully visible (${settled.join(", ")})`);
-check((await cards.count()) === 1 && !(await page.getByText(/in total/).count()), `Music videos filter shows 1 of ${allCount}, with no visible count`);
+check((await cards.count()) === 4 && allCount === 26 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 4 of ${allCount}, with no visible count`);
+check(!(await page.getByRole("radio", { name: "Music videos" }).count()), "formats with no published film have no filter chip");
 await page.keyboard.press("ArrowRight");
-check((await page.getByRole("radio", { name: "Fashion films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
+check((await page.getByRole("radio", { name: "Event films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
 await page.getByRole("radio", { name: "All work" }).click();
 await cards.first().click();
 await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
@@ -213,13 +214,23 @@ check((await page.locator('a[href="/work/mcdonalds-veg-surprise/"], a[href="/wor
 // A film the studio filled in completely shows every part of its story; one it left partly blank shows only what it gave.
 const storyOf = () => page.evaluate(() => ["The brief", "The idea", "On screen"].filter((l) => [...document.querySelectorAll("main *")].some((e) => e.children.length === 0 && e.textContent.trim() === l)));
 check((await storyOf()).length === 3, "a fully filled film shows its brief, idea and on-screen story");
-await page.goto(`${base}/work/zykaz-interview/`, { waitUntil: "networkidle" });
+// Stills: the film's frames load as real images (poster + three frames), with alt text from the extraction.
+await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } });
+await page.waitForTimeout(800);
+const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
+check(frames.length === 4 && frames.every((f) => f.ok && f.alt.length > 5), `film stills load at full resolution with alt text (${frames.length} images)`);
+await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
 const partial = await page.evaluate(() => document.querySelector("main").innerText);
-check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /Zykaz Clothing/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
+check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /R Balki/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
 await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
-check(!/\[(Client|Year)\]/.test(await page.evaluate(() => document.querySelector("main").innerText)), "work cards show no [Client] or [Year] placeholders");
+const workText = await page.evaluate(() => document.querySelector("main").innerText);
+check(!/\[(Client|Year|STILL)/.test(workText), "work cards show real stills and no [Client], [Year] or [ STILL ] placeholders");
+// Films without stills or without written content are listed by name only, under "Publishing soon", and get no page.
+const soon = page.locator('section[aria-label="Publishing soon"]');
+check((await soon.getByText("pTron", { exact: true }).count()) === 1 && (await soon.locator("a").count()) === 0, "unfinished films are listed by name under Publishing soon, without links");
+check((await page.request.get(`${base}/work/ptron/`)).status() === 404, "an unpublished film has no page yet");
 check((await page.getByRole("link", { name: "Work" }).first().getAttribute("aria-current")) === "page", "nav marks Work active on a project page");
-await page.goto(`${base}/work/tlp-teaser/`, { waitUntil: "networkidle" });
+await page.goto(`${base}/work/s-and-s-trailer/`, { waitUntil: "networkidle" });
 check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
 
 console.log("Originals");
@@ -311,7 +322,7 @@ check(!(await menu.isVisible()), "navigating closes the menu");
 await phone.close();
 
 console.log("Contrast sweep · every page");
-const PAGES = ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/zykaz-interview/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
+const PAGES = ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/pc-jeweller-tvc/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
 for (const [label, q] of [["Light", "theme=light"], ["Dark", "theme=dark"]]) {
   const bad = [];
   for (const r of PAGES) {
@@ -410,7 +421,7 @@ console.log("Motion (other pages)");
   const nojs = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
   const np = await nojs.newPage();
   const hiddenOn = [];
-  for (const r of ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/zykaz-interview/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/missing-page/"]) {
+  for (const r of ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/pc-jeweller-tvc/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/missing-page/"]) {
     await np.goto(`${base}${r}`, { waitUntil: "load" });
     const n = await np.evaluate(() => [...document.querySelectorAll("[data-reveal]")].filter((el) => getComputedStyle(el).opacity !== "1").length);
     if (n) hiddenOn.push(`${r}: ${n}`);

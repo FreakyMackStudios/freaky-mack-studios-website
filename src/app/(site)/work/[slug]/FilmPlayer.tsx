@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { Eq, PlayIcon } from "@/components/site/ui";
+import { Still } from "@/components/site/Still";
+import type { Still as StillData } from "@/content/stills";
 
 const FRAME = "relative block aspect-[1248/702] w-full overflow-hidden rounded-[20px] bg-[#0d0d0d] text-left text-white lg:rounded-[28px]";
 
-/** Project board film: play toggle (paused → big accent play button; playing → "Now playing" + equaliser). */
-export function FilmPlayer({ videoUrl, duration }: { videoUrl: string; duration: string }) {
+/**
+ * Project board film: play toggle (paused → big accent play button; playing → "Now playing" + equaliser).
+ * The film's first still is the poster; without one, the board's [ FILM ] placeholder shows.
+ */
+export function FilmPlayer({ videoUrl, duration, poster }: { videoUrl: string; duration: string; poster?: StillData }) {
   const [playing, setPlaying] = useState(false);
 
   if (playing && videoUrl) {
@@ -31,13 +36,22 @@ export function FilmPlayer({ videoUrl, duration }: { videoUrl: string; duration:
       aria-pressed={playing}
       className={`${FRAME} border-0 p-0`}
     >
-      <div
-        className="absolute inset-0"
-        style={{ background: "radial-gradient(ellipse at 50% 55%, #2c2c2c 0%, #121212 55%, #0a0a0a 100%)" }}
-      />
-      <div className="absolute inset-[12px] flex items-center justify-center border border-dashed border-white/[0.18] text-center text-[11px] tracking-[0.22em] text-white/45 uppercase lg:inset-[24px] lg:text-[12px]">
-        [ FILM — YOUTUBE / VIMEO EMBED ]
-      </div>
+      {poster ? (
+        <>
+          <Still still={poster} sizes="100vw" priority className="absolute! inset-0" />
+          <div aria-hidden="true" className="absolute inset-0 bg-black/25" />
+        </>
+      ) : (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{ background: "radial-gradient(ellipse at 50% 55%, #2c2c2c 0%, #121212 55%, #0a0a0a 100%)" }}
+          />
+          <div className="absolute inset-[12px] flex items-center justify-center border border-dashed border-white/[0.18] text-center text-[11px] tracking-[0.22em] text-white/45 uppercase lg:inset-[24px] lg:text-[12px]">
+            [ FILM — YOUTUBE / VIMEO EMBED ]
+          </div>
+        </>
+      )}
       {playing ? (
         <div className="absolute bottom-[18px] left-[20px] flex items-center gap-[14px] text-[13px] font-medium lg:bottom-[36px] lg:left-[40px] lg:text-[14px]">
           <Eq height={18} />
