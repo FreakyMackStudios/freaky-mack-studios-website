@@ -205,8 +205,11 @@ const afterEnd = await page.evaluate(() => ({
 check(!afterEnd.cinema && afterEnd.text > 0.95 && afterEnd.scroll !== "hidden" && afterEnd.y === 0, `when the reel ends, the visitor is back on the page automatically (${JSON.stringify(afterEnd)})`);
 await page.locator("#ch1 li").nth(2).hover();
 await page.waitForTimeout(800);
-const shownPreview = await page.evaluate(() => [...document.querySelectorAll('#ch1 [aria-hidden="false"]')].map((e) => e.textContent.trim()).filter((t) => /PC Jeweller/.test(t)).length);
-check(shownPreview >= 2, "hovering row 03 cross-fades the preview and caption to PC Jeweller");
+const shownPreview = await page.evaluate(() => {
+  const layer = [...document.querySelectorAll('#ch1 [aria-hidden="false"]')].find((e) => getComputedStyle(e).opacity === "1");
+  return layer ? { text: layer.textContent, photos: layer.querySelectorAll("img[alt]:not([alt=''])").length } : null;
+});
+check(!!shownPreview && /PC Jeweller · Ad film/.test(shownPreview.text) && /PC Jeweller TVC/.test(shownPreview.text) && shownPreview.photos === 3, `hovering row 03 cross-fades to a collage of three PC Jeweller frames with its caption (${shownPreview?.photos} photos)`);
 // Work list: every title on one line, at desktop and tablet widths, and the active row slides (transform) instead of re-flowing.
 for (const w of [1440, 1024, 768]) {
   await page.setViewportSize({ width: w, height: 900 });
@@ -415,6 +418,26 @@ await menu.getByRole("link", { name: /Originals/ }).click();
 await phone.waitForURL(/\/originals/);
 await phone.waitForTimeout(300);
 check(!(await menu.isVisible()), "navigating closes the menu");
+// Phones: the homepage film list is a set of dropdowns; the open one shows one row of two frames.
+await phone.goto(`${base}/`, { waitUntil: "networkidle" });
+await phone.locator("#ch1").scrollIntoViewIfNeeded();
+await phone.waitForTimeout(1200);
+const panelState = () =>
+  phone.evaluate(() =>
+    [...document.querySelectorAll('#ch1 button[aria-controls^="ch1-panel-"]')].map((b) => {
+      const panel = document.getElementById(b.getAttribute("aria-controls"));
+      const imgs = [...panel.querySelectorAll("img[alt]:not([alt=''])")];
+      const tops = new Set(imgs.map((i) => Math.round(i.getBoundingClientRect().top)));
+      return { open: b.getAttribute("aria-expanded") === "true", h: Math.round(panel.getBoundingClientRect().height), imgs: imgs.length, rows: tops.size };
+    }),
+  );
+let ps = await panelState();
+check(ps.length === 6 && ps[0].open && ps[0].h > 80 && ps[0].imgs === 2 && ps[0].rows === 1 && ps.slice(1).every((p) => !p.open && p.h < 2), `phone: first film open with one row of two frames, the rest closed (${JSON.stringify(ps.map((p) => p.h))})`);
+await phone.locator('#ch1 button[aria-controls="ch1-panel-2"]').click();
+await phone.waitForTimeout(900);
+ps = await panelState();
+check(ps[2].open && ps[2].h > 80 && ps[2].imgs === 2 && !ps[0].open && ps[0].h < 2, `phone: tapping another film opens it and closes the one before (${JSON.stringify(ps.map((p) => p.h))})`);
+check((await phone.locator("#ch1-panel-2").getByRole("link", { name: "Open project →" }).getAttribute("href"))?.startsWith("/work/pc-jeweller-tvc"), "phone: the open film links to its project");
 await phone.close();
 
 console.log("Contrast sweep · every page");

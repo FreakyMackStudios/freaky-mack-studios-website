@@ -28,6 +28,9 @@
 /* Chapter 01 work list: the active row glides, the preview and caption cross-fade (WorkPreview.tsx). */
 .workRow { transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease; will-change: transform; }
 .workPreview { transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.accordion { transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease; }
+.collagePhoto { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.collagePhoto:hover { z-index: 5 !important; }
 .workCaption { transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
 .chip { transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease; }
 .chip:hover { transform: translateY(-2px); }
