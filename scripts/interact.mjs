@@ -210,6 +210,24 @@ const shownPreview = await page.evaluate(() => {
   return layer ? { text: layer.textContent, photos: layer.querySelectorAll("img[alt]:not([alt=''])").length } : null;
 });
 check(!!shownPreview && /PC Jeweller · Ad film/.test(shownPreview.text) && /PC Jeweller TVC/.test(shownPreview.text) && shownPreview.photos === 3, `hovering row 03 cross-fades to a collage of three PC Jeweller frames with its caption (${shownPreview?.photos} photos)`);
+// Brand cloud: the project clients join the headline brands; hovering one with a film opens its cover,
+// linking to the film on YouTube (a placeholder link until the real ones are in).
+const clients = page.locator('section[aria-label="Clients"]');
+await clients.scrollIntoViewIfNeeded();
+await page.waitForTimeout(1200);
+check((await clients.locator("[data-brand]").count()) >= 20 && (await clients.getByRole("button", { name: "Google", exact: true }).count()) === 0, "brand cloud lists 20 brands; brands without a film are plain tags");
+await clients.getByRole("button", { name: "Mercedes-Benz", exact: true }).hover();
+await page.waitForFunction(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).opacity === "1"), null, { timeout: 3000 }).catch(() => {});
+const card = clients.getByRole("link", { name: /Watch Mercedes-Benz Global Star .* on YouTube/ });
+const cardOk = await card.evaluate((a) => {
+  const box = a.closest("[id^='brand-card-']");
+  const img = a.querySelector("img[alt]:not([alt=''])");
+  return { op: getComputedStyle(box).opacity, href: a.getAttribute("href"), target: a.target, img: !!img && img.naturalWidth > 0 };
+});
+check(cardOk.op === "1" && cardOk.href === "https://www.youtube.com/" && cardOk.target === "_blank" && cardOk.img, `hovering a brand shows its film's cover, linking to YouTube (${JSON.stringify(cardOk)})`);
+await page.mouse.move(5, 5);
+await page.waitForTimeout(600);
+check((await card.evaluate((a) => getComputedStyle(a.closest("[id^='brand-card-']")).opacity)) === "0", "the brand card fades away when the pointer leaves");
 // Work list: every title on one line, at desktop and tablet widths, and the active row slides (transform) instead of re-flowing.
 for (const w of [1440, 1024, 768]) {
   await page.setViewportSize({ width: w, height: 900 });
@@ -438,6 +456,19 @@ await phone.waitForTimeout(900);
 ps = await panelState();
 check(ps[2].open && ps[2].h > 80 && ps[2].imgs === 2 && !ps[0].open && ps[0].h < 2, `phone: tapping another film opens it and closes the one before (${JSON.stringify(ps.map((p) => p.h))})`);
 check((await phone.locator("#ch1-panel-2").getByRole("link", { name: "Open project →" }).getAttribute("href"))?.startsWith("/work/pc-jeweller-tvc"), "phone: the open film links to its project");
+// Phones: only the ten major brands, as plain tags; no cards.
+await phone.locator('section[aria-label="Clients"]').scrollIntoViewIfNeeded();
+await phone.waitForTimeout(1000);
+const phoneBrands = await phone.evaluate(() => {
+  const sec = document.querySelector('section[aria-label="Clients"]');
+  const shown = [...sec.querySelectorAll("[data-brand]")].filter((e) => getComputedStyle(e).display !== "none");
+  const buttons = [...sec.querySelectorAll("button")].filter((e) => getComputedStyle(e).display !== "none");
+  return { shown: shown.length, buttons: buttons.length };
+});
+check(phoneBrands.shown === 10 && phoneBrands.buttons === 0, `phone: ten major brands as plain tags, no hover cards (${JSON.stringify(phoneBrands)})`);
+await phone.getByText("McDonald’s", { exact: true }).first().click();
+await phone.waitForTimeout(500);
+check(!(await phone.evaluate(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).display !== "none" && getComputedStyle(c).opacity !== "0"))), "phone: tapping a brand opens no card");
 await phone.close();
 
 console.log("Contrast sweep · every page");
