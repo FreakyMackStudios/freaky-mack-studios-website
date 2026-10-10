@@ -75,6 +75,24 @@ button {
   outline-offset: 3px;
 }
 
+/* Theme switch (ThemeToggle): the new page grows out of the switch as a circle (to Light), or the old
+   page shrinks back into it (to Dark). The switch rides above the circle as its own layer. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-vt="shrink"]::view-transition-old(root) { z-index: 2; clip-path: var(--vt-small); }
+html[data-vt="grow"]::view-transition-new(root) { clip-path: var(--vt-small); }
+html[data-vt="shrink"]::view-transition-new(root) { z-index: 1; }
+[data-theme-toggle] { view-transition-name: theme-toggle; }
+::view-transition-group(theme-toggle) { z-index: 3; animation: none; }
+/* No cross-fade of two switch images: the live switch shows straight away and its knob slides. */
+::view-transition-old(theme-toggle) { display: none; }
+::view-transition-new(theme-toggle) { animation: none; }
+/* Colours swap at once inside the circle instead of fading on their own. */
+html[data-vt] *:not([data-theme-toggle], [data-theme-toggle] *) { transition: none !important; }
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

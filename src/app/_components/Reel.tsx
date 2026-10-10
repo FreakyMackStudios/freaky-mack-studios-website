@@ -1,11 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { EASE, Reveal } from "@/components/motion/Reveal";
 import { useScrollMotionAllowed } from "@/components/motion/useScrollMotion";
 import { REEL } from "@/shared/config";
-import { ReelEmbed, ReelLoop } from "@/shared/reel";
+import { FullReelPlayer, HAS_FULL_REEL, ReelEmbed, ReelLoop } from "@/shared/reel";
+import { ScrollNudge, useReelLock } from "@/shared/reel-lock";
 import s from "../home.module.css";
 import { Eq, PlayIcon } from "./icons";
 import { PX } from "@/shared/ui";
@@ -49,7 +51,10 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
   const baseH = baseW / ASPECT;
   const targetW = Math.min(Math.sqrt(COVER * vw * vh * ASPECT), vw * 0.94, vh * 0.94 * ASPECT);
   const maxScale = vw ? Math.max(1, targetW / baseW) : 1;
-  const pin = allowed && !open && maxScale > 1.05;
+  // With the full reel, opening plays it full screen over the page and the card stays put; without it,
+  // the card swaps for the full-width band.
+  const band = open && !HAS_FULL_REEL;
+  const pin = allowed && !band && maxScale > 1.05;
 
   // 0 when the card is centred in the window and pins, 1 when it has grown and releases.
   const top = Math.round(vh / 2 - baseH / 2);
@@ -59,20 +64,21 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
 
   return (
     <section id="reel" aria-label="Showreel" className={`flex shrink-0 flex-col items-center pb-[96px] lg:pb-[160px] ${PX}`}>
-      <div ref={track} className="flex w-full flex-col items-center">
+      <div ref={track} data-reel-track className="flex w-full flex-col items-center">
         <div
+          data-reel-pin
           className={`flex w-full justify-center ${pin ? "sticky z-10" : ""}`}
           style={pin ? { top } : undefined}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={open ? "open" : "closed"}
+              key={band ? "open" : "closed"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.55, ease: EASE } }}
               exit={{ opacity: 0, transition: { duration: 0.2 } }}
-              className={`flex w-full justify-center ${open ? "max-w-[1296px]" : "max-w-[760px]"}`}
+              className={`flex w-full justify-center ${band ? "max-w-[1296px]" : "max-w-[760px]"}`}
             >
-              {open ? (
+              {band ? (
                 <OpenReel onToggle={onToggle} />
               ) : (
                 <motion.div style={{ scale }} className="flex w-full">
@@ -92,7 +98,67 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
           come after the pinned stretch (inside it, the card would only stay pinned longer), so the next
           chapter keeps its usual distance at every window size. */}
       {pin && <div aria-hidden="true" style={{ height: Math.ceil(((maxScale - 1) * baseH) / 2) }} />}
+      {open && HAS_FULL_REEL && <FullscreenReel onClose={onToggle} />}
     </section>
+  );
+}
+
+/**
+ * "or scroll the story ↓": glide to the point where the reel has finished growing and holds the middle of
+ * the window, so only the loop is in view. Where the reel doesn't pin (phones, reduced motion, open band),
+ * centre it in the window instead.
+ */
+export function scrollToReel() {
+  const track = document.querySelector<HTMLElement>("[data-reel-track]");
+  const pin = document.querySelector<HTMLElement>("[data-reel-pin]");
+  if (!track || !pin) return;
+  const y = window.scrollY;
+  let top: number;
+  if (getComputedStyle(pin).position === "sticky") {
+    // The pinned stretch ends when the pinned box's bottom meets the track's bottom; stop just short of it.
+    top = track.getBoundingClientRect().bottom + y - parseFloat(pin.style.top || "0") - pin.offsetHeight - 2;
+  } else {
+    const r = pin.getBoundingClientRect();
+    top = r.top + y + r.height / 2 - window.innerHeight / 2;
+  }
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: reduced ? "auto" : "smooth" });
+}
+
+/**
+ * The complete showreel, full screen: the page goes full screen (where the browser allows it) and the
+ * player fills it. The page can't scroll underneath; trying to shows a nudge under the Close button.
+ * Close, Escape or leaving full screen ends it.
+ */
+function FullscreenReel({ onClose }: { onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const nudges = useReelLock(true, onClose);
+  useEffect(() => {
+    const back = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus({ preventScroll: true });
+    return () => back?.focus({ preventScroll: true });
+  }, []);
+  return createPortal(
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Freaky Mack Studios showreel"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.4, ease: EASE } }}
+      className="fixed inset-0 z-[1100] overscroll-none bg-black"
+    >
+      <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" />
+      <button
+        ref={closeRef}
+        type="button"
+        onClick={onClose}
+        className="absolute top-[20px] right-[20px] z-10 flex h-[44px] items-center gap-[10px] rounded-full border border-white/35 bg-black/55 px-[20px] text-[14px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white lg:top-[32px] lg:right-[32px]"
+      >
+        Close the reel <span aria-hidden="true">✕</span>
+      </button>
+      <ScrollNudge count={nudges} />
+    </motion.div>,
+    document.body,
   );
 }
 
@@ -135,17 +201,21 @@ function OpenReel({ onToggle }: { onToggle: () => void }) {
 }
 
 function ClosedReel({ onToggle }: { onToggle: () => void }) {
+  // The "new!" sticker hangs over the card's edge, so it sits outside the card's clipped box.
   return (
+    <div className={`${s.reelCard} relative w-full max-w-[760px]`}>
     <button
       type="button"
       onClick={onToggle}
       aria-label="Open the showreel"
-      className={`${s.reelCard} relative aspect-[760/428] w-full max-w-[760px] overflow-hidden rounded-[20px] border-0 bg-[#0d0d0d] p-0 text-left text-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] lg:rounded-[24px]`}
+      className={`relative block aspect-[760/428] w-full overflow-hidden rounded-[20px] border-0 bg-[#0d0d0d] p-0 text-left text-white shadow-[0_30px_80px_rgba(0,0,0,0.18)] lg:rounded-[24px]`}
     >
       <div className="absolute inset-0" style={{ background: GRADIENT }} />
       <ReelLoop className="absolute inset-0 h-full w-full object-cover">
         <div className={`${DASHED} inset-[12px] lg:inset-[18px]`}>[ 10–15 SEC LOOP, MUTED ]</div>
       </ReelLoop>
+      {/* Keeps the label legible over any frame of the loop. */}
+      {REEL.loopSrc && <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-black/55 to-transparent" />}
       <div className="absolute bottom-[16px] left-[18px] flex items-center gap-[14px] lg:bottom-[28px] lg:left-[32px]">
         <span className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[var(--accent)] lg:h-[52px] lg:w-[52px]">
           <PlayIcon size={14} fill="var(--on-accent)" />
@@ -155,11 +225,13 @@ function ClosedReel({ onToggle }: { onToggle: () => void }) {
           <span className="text-[12px] text-white/65 lg:text-[13px]">tap to open · {REEL.duration}</span>
         </span>
       </div>
+    </button>
       <span
-        className={`${s.it} absolute top-[14px] right-[-6px] rounded-full bg-[var(--accent)] px-[14px] py-[4px] text-[16px] text-[var(--on-accent)] [transform:rotate(6deg)] lg:top-[22px] lg:px-[18px] lg:py-[6px] lg:text-[20px]`}
+        aria-hidden="true"
+        className={`${s.it} pointer-events-none absolute top-[14px] right-[-6px] rounded-full bg-[var(--accent)] px-[14px] py-[4px] text-[16px] text-[var(--on-accent)] [transform:rotate(6deg)] lg:top-[22px] lg:px-[18px] lg:py-[6px] lg:text-[20px]`}
       >
         new!
       </span>
-    </button>
+    </div>
   );
 }

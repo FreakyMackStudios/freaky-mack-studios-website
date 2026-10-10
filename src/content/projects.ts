@@ -117,12 +117,12 @@ const FILMS: Film[] = [
   { slug: "ptron", title: "pTron", category: "Ad film", duration: "1:00", who: "pTron", client: "pTron", extra: [{ role: "Cast", who: "Aparshakti" }], source: "Ad. Films/p tron (aparshakti)_ FINAL FULL VIDEO.MP4" },
   { slug: "film-for-ace", title: "Film for Ace", category: "Ad film", duration: "1:11", source: "Ad. Films/Film for Ace.mp4" },
   { slug: "jaldi-bidai", title: "Jaldi Bidai", category: "Ad film", duration: "1:18", source: "Ad. Films/Jaldi Bidai_Film.mov.mp4" },
-  { slug: "falaknama", title: "Falaknama", category: "Ad film", duration: "0:39", aspect: "9:16", source: "Ad. Films/Falaknama_Couple-esv2-90p-bg-0p.MOV" },
+  { slug: "falaknama", title: "Falaknama — Film 01", category: "Ad film", duration: "0:39", aspect: "9:16", source: "Ad. Films/Falaknama_Couple-esv2-90p-bg-0p.MOV" },
+  // Two more Falaknama cuts (client's note on the content form: "same as Falaknama").
+  { slug: "falaknama-02", title: "Falaknama — Film 02", category: "Ad film", duration: "0:30", aspect: "9:16", source: "Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4" },
+  { slug: "falaknama-03", title: "Falaknama — Film 03", category: "Ad film", duration: "0:23", aspect: "9:16", source: "Ad. Films/VIDEO-2026-02-26-21-26-33.mp4" },
   { slug: "zykaz-cafe", title: "Zykaz Cafe", category: "Ad film", duration: "0:35", who: "Zykaz", client: "Zykaz", aspect: "4:3", source: "Ad. Films/Zykaz_Cafe_Square.mov.mp4" },
   { slug: "zykaz-interview", title: "Zykaz Interview", category: "Ad film", duration: "0:32", who: "Zykaz", client: "Zykaz", source: "Ad. Films/Zykaz_Interview_FinalCut.mov" },
-  // Two different vertical cuts with camera-roll file names; titles owed.
-  { slug: "ad-film-vertical-01", title: "[Project title]", category: "Ad film", duration: "0:30", aspect: "9:16", source: "Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4" },
-  { slug: "ad-film-vertical-02", title: "[Project title]", category: "Ad film", duration: "0:23", aspect: "9:16", source: "Ad. Films/VIDEO-2026-02-26-21-26-33.mp4" },
 
   // Corporate films
   { slug: "bharatbenz-dhingra-trucking", title: "BharatBenz × Dhingra Trucking", category: "Corporate film", duration: "7:42", who: "Dhingra Trucking", client: "Dhingra Trucking", source: "Corporate Videos/Bharat Benz   Dhingra Trucking - DHINGRA TRUCKING (1080p, h264).mp4" },
@@ -143,9 +143,9 @@ const FILMS: Film[] = [
   { slug: "fabindia-02", title: "Fabindia — Film 02", category: "Fashion film", duration: "0:58", who: "Fabindia", client: "Fabindia", source: "Fashion Films/Fabindia 2.mp4" },
 
   // Govt. ads
-  { slug: "sex-sorted", title: "Sex Sorted", category: "Govt. ad", duration: "2:32", source: "Govt. Ads/SEX SORTED whats app file_1080p.mp4" },
+  { slug: "sex-sorted", title: "Sex Sorted", category: "Govt. ad", duration: "2:32", who: "Haryana Government", client: "Haryana Government", source: "Govt. Ads/SEX SORTED whats app file_1080p.mp4" },
   { slug: "sexual-harassment-haryana", title: "Sexual Harassment", category: "Govt. ad", duration: "2:49", who: "Haryana Government", client: "Haryana Government", aspect: "2.35:1", source: "Govt. Ads/Saxual Harrasment for Haryana Govt.mov" },
-  { slug: "voting-campaign", title: "Voting Campaign", category: "Govt. ad", duration: "1:41", source: "Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4" },
+  { slug: "voting-campaign", title: "Voting Campaign", category: "Govt. ad", duration: "1:41", who: "Haryana Government", client: "Haryana Government", source: "Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4" },
 
   // Short films
   { slug: "happy-republic-day", title: "Happy Republic Day", category: "Short film", duration: "2:19", director: IZAAN, source: "Short Films/Happy Republic Day  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4" },

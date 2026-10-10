@@ -1,0 +1,15 @@
+/* "On air soon" sticker on the podcast sections: a softly pulsing dot. Still for reduced motion. */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: onair 1.6s ease-in-out infinite;
+}
+@keyframes onair {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot { animation: none; }
+}

@@ -31,8 +31,6 @@
 .still:hover { transform: rotate(0deg) scale(1.02) !important; }
 .next { transition: background 0.3s ease; }
 .next:hover { background: var(--next-hover); }
-.epRow { transition: background 0.2s ease; }
-.epRow:hover { background: var(--surface); }
 
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(-8deg); }

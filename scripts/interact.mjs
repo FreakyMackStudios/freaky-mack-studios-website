@@ -43,7 +43,7 @@ async function contrastSweep(page) {
       const el = walker.currentNode.parentElement;
       if (!el || seen.has(el) || !walker.currentNode.textContent.trim()) continue;
       seen.add(el);
-      if (el.closest("[data-pitch-only], [aria-hidden=\"true\"]")) continue; // picker, decorative text
+      if (el.closest("[aria-hidden=\"true\"]")) continue; // decorative text
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       if (cs.visibility === "hidden" || r.width === 0 || r.height === 0 || Number(cs.opacity) === 0) continue;
@@ -68,12 +68,70 @@ page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
 
 console.log("Homepage interactions");
+await page.evaluate(() => window.scrollTo({ top: 700, behavior: "instant" }));
+const scrollBefore = await page.evaluate(() => window.scrollY);
 await page.getByRole("button", { name: "Open the showreel" }).click();
 const shows = (loc) => loc.waitFor({ state: "visible", timeout: 3000 }).then(() => true, () => false); // the reel fades between states
-check(await shows(page.getByText("[ FULL SHOWREEL — EMBED, SOUND ON ]")), "reel card expands to full band");
-check(await page.getByRole("button", { name: "Close the reel" }).first().isVisible(), "hero button label → Close the reel");
-await page.getByRole("button", { name: "Close the reel" }).last().click();
-check(await shows(page.getByText("[ 10–15 SEC LOOP, MUTED ]")), "band closes back to tilted card");
+const theatre = page.getByRole("dialog", { name: "Freaky Mack Studios showreel" });
+const full = theatre.locator("video[controls]");
+check(await shows(full), "reel card opens the full showreel");
+const fsBox = await theatre.boundingBox();
+check(fsBox && fsBox.x === 0 && fsBox.y === 0 && fsBox.width === 1440 && fsBox.height === 900, `full reel fills the whole screen (${fsBox && `${fsBox.width}×${fsBox.height}`})`);
+const fullSrcs = await full.evaluate((v) => [...v.querySelectorAll("source")].map((s) => s.getAttribute("src") + "|" + (s.getAttribute("media") ?? "")));
+check(
+  fullSrcs.length === 4 &&
+    /^https:\/\/d12r07g6j7a5zr\.cloudfront\.net\/showreel\/.*_720p\.mp4\|\(max-width: 899px\)$/.test(fullSrcs[0]) &&
+    /s3\.us-east-1\.amazonaws\.com\/.*_720p\.mp4/.test(fullSrcs[1]) &&
+    /cloudfront\.net\/.*Showreel\.mp4\|$/.test(fullSrcs[2]) && /amazonaws\.com\/.*Showreel\.mp4\|$/.test(fullSrcs[3]),
+  `full reel: CloudFront first, S3 fallback, 720p on phones, then full quality (${fullSrcs.length} sources)`,
+);
+await page.mouse.move(720, 450);
+await page.mouse.wheel(0, 600);
+await page.waitForTimeout(400);
+const nudge = page.getByText("Close the reel to keep scrolling");
+check((await page.evaluate(() => window.scrollY)) === scrollBefore && (await nudge.isVisible()), "scrolling while the reel plays is held, and the close-the-reel nudge appears");
+const nb = await nudge.boundingBox();
+const cb = await page.getByRole("button", { name: "Close the reel" }).boundingBox();
+check(nb && cb && nb.y > cb.y + cb.height && nb.x + nb.width > 1440 - 120, "nudge sits top-right, just under the Close button");
+await page.waitForTimeout(2800);
+check(!(await nudge.isVisible()), "nudge goes away on its own");
+await page.getByRole("button", { name: "Close the reel" }).click();
+check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Close ends the full reel");
+check((await page.evaluate(() => [window.scrollY, getComputedStyle(document.documentElement).overflow])).join() === `${scrollBefore},visible`, "page is back where it was and scrolls again");
+await page.getByRole("button", { name: "Open the showreel" }).click();
+await shows(full);
+await page.keyboard.press("Escape");
+check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Escape closes the full reel");
+await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+const loop = page.locator('[aria-label="Open the showreel"] video');
+await loop.waitFor({ state: "attached", timeout: 5000 }).catch(() => {});
+const loopState = await loop.evaluate((v) => ({ muted: v.muted, loop: v.loop, inline: v.playsInline, src: v.currentSrc, poster: v.poster })).catch(() => null);
+check(!!loopState && loopState.muted && loopState.loop && loopState.inline && /reel-loop-720\.(webm|mp4)$/.test(loopState.src) && /reel-poster\.jpg$/.test(loopState.poster), `homepage reel plays the silent 720p loop at 1440px (${loopState ? loopState.src.split("/").pop() : "no video"})`);
+// Chrome pauses muted autoplay while it's off screen (at the top of the page the card sits just below
+// the fold), so bring it into view first.
+await page.evaluate(() => window.scrollTo({ top: 400, behavior: "instant" }));
+await page.waitForTimeout(1200);
+const loopNow = await loop.evaluate((v) => ({ paused: v.paused, t: +v.currentTime.toFixed(2), y: Math.round(v.getBoundingClientRect().top), sy: scrollY })).catch((e) => String(e));
+check(!loopNow.paused && loopNow.t > 0.3, `the loop is actually playing (${JSON.stringify(loopNow)})`);
+// The "new!" sticker hangs over the card's edge instead of being cut off by it.
+const stick = await page.evaluate(() => {
+  const card = document.querySelector('[aria-label="Open the showreel"]').getBoundingClientRect();
+  const tag = [...document.querySelectorAll("#reel span")].find((e) => e.textContent.trim() === "new!").getBoundingClientRect();
+  return { over: Math.round(tag.right - card.right) };
+});
+check(stick.over > 0, `"new!" sticker overhangs the card, not clipped (${stick.over}px past the edge)`);
+// "or scroll the story" glides to the grown reel, alone in the window.
+await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+await page.getByRole("link", { name: /scroll the story/ }).click();
+await page.waitForTimeout(2200);
+const framed = await page.evaluate(() => {
+  const r = document.querySelector('[aria-label="Open the showreel"]').getBoundingClientRect();
+  const h1 = document.querySelector("#top h1").getBoundingClientRect();
+  const next = document.querySelector("#ch1").getBoundingClientRect();
+  return { cover: +((r.width * r.height) / (innerWidth * innerHeight)).toFixed(2), centre: Math.round(r.top + r.height / 2), heroGone: h1.bottom <= 0, nextBelow: next.top >= innerHeight };
+});
+check(framed.cover > 0.66 && Math.abs(framed.centre - 450) < 6 && framed.heroGone && framed.nextBelow, `scroll the story → reel fully grown and centred, nothing else in view (${JSON.stringify(framed)})`);
+await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 await page.locator("#ch1 li").nth(2).hover();
 check((await page.locator("#ch1").getByText("PC Jeweller · Ad film").count()) === 2, "hovering row 03 swaps preview meta");
 await page.getByRole("button", { name: "music video", exact: true }).click();
@@ -81,33 +139,34 @@ await page.getByRole("button", { name: "face on screen" }).click();
 await page.waitForTimeout(700); // the pill words slide in
 const sentence = (await page.locator("#ch3 p").first().innerText()).replace(/\s+/g, " ");
 check(/a music video/.test(sentence) && /a face on screen/.test(sentence), `sentence builder → "${sentence}"`);
-const eps = page.locator("#ch4 button[aria-pressed]");
-await eps.nth(1).click();
-check((await page.locator("#ch4").getByText("Now playing").count()) === 1, "episode 2 shows Now playing");
-await eps.nth(0).click();
-check((await eps.nth(1).getAttribute("aria-pressed")) === "false", "playing another episode stops the first");
+const ch4 = page.locator("#ch4");
+check((await ch4.getByText("Coming", { exact: false }).count()) > 0 && (await ch4.getByText("On air soon").isVisible()), "podcast chapter shows Coming soon");
+check(/^mailto:/.test((await ch4.getByRole("link", { name: /Say hello/ }).getAttribute("href")) ?? "") && !(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: email CTA, no episode placeholders");
 
-console.log("Theme picker");
+console.log("Theme switch");
 const bg = () => root(page).evaluate((el) => getComputedStyle(el).backgroundColor);
 const fg = () => root(page).evaluate((el) => getComputedStyle(el).color);
 const accentVar = () => root(page).evaluate((el) => getComputedStyle(el).getPropertyValue("--accent").trim().toUpperCase());
 const serverHtml = await (await page.request.get(`${base}/studio/`)).text();
-check(/<html[^>]*data-theme="dark"[^>]*data-accent="grey"/.test(serverHtml), "server HTML already carries the default Dark + Grey (works without JS)");
+check(/<html[^>]*data-theme="dark"/.test(serverHtml), "server HTML already carries the default Dark (works without JS)");
 check((await root(page).getAttribute("data-theme")) === "dark" && (await bg()) === "rgb(10, 10, 10)" && (await fg()) === "rgb(255, 255, 255)", `defaults to Dark: black ground, white text (${await bg()} / ${await fg()})`);
-check((await accentVar()) === "#8A8A8A", `defaults to the Grey accent (${await accentVar()})`);
-check((await page.getByRole("button", { name: /^Ground / }).count()) === 0, "ground swatches hidden in Dark");
-await page.getByRole("button", { name: "Light theme" }).click();
-await page.waitForTimeout(400);
-check((await root(page).getAttribute("data-theme")) === "light" && (await bg()) === "rgb(255, 255, 255)", "Light sets data-theme=light on white");
-check((await page.getByRole("button", { name: /^Ground / }).count()) === 3, "ground swatches shown in Light");
-await page.getByRole("button", { name: "Cobalt accent" }).click();
-check((await accentVar()) === "#1F3BFF", `Cobalt sets --accent (${await accentVar()})`);
-check(page.url().endsWith("/?theme=light&accent=cobalt"), `URL records the choice (${page.url()})`);
+check((await accentVar()) === "#1F3BFF", `the accent is Cobalt (${await accentVar()})`);
+check((await page.getByRole("button", { name: /accent|^Ground/ }).count()) === 0, "no accent or ground options");
+const toggle = page.getByRole("switch", { name: "Dark theme" });
+const tb = await toggle.boundingBox();
+check(tb && tb.x + tb.width > 1440 - 40 && tb.y + tb.height > 900 - 40 && (await toggle.getAttribute("aria-checked")) === "true", "theme switch sits bottom-right, on (Dark)");
+await toggle.click();
+await page.waitForTimeout(1000);
+check((await root(page).getAttribute("data-theme")) === "light" && (await bg()) === "rgb(255, 255, 255)" && (await toggle.getAttribute("aria-checked")) === "false", "switch → Light: data-theme=light on white");
+check(!(await root(page).getAttribute("data-vt")), "the circle transition finishes and cleans up");
 await page.reload({ waitUntil: "networkidle" });
-check((await root(page).getAttribute("data-theme")) === "light" && (await accentVar()) === "#1F3BFF", "reloading the link restores Light + Cobalt");
+check((await root(page).getAttribute("data-theme")) === "light", "reload keeps Light");
+await toggle.click();
+await page.waitForTimeout(1000);
+check((await root(page).getAttribute("data-theme")) === "dark" && (await bg()) === "rgb(10, 10, 10)", "switch → Dark again");
 
 console.log("Contrast sweep");
-for (const [label, q] of [["Light · Cobalt", "/?theme=light&accent=cobalt"], ["Dark · Cobalt", "/?theme=dark&accent=cobalt"], ["Dark · Grey", "/?theme=dark&accent=grey"], ["Light · Grey", "/?theme=light&accent=grey"]]) {
+for (const [label, q] of [["Light", "/?theme=light"], ["Dark", "/?theme=dark"]]) {
   await page.goto(`${base}${q}`, { waitUntil: "networkidle" });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.waitForTimeout(400);
@@ -146,11 +205,9 @@ check((await page.locator('a[href^="/work/mercedes-benz-global-star"]').count())
 
 console.log("Originals");
 await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
-const rows = page.locator('section[aria-label="All episodes"] button');
-await page.getByRole("button", { name: "Play the latest episode" }).click();
-check((await rows.nth(0).getAttribute("aria-pressed")) === "true", "featured player lights up episode row 1");
-await rows.nth(2).click();
-check((await page.getByRole("button", { name: "Play the latest episode" }).getAttribute("aria-pressed")) === "false" && (await rows.nth(2).getAttribute("aria-pressed")) === "true", "playing row 3 pauses the featured player");
+const pod = page.locator("#podcast");
+check((await pod.getByRole("heading", { name: /Coming\s+soon/ }).isVisible()) && (await pod.locator("li").count()) === 3, "Originals podcast: Coming soon heading and what-to-expect list");
+check((await pod.locator("button").count()) === 0 && !(await page.getByText(/Latest episode|Every episode|\[Guest\]/).count()), "Originals podcast: no player or episode placeholders");
 
 console.log("Start a project");
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -206,15 +263,15 @@ const res = await page.goto(`${base}/missing-page/`, { waitUntil: "networkidle" 
 check(res.status() === 404 && (await page.getByText("This scene didn’t make the edit.").isVisible()), `unknown URL → 404 page (${res.status()})`);
 
 console.log("Theme across pages");
-await page.goto(`${base}/?theme=light&accent=cobalt`, { waitUntil: "networkidle" });
-await page.getByRole("button", { name: "Dark theme" }).click();
-await page.getByRole("button", { name: "Orange accent" }).click();
+await page.goto(`${base}/?theme=dark`, { waitUntil: "networkidle" });
+await page.getByRole("switch", { name: "Dark theme" }).click();
+await page.waitForTimeout(900);
 await page.locator('nav a[href="/studio"], nav a[href="/studio/"]').first().click();
 await page.waitForURL(/\/studio/);
-check((await root(page).getAttribute("data-theme")) === "dark" && (await accentVar()) === "#FF8A00", "Dark + Orange carries over on client navigation");
+check((await root(page).getAttribute("data-theme")) === "light", "Light carries over on client navigation");
 await page.goto(`${base}/people/`, { waitUntil: "networkidle" });
-check((await root(page).getAttribute("data-theme")) === "dark" && (await accentVar()) === "#FF8A00", "…and after a fresh load without the query");
-await page.goto(`${base}/?theme=dark&accent=grey`, { waitUntil: "networkidle" }); // back to the defaults
+check((await root(page).getAttribute("data-theme")) === "light", "…and after a fresh load without the query");
+await page.goto(`${base}/?theme=dark`, { waitUntil: "networkidle" }); // back to the default
 
 console.log("Mobile menu");
 const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
@@ -236,7 +293,7 @@ await phone.close();
 
 console.log("Contrast sweep · every page");
 const PAGES = ["/work/", "/work/mercedes-benz-global-star/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
-for (const [label, q] of [["Light · Cobalt", "theme=light&accent=cobalt"], ["Dark · Cobalt", "theme=dark&accent=cobalt"], ["Dark · Grey", "theme=dark&accent=grey"], ["Light · Grey", "theme=light&accent=grey"]]) {
+for (const [label, q] of [["Light", "theme=light"], ["Dark", "theme=dark"]]) {
   const bad = [];
   for (const r of PAGES) {
     await page.goto(`${base}${r}?${q}`, { waitUntil: "networkidle" });
