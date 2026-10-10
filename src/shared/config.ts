@@ -17,12 +17,18 @@ export const CONTACT = {
 };
 
 /**
- * Showreel media. Leave empty until the client sends files; the [ PLACEHOLDER ] blocks show meanwhile.
- * loopSrc: 10–15s muted loop (mp4). poster: still for the loop. fullEmbedUrl: YouTube/Vimeo embed URL.
+ * Showreel media. Empty values show the board's [ PLACEHOLDER ] blocks instead.
+ * loop: the silent homepage loop (FM_Showreel_15Sec_V_01, 14.75s, re-encoded without audio), as WebM (VP9,
+ * smaller) with an MP4 (H.264) fallback, at 720p (≈ 1.8–2 MB) and 1080p for wide windows (≈ 3.1–3.9 MB).
+ * poster: a still from it. fullEmbedUrl: the full reel's YouTube/Vimeo/Stream embed URL, opened on click.
  */
 export const REEL = {
-  loopSrc: "",
-  poster: "",
+  loopSrc: "/reel/reel-loop-720.mp4",
+  loop: {
+    sd: { webm: "/reel/reel-loop-720.webm", mp4: "/reel/reel-loop-720.mp4" },
+    hd: { webm: "/reel/reel-loop-1080.webm", mp4: "/reel/reel-loop-1080.mp4" },
+  },
+  poster: "/reel/reel-poster.jpg",
   fullEmbedUrl: "",
   /** Running time of the full reel (Freaky Mack_Showreel.mov). */
   duration: "1:30",

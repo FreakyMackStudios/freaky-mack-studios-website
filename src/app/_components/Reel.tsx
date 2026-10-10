@@ -146,6 +146,8 @@ function ClosedReel({ onToggle }: { onToggle: () => void }) {
       <ReelLoop className="absolute inset-0 h-full w-full object-cover">
         <div className={`${DASHED} inset-[12px] lg:inset-[18px]`}>[ 10–15 SEC LOOP, MUTED ]</div>
       </ReelLoop>
+      {/* Keeps the label legible over any frame of the loop. */}
+      {REEL.loopSrc && <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-black/55 to-transparent" />}
       <div className="absolute bottom-[16px] left-[18px] flex items-center gap-[14px] lg:bottom-[28px] lg:left-[32px]">
         <span className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[var(--accent)] lg:h-[52px] lg:w-[52px]">
           <PlayIcon size={14} fill="var(--on-accent)" />

@@ -73,7 +73,13 @@ const shows = (loc) => loc.waitFor({ state: "visible", timeout: 3000 }).then(() 
 check(await shows(page.getByText("[ FULL SHOWREEL — EMBED, SOUND ON ]")), "reel card expands to full band");
 check(await page.getByRole("button", { name: "Close the reel" }).first().isVisible(), "hero button label → Close the reel");
 await page.getByRole("button", { name: "Close the reel" }).last().click();
-check(await shows(page.getByText("[ 10–15 SEC LOOP, MUTED ]")), "band closes back to tilted card");
+check(await shows(page.getByRole("button", { name: "Open the showreel" })), "band closes back to the reel card");
+const loop = page.locator('[aria-label="Open the showreel"] video');
+await loop.waitFor({ state: "attached", timeout: 5000 }).catch(() => {});
+const loopState = await loop.evaluate((v) => ({ muted: v.muted, loop: v.loop, inline: v.playsInline, src: v.currentSrc, poster: v.poster })).catch(() => null);
+check(!!loopState && loopState.muted && loopState.loop && loopState.inline && /reel-loop-720\.(webm|mp4)$/.test(loopState.src) && /reel-poster\.jpg$/.test(loopState.poster), `homepage reel plays the silent 720p loop at 1440px (${loopState ? loopState.src.split("/").pop() : "no video"})`);
+await page.waitForTimeout(1200);
+check(await loop.evaluate((v) => !v.paused && v.currentTime > 0.3).catch(() => false), "the loop is actually playing");
 await page.locator("#ch1 li").nth(2).hover();
 check((await page.locator("#ch1").getByText("PC Jeweller · Ad film").count()) === 2, "hovering row 03 swaps preview meta");
 await page.getByRole("button", { name: "music video", exact: true }).click();
