@@ -42,7 +42,12 @@ export type Project = {
   stills: Still[];
   /** On the site only once it has both stills and written content; otherwise it's listed as "Publishing soon". */
   published: boolean;
+  /** The film on YouTube. Until the studio sends each link, this is YouTube's home page. */
+  youtube: string;
 };
+
+/** Placeholder for a film's YouTube link, until the real one is filled in per film (`youtube` below). */
+export const YOUTUBE_PLACEHOLDER = "https://www.youtube.com/";
 
 const BGS = [
   "linear-gradient(160deg,#3a3a3a,#111)",
@@ -55,7 +60,8 @@ const BGS = [
   "linear-gradient(210deg,#6a6a66,#141414)",
 ];
 
-type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills" | "published"> & {
+type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills" | "published" | "youtube"> & {
+  youtube?: string;
   aspect?: string;
   /** The studio left this film blank on the content form: only the file name is known, so no written content. */
   blank?: true;
@@ -73,6 +79,7 @@ const film = ({ blank, ...f }: Film, i: number): Project => {
     credits: f.credits.map(([role, who]) => ({ role, who })),
     stills,
     published: stills.length > 0 && !blank,
+    youtube: f.youtube ?? YOUTUBE_PLACEHOLDER,
   };
 };
 

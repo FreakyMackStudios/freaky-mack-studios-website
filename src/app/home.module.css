@@ -29,6 +29,7 @@
 .workRow { transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease; will-change: transform; }
 .workPreview { transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
 .accordion { transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease; }
+.brandCard { transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
 .collagePhoto { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
 .collagePhoto:hover { z-index: 5 !important; }
 .workCaption { transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
