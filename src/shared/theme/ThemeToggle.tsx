@@ -32,7 +32,9 @@ export function ThemeToggle() {
     const t = document.startViewTransition(apply);
     t.ready
       .then(() => {
-        const small = `circle(0px at ${x}px ${y}px)`;
+        // The circle ends (or starts) exactly hidden behind the switch, which is opaque, so it slips
+        // under it smoothly instead of showing through or popping at the last moment.
+        const small = `circle(${box.height / 2}px at ${x}px ${y}px)`;
         const big = `circle(${r}px at ${x}px ${y}px)`;
         html.animate(
           { clipPath: toLight ? [small, big] : [big, small] },
@@ -57,8 +59,8 @@ export function ThemeToggle() {
       title={dark ? "Switch to light" : "Switch to dark"}
       onClick={toggle}
       data-theme-toggle
-      className={`fixed right-4 bottom-4 z-[1000] flex h-[44px] w-[84px] items-center rounded-full border p-[4px] shadow-[0_8px_30px_rgba(0,0,0,0.22)] backdrop-blur-md transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)] sm:right-6 sm:bottom-6 ${
-        dark ? "border-white/15 bg-[#161616]/90" : "border-black/10 bg-white/90"
+      className={`fixed right-4 bottom-4 z-[1000] flex h-[44px] w-[84px] items-center rounded-full border p-[4px] shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)] sm:right-6 sm:bottom-6 ${
+        dark ? "border-white/15 bg-[#161616]" : "border-black/10 bg-white"
       }`}
     >
       {/* The knob slides under the active icon. */}

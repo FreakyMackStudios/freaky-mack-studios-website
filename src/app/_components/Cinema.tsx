@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { REEL } from "@/shared/config";
 import { FullReelSources } from "@/shared/reel";
+import { ScrollNudge, enterFullscreen, useReelLock } from "@/shared/reel-lock";
 import c from "./cinema.module.css";
 
 /**
@@ -48,6 +49,7 @@ export function useCinema() {
   const start = useCallback(() => {
     if (phase !== "idle") return;
     returnFocus.current = document.activeElement as HTMLElement | null;
+    enterFullscreen();
     // While we still hold the click, unlock playback with sound (iOS asks per element) and start
     // buffering, so the reel is ready when the countdown ends.
     const v = videoRef.current;
@@ -114,31 +116,22 @@ export function useCinema() {
     });
   }, [phase]);
 
-  // While it runs: no page scroll, Escape closes. Afterwards focus goes back to "Press play".
+  // While it runs: full screen, no page scroll (each attempt nudges), Escape or leaving full screen
+  // closes. Afterwards focus goes back to "Press play".
+  const nudges = useReelLock(phase === "exit" || phase === "count" || phase === "play", close);
   useEffect(() => {
-    if (!active) {
-      returnFocus.current?.focus({ preventScroll: true });
-      returnFocus.current = null;
-      return;
-    }
-    const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("keydown", onKey);
-    return () => {
-      html.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [active, close]);
+    if (active) return;
+    returnFocus.current?.focus({ preventScroll: true });
+    returnFocus.current = null;
+  }, [active]);
 
-  return { phase, count, muted, active, videoRef, start, close, unmute };
+  return { phase, count, muted, active, nudges, videoRef, start, close, unmute };
 }
 
 export type Cinema = ReturnType<typeof useCinema>;
 
 export function CinemaOverlay({ cinema }: { cinema: Cinema }) {
-  const { phase, count, muted, active, videoRef, close, unmute } = cinema;
+  const { phase, count, muted, active, nudges, videoRef, close, unmute } = cinema;
   const closeRef = useRef<HTMLButtonElement>(null);
   const shown = phase === "exit" || phase === "count" || phase === "play";
 
@@ -202,6 +195,7 @@ export function CinemaOverlay({ cinema }: { cinema: Cinema }) {
       <button ref={closeRef} type="button" onClick={close} className={c.close} tabIndex={shown ? 0 : -1}>
         Close <span aria-hidden="true">✕</span>
       </button>
+      <ScrollNudge count={nudges} />
     </div>
   );
 }

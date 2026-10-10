@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { HAS_FULL_REEL } from "@/shared/reel";
 import { CinemaOverlay, useCinema } from "./Cinema";
+import { enterFullscreen } from "@/shared/reel-lock";
 import s from "../home.module.css";
 import { ClientScatter } from "./ClientScatter";
 import { Contact } from "./Contact";
@@ -24,7 +25,11 @@ import { WorkPreview } from "./WorkPreview";
  */
 export function Home() {
   const [reelOpen, setReelOpen] = useState(false);
-  const toggleReel = () => setReelOpen((o) => !o);
+  // Opening the full reel takes the page full screen; that has to start inside the click.
+  const toggleReel = () => {
+    if (!reelOpen && HAS_FULL_REEL) enterFullscreen();
+    setReelOpen((o) => !o);
+  };
   // TEST FEATURE: the hero's "Press play" runs the cinema intro into the complete showreel.
   const cinema = useCinema();
   const pressPlay = HAS_FULL_REEL ? cinema.start : toggleReel;

@@ -85,7 +85,10 @@ button {
 html[data-vt="shrink"]::view-transition-old(root) { z-index: 2; }
 html[data-vt="shrink"]::view-transition-new(root) { z-index: 1; }
 [data-theme-toggle] { view-transition-name: theme-toggle; }
-::view-transition-group(theme-toggle) { z-index: 3; }
+::view-transition-group(theme-toggle) { z-index: 3; animation: none; }
+/* No cross-fade of two switch images: the live switch shows straight away and its knob slides. */
+::view-transition-old(theme-toggle) { display: none; }
+::view-transition-new(theme-toggle) { animation: none; }
 /* Colours swap at once inside the circle instead of fading on their own. */
 html[data-vt] *:not([data-theme-toggle], [data-theme-toggle] *) { transition: none !important; }
 
