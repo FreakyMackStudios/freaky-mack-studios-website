@@ -5,7 +5,8 @@ import { ScrollIn } from "@/components/motion/ScrollIn";
 import { YourTurnCta } from "@/components/site/blocks";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, MX, PX } from "@/components/site/ui";
-import { BELIEFS, CLIENT_TAGS, PROCESS, SERVICES, TIMELINE } from "@/content/studio";
+import { BELIEFS, PROCESS, SERVICES, TIMELINE } from "@/content/studio";
+import { ClientScatter } from "@/app/_components/ClientScatter";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -147,25 +148,29 @@ export default function StudioPage() {
       </section>
       </ScrollIn>
 
-      <section aria-label="What we make" className={`grid grid-cols-1 gap-y-[40px] xl:grid-cols-12 xl:gap-x-[32px] ${SECTION}`}>
-        <Reveal className="flex flex-col gap-[16px] xl:col-span-4">
+      <section aria-label="What we make" className={`flex flex-col gap-[40px] lg:gap-[56px] ${SECTION}`}>
+        <Reveal className="flex flex-col gap-[16px]">
           <Label>What we make</Label>
-          <h2 className="m-0 text-[36px] leading-[1.05] font-extrabold tracking-[-0.03em] text-balance md:text-[48px] lg:text-[56px]">
-            Eight ways a brief becomes a film.
-          </h2>
+          <h2 className={H2}>Eight ways a brief becomes a film.</h2>
         </Reveal>
-        <Reveal as="ol" stagger={0.06} amount={0.15} className="m-0 list-none border-t border-[var(--ink)] p-0 xl:col-span-7 xl:col-start-6">
+        {/* Heading on top, the eight services below in two even columns (01–04, then 05–08). */}
+        <Reveal
+          as="ol"
+          stagger={0.06}
+          amount={0.15}
+          className="m-0 grid list-none grid-cols-1 gap-x-[32px] border-t border-[var(--ink)] p-0 lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-4 lg:gap-x-[48px]"
+        >
           {SERVICES.map((sv, i) => (
             <RevealItem
               as="li"
-              from={{ x: 50, y: 0 }}
+              from={{ y: 40 }}
               duration={0.7}
               key={sv.name}
-              className={`${s.row} grid grid-cols-[36px_1fr] items-baseline gap-x-[12px] gap-y-[6px] border-b border-[var(--line)] py-[20px] md:grid-cols-[48px_1fr_1.3fr] md:gap-[16px] lg:py-[22px]`}
+              className={`${s.row} grid grid-cols-[36px_1fr] items-baseline gap-x-[12px] gap-y-[6px] border-b border-[var(--line)] py-[20px] md:grid-cols-[48px_1fr_1.3fr] md:gap-[16px] lg:grid-cols-[48px_1fr] lg:gap-y-[6px] lg:py-[24px]`}
             >
               <span className={`${s.it} text-[18px] text-[var(--muted-2)]`}>{String(i + 1).padStart(2, "0")}</span>
               <span className="text-[21px] font-semibold lg:text-[24px]">{sv.name}</span>
-              <span className="col-start-2 text-[15px] text-[var(--muted)] md:col-start-auto">{sv.text}</span>
+              <span className="col-start-2 text-[15px] text-[var(--muted)] md:col-start-auto lg:col-start-2">{sv.text}</span>
             </RevealItem>
           ))}
         </Reveal>
@@ -192,42 +197,7 @@ export default function StudioPage() {
         </Reveal>
       </section>
 
-      <section aria-label="Clients" className={`flex flex-col items-center gap-[32px] lg:gap-[40px] ${SECTION}`}>
-        <Reveal>
-          <Label>Films made for</Label>
-        </Reveal>
-        {/* The stickers pop in one after another. The item carries the board position; the sticker inside keeps its tilt. */}
-        <Reveal
-          as="ul"
-          stagger={0.07}
-          delay={0.1}
-          amount={0.3}
-          className="m-0 flex list-none flex-wrap justify-center gap-[14px] p-0 xl:relative xl:block xl:h-[300px] xl:w-full xl:max-w-[1248px]"
-        >
-          {CLIENT_TAGS.map((c) => (
-            <RevealItem
-              as="li"
-              key={c.name}
-              from={{ y: 40, scale: 0.6, rotate: c.rot * 3 }}
-              className="flex xl:absolute xl:top-[var(--t)] xl:left-[var(--l)]"
-              style={{ ["--l" as string]: `${(c.left / 1248) * 100}%`, ["--t" as string]: `${c.top}px` }}
-            >
-            <span
-              className={`${s.tag} relative rounded-full border px-[20px] py-[10px] text-[18px] lg:px-[26px] lg:py-[14px] lg:text-[22px] ${
-                c.accent
-                  ? "border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--on-accent)]"
-                  : c.more
-                    ? "border-dashed border-[var(--ink)] bg-[var(--pill-bg)] font-medium text-[var(--muted)]"
-                    : "border-[var(--ink)] bg-[var(--pill-bg)] font-semibold"
-              }`}
-              style={{ transform: `rotate(${c.rot}deg)` }}
-            >
-              {c.name}
-            </span>
-            </RevealItem>
-          ))}
-        </Reveal>
-      </section>
+      <ClientScatter label="Films made for" className={SECTION} />
 
       <YourTurnCta />
     </>

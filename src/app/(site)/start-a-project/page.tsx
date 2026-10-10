@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CONTACT, STUDIO } from "@/shared/config";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
+import { ContactRow, PhoneIcon, PhoneLine, WhatsAppIcon } from "@/components/site/ContactDetails";
 import { H1, Intro, Kicker, Label, PX } from "@/components/site/ui";
 import { EnquiryForm } from "./_components/EnquiryForm";
 
@@ -65,14 +66,17 @@ export default function StartAProjectPage() {
             >
               {CONTACT.email}
             </a>
-            <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
-              WhatsApp · {CONTACT.whatsappNumber} ↗
-            </a>
-            {CONTACT.phones.map((ph) => (
-              <a key={ph.href} href={ph.href} className={`${s.link} self-start text-[17px] lg:text-[18px]`}>
-                Call · {ph.label}
-              </a>
-            ))}
+            <ul className="m-0 flex list-none flex-col gap-[14px] p-0 text-[17px] lg:text-[18px]">
+              <ContactRow icon={<WhatsAppIcon />}>
+                <a href={CONTACT.whatsapp} className={s.link}>
+                  WhatsApp · {CONTACT.whatsappNumber} ↗
+                </a>
+              </ContactRow>
+              <ContactRow icon={<PhoneIcon />}>
+                <span className="sr-only">Call: </span>
+                <PhoneLine />
+              </ContactRow>
+            </ul>
           </RevealItem>
           <RevealItem className="flex flex-col gap-[16px]">
             <Label size="text-[20px] lg:text-[24px]">The studio</Label>

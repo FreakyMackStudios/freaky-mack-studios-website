@@ -213,6 +213,8 @@ check(!!shownPreview && /PC Jeweller · Ad film/.test(shownPreview.text) && /PC 
 // Brand cloud: the project clients join the headline brands; hovering one with a film opens its cover,
 // linking to the film on YouTube (a placeholder link until the real ones are in).
 const clients = page.locator('section[aria-label="Clients"]');
+// The site scrolls smoothly; Playwright would place the pointer mid-scroll and the tag would slide out from under it.
+await page.evaluate(() => (document.documentElement.style.scrollBehavior = "auto"));
 await clients.scrollIntoViewIfNeeded();
 await page.waitForTimeout(1200);
 check((await clients.locator("[data-brand]").count()) >= 20 && (await clients.getByRole("button", { name: "Google", exact: true }).count()) === 0, "brand cloud lists 20 brands; brands without a film are plain tags");
@@ -228,6 +230,7 @@ check(cardOk.op === "1" && cardOk.href === "https://www.youtube.com/" && cardOk.
 await page.mouse.move(5, 5);
 await page.waitForTimeout(600);
 check((await card.evaluate((a) => getComputedStyle(a.closest("[id^='brand-card-']")).opacity)) === "0", "the brand card fades away when the pointer leaves");
+await page.evaluate(() => (document.documentElement.style.scrollBehavior = ""));
 // Work list: every title on one line, at desktop and tablet widths, and the active row slides (transform) instead of re-flowing.
 for (const w of [1440, 1024, 768]) {
   await page.setViewportSize({ width: w, height: 900 });
@@ -561,6 +564,39 @@ console.log("Motion (other pages)");
   const o2 = await card.evaluate((el) => getComputedStyle(el).opacity);
   const tilt = await card.evaluate((el) => getComputedStyle(el.firstElementChild).transform);
   check(o1 === "0" && o2 === "1" && tilt !== "none", `Studio cards reveal on scroll and keep their tilt (opacity ${o1} → ${o2})`);
+  // Studio: no years on the timeline; services stack under their heading in two columns; the shared brand cloud.
+  const labels = await sp.locator('section[aria-label="Timeline"] li').allInnerTexts();
+  check(labels.length === 4 && labels.every((t) => !/\[Year\]|20\d\d/.test(t)), "Studio timeline shows chapters without years");
+  const make = await sp.evaluate(() => {
+    const sec = document.querySelector('section[aria-label="What we make"]');
+    const h = sec.querySelector("h2").getBoundingClientRect();
+    const rows = [...sec.querySelectorAll("li")].map((li) => li.getBoundingClientRect());
+    return { below: rows.every((r) => r.top > h.bottom), cols: new Set(rows.map((r) => Math.round(r.left))).size, rows: rows.length };
+  });
+  check(make.rows === 8 && make.below && make.cols === 2, `Studio services sit below the heading in two columns (${JSON.stringify(make)})`);
+  await sp.evaluate(() => (document.documentElement.style.scrollBehavior = "auto")); // see the homepage brand check
+  const studioClients = sp.locator('section[aria-label="Clients"]');
+  await studioClients.scrollIntoViewIfNeeded();
+  await sp.waitForTimeout(1200);
+  check((await studioClients.getByText("Films made for").count()) === 1 && (await studioClients.locator("[data-brand]").count()) >= 20, "Studio uses the shared brand cloud");
+  await studioClients.getByRole("button", { name: "McDonald’s", exact: true }).hover();
+  await sp.waitForFunction(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).opacity === "1"), null, { timeout: 3000 }).catch(() => {});
+  const studioCard = await studioClients.getByRole("link", { name: /Watch .*McWings.* on YouTube/ }).evaluate((a) => ({
+    op: getComputedStyle(a.closest("[id^='brand-card-']")).opacity,
+    href: a.getAttribute("href"),
+  }));
+  check(studioCard.op === "1" && studioCard.href === "https://www.youtube.com/", `Studio brand hover opens the film card (${JSON.stringify(studioCard)})`);
+  // Footer: each contact detail has its icon, and the three phones share one line, split by "|".
+  for (const w of [1440, 1024, 768]) {
+    await sp.setViewportSize({ width: w, height: 900 });
+    const foot = await sp.evaluate(() => {
+      const f = document.querySelector("footer");
+      const tels = [...f.querySelectorAll("a[href^='tel:']")].map((a) => Math.round(a.getBoundingClientRect().top));
+      return { tels: tels.length, rows: new Set(tels).size, icons: f.querySelectorAll("li svg").length };
+    });
+    check(foot.tels === 3 && foot.rows === 1 && foot.icons === 4, `footer at ${w}px: icons on every contact line, three phones on one line (${JSON.stringify(foot)})`);
+  }
+  await sp.setViewportSize({ width: 1440, height: 900 });
   // The hero plays in on load.
   await sp.goto(`${base}/people/`, { waitUntil: "networkidle" });
   await sp.waitForTimeout(1800);
