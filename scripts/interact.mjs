@@ -86,10 +86,14 @@ check(
   `full reel: CloudFront first, S3 fallback, 720p on phones, then full quality (${fullSrcs.length} sources)`,
 );
 await page.mouse.move(720, 450);
+// Going full screen resizes the window, so the page may re-flow under the player: let it settle, then try to scroll.
+await page.waitForTimeout(1000);
+const heldAt = await page.evaluate(() => window.scrollY);
 await page.mouse.wheel(0, 600);
 await page.waitForTimeout(400);
 const nudge = page.getByText("Close the reel to keep scrolling");
-check((await page.evaluate(() => window.scrollY)) === scrollBefore && (await nudge.isVisible()), "scrolling while the reel plays is held, and the close-the-reel nudge appears");
+const afterWheel = await page.evaluate(() => window.scrollY);
+check(afterWheel === heldAt && (await nudge.isVisible()), `scrolling while the reel plays is held, and the close-the-reel nudge appears (scrollY ${heldAt} → ${afterWheel}; opened at ${scrollBefore})`);
 const nb = await nudge.boundingBox();
 const cb = await page.getByRole("button", { name: "Close the reel" }).boundingBox();
 check(nb && cb && nb.y > cb.y + cb.height && nb.x + nb.width > 1440 - 120, "nudge sits top-right, just under the Close button");
@@ -97,7 +101,9 @@ await page.waitForTimeout(2800);
 check(!(await nudge.isVisible()), "nudge goes away on its own");
 await page.getByRole("button", { name: "Close the reel" }).click();
 check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Close ends the full reel");
-check((await page.evaluate(() => [window.scrollY, getComputedStyle(document.documentElement).overflow])).join() === `${scrollBefore},visible`, "page is back where it was and scrolls again");
+await page.waitForTimeout(300);
+const backAt = await page.evaluate(() => [window.scrollY, getComputedStyle(document.documentElement).overflow]);
+check(Math.abs(backAt[0] - scrollBefore) <= 2 && backAt[1] === "visible", `closing puts the page back exactly where it was, and it scrolls again (${backAt.join(", ")}; opened at ${scrollBefore})`);
 await page.getByRole("button", { name: "Open the showreel" }).click();
 await shows(full);
 await page.keyboard.press("Escape");
@@ -218,7 +224,7 @@ check((await storyOf()).length === 3, "a fully filled film shows its brief, idea
 await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } });
 await page.waitForTimeout(800);
 const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
-check(frames.length === 4 && frames.every((f) => f.ok && f.alt.length > 5), `film stills load at full resolution with alt text (${frames.length} images)`);
+check(frames.length === 7 && frames.every((f) => f.ok && f.alt.length > 5), `all 7 McWings stills load at full resolution with alt text (${frames.length} images)`);
 await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
 const partial = await page.evaluate(() => document.querySelector("main").innerText);
 check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /R Balki/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");

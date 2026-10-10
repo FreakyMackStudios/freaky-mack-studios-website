@@ -35,6 +35,9 @@ export function useReelLock(active: boolean, onClose: () => void) {
     const onClose = () => close.current();
     const html = document.documentElement;
     const body = document.body;
+    // Where the visitor was. Going full screen resizes the window and the page re-flows underneath the
+    // player, so on the way out they're put back exactly here.
+    const scrollY = window.scrollY;
     const prev = [html.style.overflow, body.style.overflow, html.style.overscrollBehavior];
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
@@ -93,7 +96,9 @@ export function useReelLock(active: boolean, onClose: () => void) {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("keydown", onKey);
       document.removeEventListener("fullscreenchange", onFullscreen);
-      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      const restore = () => requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: "instant" }));
+      if (document.fullscreenElement) document.exitFullscreen().then(restore, restore);
+      else restore();
     };
   }, [active]);
 

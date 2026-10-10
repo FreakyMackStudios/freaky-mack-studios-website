@@ -11,6 +11,8 @@ import { FilmPlayer } from "./FilmPlayer";
 
 export const dynamicParams = false;
 
+const GALLERY_TILT = [-1, 0.8, -0.6, 1.2, -1.2, 0.6];
+
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
 }
@@ -30,7 +32,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const p = getProject((await params).slug);
   if (!p) notFound();
   const next = nextProject(p.slug);
-  const [wide, left, right] = p.stills;
+  // The first still is the film's poster; with more than three, the frames below start from the second.
+  const frames = p.stills.length > 3 ? p.stills.slice(1) : p.stills;
+  const [wide, left, right, ...more] = frames;
   const story = [
     { label: "The brief", text: p.brief, lead: true },
     { label: "The idea", text: p.idea, lead: false },
@@ -146,6 +150,20 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
                 />
               </Reveal>
             </div>
+          )}
+          {more.length > 0 && (
+            <Reveal stagger={0.08} amount={0.1} className="grid grid-cols-1 items-start gap-[24px] pt-[8px] sm:grid-cols-2 lg:grid-cols-3 lg:gap-[32px] lg:pt-[24px]">
+              {more.map((f, i) => (
+                <RevealItem key={f.src} from={{ y: 50 }}>
+                  <Still
+                    still={f}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className={`${s.still} h-[220px] rounded-[20px] md:h-[260px] lg:h-[280px]`}
+                    style={{ transform: `rotate(${GALLERY_TILT[i % GALLERY_TILT.length]}deg)` }}
+                  />
+                </RevealItem>
+              ))}
+            </Reveal>
           )}
         </section>
       )}
