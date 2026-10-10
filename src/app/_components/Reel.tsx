@@ -2,10 +2,12 @@
 
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { EASE, Reveal } from "@/components/motion/Reveal";
 import { useScrollMotionAllowed } from "@/components/motion/useScrollMotion";
 import { REEL } from "@/shared/config";
 import { FullReelPlayer, HAS_FULL_REEL, ReelEmbed, ReelLoop } from "@/shared/reel";
+import { ScrollNudge, useReelLock } from "@/shared/reel-lock";
 import s from "../home.module.css";
 import { Eq, PlayIcon } from "./icons";
 import { PX } from "@/shared/ui";
@@ -49,7 +51,10 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
   const baseH = baseW / ASPECT;
   const targetW = Math.min(Math.sqrt(COVER * vw * vh * ASPECT), vw * 0.94, vh * 0.94 * ASPECT);
   const maxScale = vw ? Math.max(1, targetW / baseW) : 1;
-  const pin = allowed && !open && maxScale > 1.05;
+  // With the full reel, opening plays it full screen over the page and the card stays put; without it,
+  // the card swaps for the full-width band.
+  const band = open && !HAS_FULL_REEL;
+  const pin = allowed && !band && maxScale > 1.05;
 
   // 0 when the card is centred in the window and pins, 1 when it has grown and releases.
   const top = Math.round(vh / 2 - baseH / 2);
@@ -67,13 +72,13 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={open ? "open" : "closed"}
+              key={band ? "open" : "closed"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.55, ease: EASE } }}
               exit={{ opacity: 0, transition: { duration: 0.2 } }}
-              className={`flex w-full justify-center ${open ? "max-w-[1296px]" : "max-w-[760px]"}`}
+              className={`flex w-full justify-center ${band ? "max-w-[1296px]" : "max-w-[760px]"}`}
             >
-              {open ? (
+              {band ? (
                 <OpenReel onToggle={onToggle} />
               ) : (
                 <motion.div style={{ scale }} className="flex w-full">
@@ -93,6 +98,7 @@ export function Reel({ open, onToggle }: { open: boolean; onToggle: () => void }
           come after the pinned stretch (inside it, the card would only stay pinned longer), so the next
           chapter keeps its usual distance at every window size. */}
       {pin && <div aria-hidden="true" style={{ height: Math.ceil(((maxScale - 1) * baseH) / 2) }} />}
+      {open && HAS_FULL_REEL && <FullscreenReel onClose={onToggle} />}
     </section>
   );
 }
@@ -119,6 +125,43 @@ export function scrollToReel() {
   window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: reduced ? "auto" : "smooth" });
 }
 
+/**
+ * The complete showreel, full screen: the page goes full screen (where the browser allows it) and the
+ * player fills it. The page can't scroll underneath; trying to shows a nudge under the Close button.
+ * Close, Escape or leaving full screen ends it.
+ */
+function FullscreenReel({ onClose }: { onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const nudges = useReelLock(true, onClose);
+  useEffect(() => {
+    const back = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus({ preventScroll: true });
+    return () => back?.focus({ preventScroll: true });
+  }, []);
+  return createPortal(
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Freaky Mack Studios showreel"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.4, ease: EASE } }}
+      className="fixed inset-0 z-[1100] overscroll-none bg-black"
+    >
+      <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" />
+      <button
+        ref={closeRef}
+        type="button"
+        onClick={onClose}
+        className="absolute top-[20px] right-[20px] z-10 flex h-[44px] items-center gap-[10px] rounded-full border border-white/35 bg-black/55 px-[20px] text-[14px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white lg:top-[32px] lg:right-[32px]"
+      >
+        Close the reel <span aria-hidden="true">✕</span>
+      </button>
+      <ScrollNudge count={nudges} />
+    </motion.div>,
+    document.body,
+  );
+}
+
 function OpenReel({ onToggle }: { onToggle: () => void }) {
   const inner = (
     <>
@@ -137,24 +180,6 @@ function OpenReel({ onToggle }: { onToggle: () => void }) {
     "relative aspect-[1296/730] w-full max-w-[1296px] overflow-hidden rounded-[20px] border-0 bg-[#0d0d0d] p-0 text-left text-white lg:rounded-[28px]";
   const closeLabel =
     "absolute top-[16px] right-[18px] text-[12px] text-white/70 lg:top-auto lg:right-[40px] lg:bottom-[36px] lg:text-[13px]";
-
-  // The full reel: the player owns play/pause, the timeline, volume and fullscreen along the bottom, so the
-  // close control sits top-right, clear of them. Escape closes it too.
-  if (HAS_FULL_REEL) {
-    return (
-      <div className={box}>
-        <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" />
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute top-[12px] right-[12px] z-10 rounded-full border-0 bg-black/65 px-[14px] py-[8px] text-[12px] font-semibold text-white backdrop-blur-sm lg:top-[20px] lg:right-[20px] lg:text-[13px]"
-        >
-          Close the reel ✕
-        </button>
-        <CloseOnEscape onClose={onToggle} />
-      </div>
-    );
-  }
 
   // With an embed in place the band can't be one big button, so it gets its own close control.
   if (REEL.fullEmbedUrl) {
@@ -209,14 +234,4 @@ function ClosedReel({ onToggle }: { onToggle: () => void }) {
       </span>
     </div>
   );
-}
-
-/** Closes the open reel on Escape. */
-function CloseOnEscape({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  return null;
 }

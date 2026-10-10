@@ -68,10 +68,15 @@ page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
 
 console.log("Homepage interactions");
+await page.evaluate(() => window.scrollTo({ top: 700, behavior: "instant" }));
+const scrollBefore = await page.evaluate(() => window.scrollY);
 await page.getByRole("button", { name: "Open the showreel" }).click();
 const shows = (loc) => loc.waitFor({ state: "visible", timeout: 3000 }).then(() => true, () => false); // the reel fades between states
-const full = page.locator('#reel video[controls]');
-check(await shows(full), "reel card expands to the full showreel player");
+const theatre = page.getByRole("dialog", { name: "Freaky Mack Studios showreel" });
+const full = theatre.locator("video[controls]");
+check(await shows(full), "reel card opens the full showreel");
+const fsBox = await theatre.boundingBox();
+check(fsBox && fsBox.x === 0 && fsBox.y === 0 && fsBox.width === 1440 && fsBox.height === 900, `full reel fills the whole screen (${fsBox && `${fsBox.width}×${fsBox.height}`})`);
 const fullSrcs = await full.evaluate((v) => [...v.querySelectorAll("source")].map((s) => s.getAttribute("src") + "|" + (s.getAttribute("media") ?? "")));
 check(
   fullSrcs.length === 4 &&
@@ -80,19 +85,34 @@ check(
     /cloudfront\.net\/.*Showreel\.mp4\|$/.test(fullSrcs[2]) && /amazonaws\.com\/.*Showreel\.mp4\|$/.test(fullSrcs[3]),
   `full reel: CloudFront first, S3 fallback, 720p on phones, then full quality (${fullSrcs.length} sources)`,
 );
-check(await page.getByRole("button", { name: "Close the reel" }).first().isVisible(), "hero button label → Close the reel");
-await page.getByRole("button", { name: "Close the reel" }).last().click();
-check(await shows(page.getByRole("button", { name: "Open the showreel" })), "band closes back to the reel card");
+await page.mouse.move(720, 450);
+await page.mouse.wheel(0, 600);
+await page.waitForTimeout(400);
+const nudge = page.getByText("Close the reel to keep scrolling");
+check((await page.evaluate(() => window.scrollY)) === scrollBefore && (await nudge.isVisible()), "scrolling while the reel plays is held, and the close-the-reel nudge appears");
+const nb = await nudge.boundingBox();
+const cb = await page.getByRole("button", { name: "Close the reel" }).boundingBox();
+check(nb && cb && nb.y > cb.y + cb.height && nb.x + nb.width > 1440 - 120, "nudge sits top-right, just under the Close button");
+await page.waitForTimeout(2800);
+check(!(await nudge.isVisible()), "nudge goes away on its own");
+await page.getByRole("button", { name: "Close the reel" }).click();
+check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Close ends the full reel");
+check((await page.evaluate(() => [window.scrollY, getComputedStyle(document.documentElement).overflow])).join() === `${scrollBefore},visible`, "page is back where it was and scrolls again");
 await page.getByRole("button", { name: "Open the showreel" }).click();
 await shows(full);
 await page.keyboard.press("Escape");
-check(await shows(page.getByRole("button", { name: "Open the showreel" })), "Escape closes the full reel");
+check(await theatre.waitFor({ state: "detached", timeout: 3000 }).then(() => true, () => false), "Escape closes the full reel");
+await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 const loop = page.locator('[aria-label="Open the showreel"] video');
 await loop.waitFor({ state: "attached", timeout: 5000 }).catch(() => {});
 const loopState = await loop.evaluate((v) => ({ muted: v.muted, loop: v.loop, inline: v.playsInline, src: v.currentSrc, poster: v.poster })).catch(() => null);
 check(!!loopState && loopState.muted && loopState.loop && loopState.inline && /reel-loop-720\.(webm|mp4)$/.test(loopState.src) && /reel-poster\.jpg$/.test(loopState.poster), `homepage reel plays the silent 720p loop at 1440px (${loopState ? loopState.src.split("/").pop() : "no video"})`);
+// Chrome pauses muted autoplay while it's off screen (at the top of the page the card sits just below
+// the fold), so bring it into view first.
+await page.evaluate(() => window.scrollTo({ top: 400, behavior: "instant" }));
 await page.waitForTimeout(1200);
-check(await loop.evaluate((v) => !v.paused && v.currentTime > 0.3).catch(() => false), "the loop is actually playing");
+const loopNow = await loop.evaluate((v) => ({ paused: v.paused, t: +v.currentTime.toFixed(2), y: Math.round(v.getBoundingClientRect().top), sy: scrollY })).catch((e) => String(e));
+check(!loopNow.paused && loopNow.t > 0.3, `the loop is actually playing (${JSON.stringify(loopNow)})`);
 // The "new!" sticker hangs over the card's edge instead of being cut off by it.
 const stick = await page.evaluate(() => {
   const card = document.querySelector('[aria-label="Open the showreel"]').getBoundingClientRect();

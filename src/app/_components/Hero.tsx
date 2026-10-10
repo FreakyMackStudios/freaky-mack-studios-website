@@ -8,6 +8,7 @@ import { useSmoothScrollValue } from "@/components/motion/useScrollMotion";
 import s from "../home.module.css";
 import { PlayIcon } from "./icons";
 import { scrollToReel } from "./Reel";
+import { HAS_FULL_REEL } from "@/shared/reel";
 import { PX } from "@/shared/ui";
 
 export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleReel: () => void }) {
@@ -81,14 +82,13 @@ export function Hero({ reelOpen, onToggleReel }: { reelOpen: boolean; onToggleRe
             <button
               type="button"
               onClick={onToggleReel}
-              aria-expanded={reelOpen}
-              aria-controls="reel"
+              {...(HAS_FULL_REEL ? { "aria-haspopup": "dialog" as const } : { "aria-expanded": reelOpen, "aria-controls": "reel" })}
               className={`${s.pill} ${s.primary} flex h-[60px] items-center gap-[14px] rounded-full border border-[var(--inv-bg)] bg-[var(--inv-bg)] pr-[30px] pl-[22px] text-[15px] font-semibold text-[var(--inv-ink)]`}
             >
               <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[var(--accent)]">
                 <PlayIcon size={11} fill="var(--on-accent)" />
               </span>
-              {reelOpen ? "Close the reel" : "Press play"}
+              {reelOpen && !HAS_FULL_REEL ? "Close the reel" : "Press play"}
             </button>
             <a
               href="#reel"
