@@ -15,9 +15,16 @@ const BY_SLUG = new Map(PROJECTS.map((p) => [p.slug, p]));
 /**
  * "…and the brands that trusted us with the yes". Tablets and up: every brand, and those with a published
  * film open a card on hover, focus or click, with the film's cover and a link to it on YouTube.
- * Phones: just the ten major brands, as plain tags.
+ * Phones: just the ten major brands, as plain tags. Used on the homepage and on /studio.
  */
-export function ClientScatter() {
+export function ClientScatter({
+  label = "…and the brands that trusted us with the yes",
+  className = `${PB} ${PX}`,
+}: {
+  label?: string;
+  /** Section padding: each page keeps its own rhythm. */
+  className?: string;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   const closing = useRef<number | undefined>(undefined);
   const root = useRef<HTMLDivElement>(null);
@@ -50,9 +57,9 @@ export function ClientScatter() {
   }, [open]);
 
   return (
-    <section aria-label="Clients" className={`flex shrink-0 flex-col items-center gap-[32px] lg:gap-[48px] ${PB} ${PX}`}>
+    <section aria-label="Clients" className={`flex shrink-0 flex-col items-center gap-[32px] lg:gap-[48px] ${className}`}>
       <Reveal className={`${s.it} text-center text-[20px] text-[var(--muted-2)] lg:text-[26px]`}>
-        …and the brands that trusted us with the yes
+        {label}
       </Reveal>
       <div ref={root} className="w-full max-w-[1200px]">
         <Reveal stagger={0.04} delay={0.1} amount={0.2} className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-[20px] lg:gap-x-[18px] lg:gap-y-[28px]">
