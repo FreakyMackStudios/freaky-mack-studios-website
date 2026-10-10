@@ -82,9 +82,7 @@ button {
   animation: none;
   mix-blend-mode: normal;
 }
-html[data-vt="shrink"]::view-transition-old(root) { z-index: 2; clip-path: var(--vt-small); }
-html[data-vt="grow"]::view-transition-new(root) { clip-path: var(--vt-small); }
-html[data-vt="shrink"]::view-transition-new(root) { z-index: 1; }
+/* The circle itself (keyframes with the exact size and position) is injected per switch by ThemeToggle. */
 [data-theme-toggle] { view-transition-name: theme-toggle; }
 ::view-transition-group(theme-toggle) { z-index: 3; animation: none; }
 /* No cross-fade of two switch images: the live switch shows straight away and its knob slides. */

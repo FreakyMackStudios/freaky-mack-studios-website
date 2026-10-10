@@ -261,15 +261,22 @@ check((await page.getByRole("button", { name: /accent|^Ground/ }).count()) === 0
 const toggle = page.getByRole("switch", { name: "Dark theme" });
 const tb = await toggle.boundingBox();
 check(tb && tb.x + tb.width > 1440 - 40 && tb.y + tb.height > 900 - 40 && (await toggle.getAttribute("aria-checked")) === "true", "theme switch sits bottom-right, on (Dark)");
+// The circle is a plain CSS animation on the transition layer (no CSS variables or script-driven animation
+// there, which Safari handled unevenly: the light page popped in at once going to Light).
+const circleOn = () => page.evaluate(() => new Promise((res) => setTimeout(() => res(document.getAnimations().filter((a) => a.animationName === "fm-vt").map((a) => a.effect.pseudoElement)), 120)));
 await toggle.click();
+const growOn = await circleOn();
+check(growOn.length === 1 && growOn[0] === "::view-transition-new(root)", `to Light: the new (light) page grows out of the switch as a CSS-animated circle (${growOn})`);
 await page.waitForTimeout(1000);
 check((await root(page).getAttribute("data-theme")) === "light" && (await bg()) === "rgb(255, 255, 255)" && (await toggle.getAttribute("aria-checked")) === "false", "switch → Light: data-theme=light on white");
 // On a cold start the transition's snapshot can take longer, so wait for it to finish rather than assume 1 s.
 const vtDone = await page.waitForFunction(() => !document.documentElement.hasAttribute("data-vt"), null, { timeout: 4000 }).then(() => true, () => false);
-check(vtDone, "the circle transition finishes and cleans up");
+check(vtDone && (await page.locator("style[data-vt-style]").count()) === 0, "the circle transition finishes and cleans up");
 await page.reload({ waitUntil: "networkidle" });
 check((await root(page).getAttribute("data-theme")) === "light", "reload keeps Light");
 await toggle.click();
+const shrinkOn = await circleOn();
+check(shrinkOn.length === 1 && shrinkOn[0] === "::view-transition-old(root)", `to Dark: the old (light) page shrinks back into the switch (${shrinkOn})`);
 await page.waitForTimeout(1000);
 check((await root(page).getAttribute("data-theme")) === "dark" && (await bg()) === "rgb(10, 10, 10)", "switch → Dark again");
 
