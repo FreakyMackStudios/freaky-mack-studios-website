@@ -147,7 +147,7 @@ function FullscreenReel({ onClose }: { onClose: () => void }) {
       animate={{ opacity: 1, transition: { duration: 0.4, ease: EASE } }}
       className="fixed inset-0 z-[1100] overscroll-none bg-black"
     >
-      <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" />
+      <FullReelPlayer className="absolute inset-0 h-full w-full bg-black object-contain" onEnded={onClose} />
       <button
         ref={closeRef}
         type="button"

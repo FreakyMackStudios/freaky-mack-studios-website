@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { REEL } from "@/shared/config";
-import { FullReelSources } from "@/shared/reel";
+import { FullReelSources, leaveVideoFullscreen } from "@/shared/reel";
 import { ScrollNudge, enterFullscreen, useReelLock } from "@/shared/reel-lock";
 import c from "./cinema.module.css";
 
@@ -181,7 +181,11 @@ export function CinemaOverlay({ cinema }: { cinema: Cinema }) {
         preload="none"
         controlsList="nodownload"
         aria-label="Freaky Mack Studios showreel"
-        onEnded={close}
+        onEnded={(e) => {
+          // The reel is over: take the visitor straight back to the page.
+          leaveVideoFullscreen(e.currentTarget);
+          close();
+        }}
       >
         <FullReelSources />
       </video>
