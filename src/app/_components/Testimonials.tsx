@@ -124,7 +124,8 @@ function Card({ t, look, tilt }: { t: Testimonial; look: (typeof LOOKS)[number];
       <span aria-hidden="true" className={`${s.serif} block h-[44px] text-[88px] leading-[0.9] ${look.mark}`}>
         “
       </span>
-      <blockquote className={`${s.serif} m-0 mt-[18px] flex-1 text-[21px] leading-[1.3] tracking-[-0.005em] text-pretty lg:text-[23px]`}>
+      {/* Body type for the quote itself: easy to read at length. The serif is only the quote mark. */}
+      <blockquote className="m-0 mt-[18px] flex-1 text-[16px] leading-[1.65] font-medium text-pretty lg:text-[18px]">
         {t.quote}
       </blockquote>
       <figcaption className={`mt-[28px] flex items-center gap-[14px] border-t pt-[22px] ${look.rule}`}>
