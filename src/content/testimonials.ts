@@ -24,9 +24,7 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     quote:
-      // Reworded at the studio's request (the first version matched Kashif Mirani's almost word for word).
-      // Needs Rajpal Yadav's or his team's approval before it goes live.
-      "I’ll be honest, I was hesitant going into this shoot. But Izaan and the Freaky Mack team put me at ease from the very first shot, listened to what I had in mind and brought their own ideas to it. The shoot turned out to be a genuinely fun experience, and the film came out better than I expected.",
+      "A good team makes all the difference on set, and Freaky Mack understands that. The atmosphere was comfortable, the crew was well prepared, and everyone knew their role. It was a pleasure working with a team that combines creativity with such a professional approach.",
     name: "Rajpal Yadav",
     role: "Actor",
   },

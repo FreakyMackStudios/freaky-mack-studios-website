@@ -58,7 +58,7 @@ Source: `src/content/testimonials.ts` (shown by `src/app/_components/Testimonial
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 2.7 | ~~`"[Client testimonial — two or three lines in their own words.]"`~~ | 8 cards | Real quotes from clients, used **with their written permission** | CLIENT | **Done:** Abhishek Patni (NoughtOne), Rajpal Yadav, Mallika Ghoshal (Development Alternatives), Prabhsimran Singh, Fila Team, Kashif Mirani, Pradhyumn Jaat, Bombay Times Team. Rajpal Yadav's quote was reworded (it matched Kashif Mirani's almost word for word) around his first hesitation and how the shoot turned out: **needs his or his team's approval before launch**. |
+| 2.7 | ~~`"[Client testimonial — two or three lines in their own words.]"`~~ | 8 cards | Real quotes from clients, used **with their written permission** | CLIENT | **Done:** Abhishek Patni (NoughtOne), Rajpal Yadav, Mallika Ghoshal (Development Alternatives), Prabhsimran Singh, Fila Team, Kashif Mirani, Pradhyumn Jaat, Bombay Times Team. Rajpal Yadav's quote replaced with the new one the client sent (the first matched Kashif Mirani's almost word for word). |
 | 2.8 | ~~`[Name]`~~ | every card | Person quoted | CLIENT | Done |
 | 2.9 | ~~`[Role], [Brand]`~~ | every card | Their role or company | CLIENT | Done as given (Rajpal Yadav shown as "Actor"; Fila and Bombay Times teams as "Client") |
 | 2.10 | Avatar | every card | Square headshot (or brand logo for the teams), at least 240px, **provided or approved by the person** | CLIENT | Open: every card shows initials until a photo arrives. Add it as `photo` in `src/content/testimonials.ts`, file in `public/testimonials/` |
