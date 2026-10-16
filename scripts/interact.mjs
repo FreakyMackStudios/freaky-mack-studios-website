@@ -231,6 +231,23 @@ await page.mouse.move(5, 5);
 await page.waitForTimeout(600);
 check((await card.evaluate((a) => getComputedStyle(a.closest("[id^='brand-card-']")).opacity)) === "0", "the brand card fades away when the pointer leaves");
 await page.evaluate(() => (document.documentElement.style.scrollBehavior = ""));
+// Testimonials: eight real quotes in cards of one size, stepped through with the arrows.
+const quotes = page.locator('section[aria-label="What clients say"]');
+await quotes.scrollIntoViewIfNeeded();
+await page.waitForTimeout(1000);
+const qInfo = await quotes.evaluate((sec) => {
+  const figs = [...sec.querySelectorAll("figure")];
+  return { n: figs.length, sizes: new Set(figs.map((f) => `${f.offsetWidth}x${f.offsetHeight}`)).size, text: sec.textContent };
+});
+check(qInfo.n === 8 && qInfo.sizes === 1 && !/\[(Client|Name|Role|Brand)/.test(qInfo.text) && /Rajpal Yadav/.test(qInfo.text) && /Bombay Times Team/.test(qInfo.text), `testimonials: 8 quotes, every card the same size, no placeholders (${qInfo.n} cards, ${qInfo.sizes} size)`);
+const prevQ = quotes.getByRole("button", { name: "Previous testimonial" });
+const nextQ = quotes.getByRole("button", { name: "Next testimonial" });
+check((await prevQ.isDisabled()) && (await quotes.getByText("01 / 08").isVisible()), "testimonials start at 01 / 08 with Previous off");
+await nextQ.click();
+await page.waitForFunction(() => document.querySelector('section[aria-label="What clients say"]')?.textContent.includes("02 / 08"), null, { timeout: 3000 }).catch(() => {});
+check((await quotes.getByText("02 / 08").count()) === 1 && !(await prevQ.isDisabled()), "Next steps one card and the counter follows");
+await prevQ.click();
+await page.waitForTimeout(800);
 // Work list: every title on one line, at desktop and tablet widths, and the active row slides (transform) instead of re-flowing.
 for (const w of [1440, 1024, 768]) {
   await page.setViewportSize({ width: w, height: 900 });

@@ -37,6 +37,10 @@
 .chip:hover { transform: translateY(-2px); }
 .ep { transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .ep:hover { transform: translateY(-6px) rotate(-1deg); }
+.quoteCard { transform: rotate(var(--tilt, 0deg)); transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.quoteCard:hover { transform: translateY(-6px) rotate(0deg); }
+.noBar { scrollbar-width: none; }
+.noBar::-webkit-scrollbar { display: none; }
 .face { transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .face:hover { transform: rotate(-6deg) scale(1.05); }
 .reelCard { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
