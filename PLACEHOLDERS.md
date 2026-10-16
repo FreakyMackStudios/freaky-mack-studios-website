@@ -53,15 +53,15 @@ Paths are relative to the repo root.
 
 - **2.6 `[ STILL — {title} ]`** (`src/app/_components/WorkPreview.tsx`): the preview image that changes on hover. The first project still is reused here. **Supplied by:** CLIENT (covered by section 5).
 
-### Chapter 03: Testimonials (×2)
-Source: `src/content/testimonials.ts` (shown by `src/app/_components/Testimonials.tsx`)
+### Chapter 03: Testimonials (×8)
+Source: `src/content/testimonials.ts` (shown by `src/app/_components/Testimonials.tsx`, a row of equal cards with arrows)
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 2.7 | `"[Client testimonial — two or three lines in their own words.]"` | 2 cards | Real quotes from clients, used **with their written permission** | CLIENT | 1: **Done** (Abhishek Patni, NoughtOne) <br> 2: still open |
-| 2.8 | `[Name]` | card 2 | Person quoted | CLIENT | 1: Abhishek Patni <br> 2: |
-| 2.9 | `[Role], [Brand]` | card 2 | Their job title and company | CLIENT | 1: NoughtOne (job title not given, so none shown) <br> 2: |
-| 2.10 | Avatar | both cards | Headshot or brand logo, square, at least 200px | CLIENT | 1: shows initials "AP" until a photo or logo arrives <br> 2: |
+| 2.7 | ~~`"[Client testimonial — two or three lines in their own words.]"`~~ | 8 cards | Real quotes from clients, used **with their written permission** | CLIENT | **Done:** Abhishek Patni (NoughtOne), Rajpal Yadav, Mallika Ghoshal (Development Alternatives), Prabhsimran Singh, Fila Team, Kashif Mirani, Pradhyumn Jaat, Bombay Times Team. Rajpal Yadav's quote was reworded (it matched Kashif Mirani's almost word for word) around his first hesitation and how the shoot turned out: **needs his or his team's approval before launch**. |
+| 2.8 | ~~`[Name]`~~ | every card | Person quoted | CLIENT | Done |
+| 2.9 | ~~`[Role], [Brand]`~~ | every card | Their role or company | CLIENT | Done as given (Rajpal Yadav shown as "Actor"; Fila and Bombay Times teams as "Client") |
+| 2.10 | Avatar | every card | Square headshot (or brand logo for the teams), at least 240px, **provided or approved by the person** | CLIENT | Open: every card shows initials until a photo arrives. Add it as `photo` in `src/content/testimonials.ts`, file in `public/testimonials/` |
 
 ### Chapter 04: Podcast
 **Done (coming soon):** the podcast hasn't launched, so Chapter 04 is now a type-only "Coming soon." block with an "On air soon" sticker and a "Want to be on it? Say hello" email link. No episode art, titles or player. **Nothing needed until the podcast launches.**
@@ -287,7 +287,7 @@ Contact details already filled in and real: freakymackstudios@gmail.com, +91 971
 | Behind-the-scenes photo | 1 | Landscape JPG, at least 2400px wide | Studio |
 | Founder portrait | 1 | Portrait JPG, at least 1600px tall | People, Home |
 | Crew portraits | 8 (3 also used on Home) | Portrait JPG, same crop and light | People, Home |
-| Testimonial avatars | 2 | Square, at least 200px, headshot or brand logo | Home |
+| Testimonial avatars | 8 | Square, at least 240px, headshot or brand logo, provided or approved by the person | Home |
 | Episode thumbnails | 6 (3 newest on Home) | 16:9 | Originals, Home |
 | Slate posters | 3 | 2:3 | Originals |
 | Client logos (optional) | Up to 7 | SVG/PNG, **only with each brand's permission** | Home and Studio client stickers (currently text) |

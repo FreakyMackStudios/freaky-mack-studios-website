@@ -30,30 +30,39 @@ export function ThemeToggle() {
     const html = document.documentElement;
     // The circle ends (or starts) exactly hidden behind the switch, which is opaque, so it slips under it
     // smoothly instead of showing through or popping at the last moment.
-    const small = `circle(${box.height / 2}px at ${x}px ${y}px)`;
-    const big = `circle(${r}px at ${x}px ${y}px)`;
-    // The same end states in CSS (globals.css), so no frame ever shows the layer unclipped: not before the
-    // animation starts, and not in the frame between it ending and the transition being torn down (that
-    // frame was the white flash going to Dark).
-    html.style.setProperty("--vt-small", small);
-    html.dataset.vt = toLight ? "grow" : "shrink";
+    const small = `circle(${(box.height / 2).toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
+    const big = `circle(${Math.ceil(r)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
+    // Plain CSS keyframes with the exact circle, injected for this one transition. They apply from the very
+    // first frame the transition layers exist, so the new page is never shown unclipped at the start (the
+    // light page popping in at once going to Light, in Safari). The layer's own clip-path is also set to
+    // the end state: a clip-path animation runs on the compositor, and in the frame between it finishing
+    // and the transition being torn down the fill can drop, which showed the old light page whole (the
+    // white flash going to Dark). No CSS variables or script-driven animations on the transition layers,
+    // which browsers support unevenly.
+    const layer = toLight ? "new" : "old";
+    const style = document.createElement("style");
+    style.textContent = `
+      html::view-transition-${layer}(root) {
+        z-index: 2;
+        clip-path: ${toLight ? big : small};
+        animation: fm-vt ${toLight ? 750 : 650}ms ${toLight ? "cubic-bezier(0.65, 0, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.45, 1)"} both;
+      }
+      html::view-transition-${toLight ? "old" : "new"}(root) { z-index: 1; }
+      @keyframes fm-vt {
+        from { clip-path: ${toLight ? small : big}; }
+        to { clip-path: ${toLight ? big : small}; }
+      }`;
+    // A quick second click starts a new transition before this one is torn down: only the latest one's
+    // style stays, and only the latest one clears the flag.
+    document.querySelectorAll("style[data-vt-style]").forEach((el) => el.remove());
+    style.dataset.vtStyle = "";
+    document.head.appendChild(style);
+    const id = String(Date.now());
+    html.dataset.vt = id;
     const t = document.startViewTransition(apply);
-    t.ready
-      .then(() => {
-        html.animate(
-          { clipPath: toLight ? [small, big] : [big, small] },
-          {
-            duration: toLight ? 750 : 650,
-            easing: toLight ? "cubic-bezier(0.65, 0, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.45, 1)",
-            pseudoElement: toLight ? "::view-transition-new(root)" : "::view-transition-old(root)",
-            fill: "forwards",
-          },
-        );
-      })
-      .catch(() => {});
     t.finished.finally(() => {
-      delete html.dataset.vt;
-      html.style.removeProperty("--vt-small");
+      style.remove();
+      if (html.dataset.vt === id) delete html.dataset.vt;
     });
   };
 
