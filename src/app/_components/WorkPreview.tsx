@@ -42,6 +42,8 @@ const rowWidths = (stills: Still[], gap = GAP) => {
 
 function mosaic(stills: Still[]) {
   const [a, b, c] = stills;
+  // One frame (a film whose cover is its YouTube thumbnail): about the size of the others' big frame.
+  if (stills.length === 1) return { kind: "row" as const, widths: [64] };
   if (!a || !b || !c || stills.some((st) => st.height > st.width)) {
     return { kind: "row" as const, widths: rowWidths(stills) };
   }

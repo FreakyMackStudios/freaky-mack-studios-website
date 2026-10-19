@@ -33,7 +33,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   if (!p) notFound();
   const next = nextProject(p.slug);
   // The first still is the film's poster; with more than three, the frames below start from the second.
-  const frames = p.stills.length > 3 ? p.stills.slice(1) : p.stills;
+  // A YouTube thumbnail cover isn't one of our frames, so a film with only that has no frames section.
+  const own = p.stills.filter((st) => !st.fallback);
+  const frames = own.length > 3 ? own.slice(1) : own;
   const [wide, left, right, ...more] = frames;
   const tall = !!wide && isTall(wide);
   const story = [
@@ -85,11 +87,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       <section aria-label="Film" className={`pb-[96px] lg:pb-[140px] ${PX}`}>
         {/* The player grows and straightens into place as it scrolls in. */}
         <ScrollIn scale={0.88} rotate={-2} y={70}>
-          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} poster={p.stills[0]} />
+          <FilmPlayer videoUrl={p.videoUrl} duration={p.duration} poster={p.stills[0]} title={p.title} />
         </ScrollIn>
       </section>
 
+      {/* Credits and story, as far as the studio has given them; a film with neither skips this section. */}
+      {(p.credits.length > 0 || story.length > 0) && (
       <section className={`grid grid-cols-1 gap-y-[56px] pb-[96px] lg:grid-cols-12 lg:gap-x-[32px] lg:pb-[160px] ${PX}`}>
+        {p.credits.length > 0 && (
         <Reveal stagger={0.05} amount={0.15} className={`flex flex-col gap-[20px] ${story.length ? "lg:col-span-4" : "lg:col-span-6"}`}>
           <RevealItem>
             <Label>Credits</Label>
@@ -103,6 +108,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             ))}
           </dl>
         </Reveal>
+        )}
         {/* Only the parts of the story the studio has given; a film with none keeps just its credits. */}
         {story.length > 0 && (
           <Reveal stagger={0.15} amount={0.2} className="flex flex-col gap-[40px] lg:col-span-7 lg:col-start-6 lg:gap-[56px]">
@@ -119,6 +125,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           </Reveal>
         )}
       </section>
+      )}
 
       {wide && (
         <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>

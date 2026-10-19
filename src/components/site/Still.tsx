@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { FallbackImage } from "./FallbackImage";
 import type { CSSProperties, ReactNode } from "react";
 import type { Still as StillData } from "@/content/stills";
 
@@ -47,7 +48,12 @@ export function Still({
       {!natural && (
         <Image src={still.src} alt="" aria-hidden fill sizes={sizes} className="scale-125 object-cover opacity-60 blur-2xl" />
       )}
-      <Image src={still.src} alt={still.alt} fill sizes={sizes} priority={priority} className={natural ? "object-cover" : "object-contain"} />
+      {still.fallback ? (
+        // A YouTube thumbnail cover: falls back to the always-present smaller thumbnail when needed.
+        <FallbackImage src={still.src} fallback={still.fallback} alt={still.alt} fill sizes={sizes} priority={priority} className="object-cover" />
+      ) : (
+        <Image src={still.src} alt={still.alt} fill sizes={sizes} priority={priority} className={natural ? "object-cover" : "object-contain"} />
+      )}
       {children}
     </div>
   );

@@ -5,10 +5,11 @@
  * Only what the studio has confirmed is listed: a missing field (year, logline, brief, a credit) is left
  * out and the page simply doesn't show it. Films the studio filled in completely carry all three story
  * sections; the copy expands their answers but sticks to the facts they gave.
- * `videoUrl`: a YouTube/Vimeo/Stream embed URL; empty shows the board's [ FILM ] placeholder.
+ * `videoUrl`: the film's YouTube embed (from src/content/youtube.ts); empty shows the board's [ FILM ] placeholder.
  * `source`: the film's path in the content library, so each upload can be matched to its project.
  */
 import { STILLS, type Still } from "./stills";
+import { YOUTUBE_LINKS, youtubeId } from "./youtube";
 
 export type Category =
   | "Ad film"
@@ -30,19 +31,27 @@ export type Project = {
   bg: string;
   logline?: string;
   videoUrl: string;
-  duration: string;
+  /** Running time, when known (films added from the YouTube links sheet don't have one yet). */
+  duration?: string;
   /** Frame shape of the master file, e.g. "16:9", "9:16" (vertical), "2.39:1". */
   aspect: string;
-  source: string;
+  /** The film's path in the content library, when it has one. */
+  source?: string;
   brief?: string;
   idea?: string;
   onScreen?: string;
   credits: { role: string; who: string }[];
-  /** Three frames from the film (src/content/stills.ts); empty until the film's stills come in. */
+  /**
+   * Frames from the film (src/content/stills.ts); the first is the cover. A film without its own stills
+   * uses its YouTube thumbnail as the cover (marked by `fallback`), and has no frames gallery.
+   */
   stills: Still[];
-  /** On the site only once it has both stills and written content; otherwise it's listed as "Publishing soon". */
+  /**
+   * On the site when it can be watched (it has a YouTube video), or when it has both stills and written
+   * content; otherwise it's listed by name under "Publishing soon".
+   */
   published: boolean;
-  /** The film on YouTube. Until the studio sends each link, this is YouTube's home page. */
+  /** The film on YouTube (src/content/youtube.ts); YouTube's home page for films without a link yet. */
   youtube: string;
 };
 
@@ -69,17 +78,33 @@ type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills" | 
   credits: [string, string][];
 };
 
+/**
+ * A film's YouTube thumbnail as its cover. "maxresdefault" (1280×720) is the sharpest; YouTube serves a
+ * small grey stand-in when a video has none, so `fallback` ("hqdefault", always there, letterboxed to 4:3
+ * and trimmed back to 16:9 by the cover box) takes over then (src/components/site/Still.tsx).
+ */
+const youtubeCover = (id: string, title: string): Still => ({
+  src: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+  fallback: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+  width: 1280,
+  height: 720,
+  alt: `${title}: the film’s YouTube thumbnail`,
+});
+
 const film = ({ blank, ...f }: Film, i: number): Project => {
-  const stills = STILLS[f.slug] ?? [];
+  const link = f.youtube ?? YOUTUBE_LINKS[f.slug];
+  const id = youtubeId(link);
+  const own = STILLS[f.slug] ?? [];
   return {
     ...f,
     bg: BGS[i % BGS.length],
-    videoUrl: "",
+    // Played on the project page from YouTube (privacy-enhanced embed, no related videos from other channels).
+    videoUrl: id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1` : "",
     aspect: f.aspect ?? "16:9",
     credits: f.credits.map(([role, who]) => ({ role, who })),
-    stills,
-    published: stills.length > 0 && !blank,
-    youtube: f.youtube ?? YOUTUBE_PLACEHOLDER,
+    stills: own.length ? own : id ? [youtubeCover(id, f.title)] : [],
+    published: !!id || (own.length > 0 && !blank),
+    youtube: link ?? YOUTUBE_PLACEHOLDER,
   };
 };
 
@@ -808,12 +833,20 @@ const FILMS: Film[] = [
     ],
     source: "Short Films/TLP_Teaser_Final.mp4",
   },
+  // Added from the studio's video links sheet (Oct 2026): only the title, the format and the film on
+  // YouTube so far, so their pages show the film and nothing else until the studio sends more.
+  { slug: "zypp-electric-02", title: "Zypp Electric App — Film 02", who: "Zypp Electric", category: "Ad film", credits: [["Client", "Zypp Electric"]] },
+  { slug: "neeta-lulla-show", title: "Neeta Lulla Show", category: "Event film", credits: [] },
+  { slug: "times-power-women-awards", title: "Times Power Women Awards", category: "Event film", credits: [] },
+  { slug: "times-men-of-the-year", title: "Times Men of the Year", category: "Event film", credits: [] },
+  { slug: "narendra-kumar", title: "Narendra Kumar", category: "Fashion film", credits: [] },
+  { slug: "sang-tu-chalen", title: "Sang Tu Chalen", category: "Music video", credits: [] },
 ];
 
 const ALL_PROJECTS: Project[] = FILMS.map(film);
 /**
- * The films on the site: only those with both stills and written content. Their pages, the Work grid,
- * the homepage six, "Film 03 of N" and Next up all use this list.
+ * The films on the site: those with a YouTube video, plus those with both stills and written content.
+ * Their pages, the Work grid, the homepage six, "Film 03 of N" and Next up all use this list.
  */
 export const PROJECTS: Project[] = ALL_PROJECTS.filter((p) => p.published);
 /** Everything else waits, shown on /work by name only under "Publishing soon". */

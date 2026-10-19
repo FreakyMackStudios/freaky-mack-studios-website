@@ -62,6 +62,16 @@ async function contrastSweep(page) {
 }
 
 const browser = await chromium.launch();
+// YouTube is out of reach in some test environments: thumbnails are answered with one of the site's own
+// 16:9 frames, and the player itself isn't loaded. Every page and context the checks open goes through this.
+const youtubeStandIn = async (target) => {
+  await target.route("https://i.ytimg.com/**", (r) => r.fulfill({ path: "public/work/dbs-lifestyle/01.jpg", contentType: "image/jpeg" }));
+  await target.route(/youtube(-nocookie)?\.com\//, (r) => r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>YouTube</title>" }));
+};
+const origNewPage = browser.newPage.bind(browser);
+browser.newPage = async (...a) => { const pg = await origNewPage(...a); await youtubeStandIn(pg); return pg; };
+const origNewContext = browser.newContext.bind(browser);
+browser.newContext = async (...a) => { const c = await origNewContext(...a); await youtubeStandIn(c); return c; };
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 // Enquiries never leave the test: the studio's Google Apps Script endpoint is answered here instead, and
 // what the forms send is kept for the checks. `enquiryReply` switches the answer (ok, or a failure).
@@ -235,7 +245,7 @@ const cardOk = await card.evaluate((a) => {
   const img = a.querySelector("img[alt]:not([alt=''])");
   return { op: getComputedStyle(box).opacity, href: a.getAttribute("href"), target: a.target, img: !!img && img.naturalWidth > 0 };
 });
-check(cardOk.op === "1" && cardOk.href === "https://www.youtube.com/" && cardOk.target === "_blank" && cardOk.img, `hovering a brand shows its film's cover, linking to YouTube (${JSON.stringify(cardOk)})`);
+check(cardOk.op === "1" && cardOk.href === "https://youtu.be/nbpE1OmMjmU" && cardOk.target === "_blank" && cardOk.img, `hovering a brand shows its film's cover, linking to the film on YouTube (${JSON.stringify(cardOk)})`);
 await page.mouse.move(5, 5);
 await page.waitForTimeout(600);
 check((await card.evaluate((a) => getComputedStyle(a.closest("[id^='brand-card-']")).opacity)) === "0", "the brand card fades away when the pointer leaves");
@@ -347,22 +357,26 @@ await page.getByRole("radio", { name: "Fashion films" }).click();
 await page.waitForTimeout(900); // leaving cards animate out, the rest glide into place
 const settled = await page.evaluate(() => [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')].map((a) => getComputedStyle(a.parentElement).opacity));
 check(settled.every((o) => o === "1"), `filtered cards settle fully visible (${settled.join(", ")})`);
-check((await cards.count()) === 4 && allCount === 26 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 4 of ${allCount}, with no visible count`);
-check(!(await page.getByRole("radio", { name: "Music videos" }).count()), "formats with no published film have no filter chip");
+check((await cards.count()) === 6 && allCount === 42 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 6 of ${allCount}, with no visible count`);
+check(!(await page.getByRole("radio", { name: "Documentaries" }).count()) && (await page.getByRole("radio", { name: "Music videos" }).count()) === 1, "formats with no published film have no filter chip (Documentaries); Music videos now has films");
 await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "Event films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
 await page.getByRole("radio", { name: "All work" }).click();
 await cards.first().click();
 await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
 check(await page.getByText(`Film 01 of ${allCount}`).isVisible(), `project counter reads Film 01 of ${allCount}`);
-const film = page.getByRole("button", { name: "Play the film" });
+// The film plays from YouTube: pressing play swaps the poster for the YouTube player.
+const film = page.getByRole("button", { name: "Play McDonald’s Chicken McWings" });
 await film.click();
-check((await page.getByRole("button", { name: "Pause the film" }).getAttribute("aria-pressed")) === "true" && (await page.getByText(/Now playing/).isVisible()), "project play toggle → Now playing");
+const player = page.locator('iframe[src*="youtube-nocookie.com/embed/-Qhrky4ojhw"]');
+check((await player.count()) === 1 && /autoplay=1/.test((await player.getAttribute("src")) ?? "") && (await player.getAttribute("title")) === "McDonald’s Chicken McWings on YouTube", "play → the film's YouTube player (privacy-enhanced, autoplay)");
 check((await page.locator('a[href="/work/mcdonalds-veg-surprise/"], a[href="/work/mcdonalds-veg-surprise"]').count()) > 0, "Next up links to the second film");
 // A film the studio filled in completely shows every part of its story; one it left partly blank shows only what it gave.
 const storyOf = () => page.evaluate(() => ["The brief", "The idea", "On screen"].filter((l) => [...document.querySelectorAll("main *")].some((e) => e.children.length === 0 && e.textContent.trim() === l)));
 check((await storyOf()).length === 3, "a fully filled film shows its brief, idea and on-screen story");
 // Stills: the film's frames load as real images (poster + three frames), with alt text from the extraction.
+// (Reloaded first: pressing play above swapped the poster for the YouTube player.)
+await page.reload({ waitUntil: "networkidle" });
 await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } });
 await page.waitForTimeout(800);
 const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
@@ -376,6 +390,22 @@ await page.goto(`${base}/work/mcdonalds-chicken-mcwings/`, { waitUntil: "network
 await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
 const partial = await page.evaluate(() => document.querySelector("main").innerText);
 check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /R Balki/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
+// A film added from the YouTube links sheet: its YouTube thumbnail is the cover, it plays from YouTube, and
+// with no credits, story or frames of its own the page shows just the film.
+await page.goto(`${base}/work/neeta-lulla-show/`, { waitUntil: "networkidle" });
+const ytOnly = await page.evaluate(() => {
+  const main = document.querySelector("main");
+  const cover = main.querySelector('img[src*="i.ytimg.com/vi/ii-EsNFShMY/"]');
+  return {
+    cover: !!cover && cover.complete && cover.naturalWidth > 120,
+    credits: /Credits/.test(main.innerText),
+    frames: /Frames from the film/.test(main.innerText),
+    title: /NEETA LULLA SHOW/i.test(main.innerText),
+  };
+});
+check(ytOnly.cover && ytOnly.title && !ytOnly.credits && !ytOnly.frames, `a YouTube-only film: thumbnail cover, title, no empty credits or frames (${JSON.stringify(ytOnly)})`);
+await page.getByRole("button", { name: "Play Neeta Lulla Show" }).click();
+check((await page.locator('iframe[src*="youtube-nocookie.com/embed/ii-EsNFShMY"]').count()) === 1, "a YouTube-only film plays from YouTube");
 await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
 // No still is cropped: every cover-fitted image sits in a box of its own shape (16:9, 9:16, 4:3, 2.39:1…).
 async function croppedOn() {
@@ -393,12 +423,18 @@ check(cropWork.length === 0, `work cards show each still whole, in its own shape
 await page.evaluate(() => scrollTo(0, 0));
 const workText = await page.evaluate(() => document.querySelector("main").innerText);
 check(!/\[(Client|Year|STILL)/.test(workText), "work cards show real stills and no [Client], [Year] or [ STILL ] placeholders");
-// Films without stills or without written content are listed by name only, under "Publishing soon", and get no page.
+// Films with no public video and no finished write-up are listed by name only, under "Publishing soon", and
+// get no page. Films with a YouTube video are on the site.
 const soon = page.locator('section[aria-label="Publishing soon"]');
-check((await soon.getByText("pTron", { exact: true }).count()) === 1 && (await soon.locator("a").count()) === 0, "unfinished films are listed by name under Publishing soon, without links");
-check((await page.request.get(`${base}/work/ptron/`)).status() === 404, "an unpublished film has no page yet");
+const soonText = await soon.innerText();
+check(
+  ["Rudraprayag", "Zykaz Interview", "Soanbhadra", "PC Jeweller × Sonalika Sahay", "The Last Presence — Teaser"].every((n) => soonText.includes(n)) &&
+    !/Neeta Lulla|Albela|pTron/.test(soonText) && (await soon.locator("a").count()) === 0,
+  "Publishing soon: only the five films with no public video, by name, without links",
+);
+check((await page.request.get(`${base}/work/rudraprayag/`)).status() === 404 && (await page.request.get(`${base}/work/ptron/`)).status() === 200, "an unpublished film has no page; a film with a YouTube video does");
 check((await page.getByRole("link", { name: "Work" }).first().getAttribute("aria-current")) === "page", "nav marks Work active on a project page");
-await page.goto(`${base}/work/s-and-s-trailer/`, { waitUntil: "networkidle" });
+await page.goto(`${base}/work/sang-tu-chalen/`, { waitUntil: "networkidle" });
 check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
 
 console.log("Originals");
@@ -718,7 +754,7 @@ console.log("Motion (other pages)");
     op: getComputedStyle(a.closest("[id^='brand-card-']")).opacity,
     href: a.getAttribute("href"),
   }));
-  check(studioCard.op === "1" && studioCard.href === "https://www.youtube.com/", `Studio brand hover opens the film card (${JSON.stringify(studioCard)})`);
+  check(studioCard.op === "1" && studioCard.href === "https://youtu.be/-Qhrky4ojhw", `Studio brand hover opens the film card, linking to the film (${JSON.stringify(studioCard)})`);
   // Footer: each contact detail has its icon, and the three phones share one line, split by "|".
   for (const w of [1440, 1024, 768]) {
     await sp.setViewportSize({ width: w, height: 900 });

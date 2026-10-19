@@ -4,7 +4,14 @@
  * Letterbox bars burnt into some masters are trimmed off; the picture itself is never scaled.
  * Generated from the extraction manifest. Films missing here had no source file on the studio's Mac yet.
  */
-export type Still = { src: string; width: number; height: number; alt: string };
+export type Still = {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  /** Only on a YouTube thumbnail cover: the image to use if `src` turns out to be YouTube's grey stand-in. */
+  fallback?: string;
+};
 
 export const STILLS: Record<string, Still[]> = {
   "mcdonalds-chicken-mcwings": [
