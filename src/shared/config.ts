@@ -22,7 +22,9 @@ export const CONTACT = {
    * ".../exec" address here, or set NEXT_PUBLIC_ENQUIRY_ENDPOINT. It isn't secret: it ships in the page.
    * Empty: "Send it over" opens the visitor's email app with the enquiry filled in instead.
    */
-  enquiryEndpoint: process.env.NEXT_PUBLIC_ENQUIRY_ENDPOINT || "",
+  enquiryEndpoint:
+    process.env.NEXT_PUBLIC_ENQUIRY_ENDPOINT ||
+    "https://script.google.com/macros/s/AKfycbxMQOiT0qjLX2jbjlMRdNaEtNHGDPoQKpSOH0xWaazROUzB9Fw2vJj5P8bYvys4Vfod/exec",
 };
 
 /** The studio (content form, section 1). */
