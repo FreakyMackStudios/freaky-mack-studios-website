@@ -201,12 +201,12 @@ Source: `src/content/originals.ts` and the posters in `src/app/(site)/originals/
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 8.1 | `[ Portrait — Izaan ]` | `src/app/(site)/people/page.tsx:57` | Founder portrait (the same photo works on the homepage), at least 1600px tall | CLIENT | |
+| 8.1 | `[ Portrait — Izaan ]` | `src/app/(site)/people/page.tsx:57` | Founder portrait (the same photo works on the homepage), at least 1600px tall | CLIENT | **Done** (`public/people/izaan-khan-portrait.webp`, 1207×1600) |
 | 8.2 | `"[A line from Izaan on why he started Freaky Mack Studios.]"` | `people/page.tsx:82` | Founder quote, one sentence | CLIENT | |
 | 8.3 | `[Two or three lines of bio — how he got into film, six years at Freaky Mack, what he wants the studio to make next.]` | `people/page.tsx:86` | Founder bio | CLIENT | |
 | 8.4 | Founder Instagram and LinkedIn | `src/shared/config.ts:35-36` | Izaan's personal profile links. They currently point to the platforms' home pages. | CLIENT | |
 | 8.5 | `[Name]` · `[Role]` ×8 | `src/content/people.ts:7-15` | Core crew. The count of 8 can change. | CLIENT | See the table below |
-| 8.6 | `[ Photo ]` ×8 | `people/page.tsx:114` | Crew portraits, same crop for all | CLIENT | |
+| 8.6 | `[ Photo ]` ×8 | `people/page.tsx:114` | Crew portraits, same crop for all | CLIENT | **Done** for all four crew: AB Rahim Shah, Ashok Kumar Naik, Tridip K Maity, Salan Lamare (`public/people/`). Bigger photos of Rahim and Ashok would still help (theirs are 372×569 and 493×677). |
 | 8.7 | `[One line on the directors, cinematographers and editors Freaky Mack works with project by project.]` | `people/page.tsx:138` | Intro line for the collaborators section | CLIENT | |
 
 | Crew # | Name | Role |

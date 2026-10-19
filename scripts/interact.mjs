@@ -626,6 +626,22 @@ console.log("Motion (other pages)");
   await sp.waitForTimeout(1800);
   const h1 = await sp.evaluate(() => getComputedStyle(document.querySelector("h1").closest("[data-reveal]")).opacity);
   check(h1 === "1", "People hero plays in on load");
+  // Team photos: every crew member (and the founder) has a loaded portrait; no "[ PHOTO ]" left.
+  for (const r of ["/people/", "/"]) {
+    await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
+    await sp.evaluate(async () => {
+      for (const img of document.querySelectorAll('img[src*="/people/"]')) {
+        img.loading = "eager";
+        await img.decode().catch(() => {});
+      }
+    });
+    const team = await sp.evaluate(() => ({
+      imgs: [...document.querySelectorAll('img[src*="/people/"]')].map((i) => [i.alt.split(",")[0], i.naturalWidth > 0]),
+      placeholder: document.body.innerText.includes("[ PHOTO ]"),
+    }));
+    const want = r === "/" ? 4 : 5;
+    check(team.imgs.length === want && team.imgs.every(([, ok]) => ok) && !team.placeholder, `${r}: team portraits all load, no [ PHOTO ] left (${team.imgs.map(([n]) => n).join(", ")})`);
+  }
   await ctx.close();
   // Without JavaScript nothing is hidden on any page.
   const nojs = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
