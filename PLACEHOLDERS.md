@@ -263,7 +263,7 @@ These are drafts under India's DPDP Act 2023. **A lawyer must review both before
 | # | Item | Where | Purpose | Answer |
 |---|---|---|---|---|
 | 11.1 | **Domain** | `NEXT_PUBLIC_SITE_URL` (Vercel env), `src/shared/config.ts:8` | The live address. It feeds the sitemap, robots.txt, social previews and Terms. Buy it and point it at Vercel. | |
-| 11.2 | **Enquiry form endpoint** | `NEXT_PUBLIC_FORMSPREE_ENDPOINT` (Vercel env), used in `src/shared/enquiry.ts:54` | Without it, "Send it over" opens the visitor's email app instead of sending. Create a Formspree form that delivers to freakymackstudios@gmail.com. | |
+| 11.2 | **Enquiry form endpoint** | `CONTACT.enquiryEndpoint` in `src/shared/config.ts` (or `NEXT_PUBLIC_ENQUIRY_ENDPOINT`) | The Google Apps Script web app URL that saves enquiries to a Google Sheet and emails the studio (free). Setup: `docs/enquiry-form-google-sheet.md`. Without it, "Send it over" opens the visitor's email app and asks them to press Send. | STUDIO | |
 | 11.3 | **Hide the theme picker at launch** | `NEXT_PUBLIC_PITCH_MODE=off` (Vercel env) | The Light/Dark/accent picker is for pitching only. Also tell me the final theme and accent (currently Dark + Grey). | |
 | 11.4 | **Vercel plan** | Vercel dashboard | Hobby (free) is for non-commercial use, so move to Pro before the client launch. | |
 | 11.5 | **Cloudflare Stream** | Cloudflare dashboard, then `REEL` in `config.ts` and the project videos | Buy the **Starter Bundle ($5/month)**, upload the films, then send me your `customer-xxxx` code and each video's ID. Allow only your domain and `*.vercel.app` to play them. | Customer code: <br> Video IDs: |

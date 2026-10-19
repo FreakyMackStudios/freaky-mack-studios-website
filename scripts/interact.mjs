@@ -63,6 +63,15 @@ async function contrastSweep(page) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+// Enquiries never leave the test: the studio's Google Apps Script endpoint is answered here instead, and
+// what the forms send is kept for the checks. `enquiryReply` switches the answer (ok, or a failure).
+const enquiries = [];
+let enquiryReply = { ok: true };
+await page.route("https://script.google.com/**", async (route) => {
+  const req = route.request();
+  enquiries.push({ type: req.headers()["content-type"], body: JSON.parse(req.postData() || "{}") });
+  await route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(enquiryReply) });
+});
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -418,11 +427,55 @@ await page.getByLabel("The story so far").fill("A launch film.");
 await page.getByRole("button", { name: "Send it over →" }).click();
 check((await page.getByText("That email doesn’t look quite right.").isVisible()), "bad email is caught");
 await page.getByLabel("Email").fill("test@brand.com");
-await page.getByRole("button", { name: "Send it over →" }).click();
-await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
-check(/\/thanks\/?$/.test(new URL(page.url()).pathname), `valid submit lands on /thanks (${page.url()})`);
+const sendMode = await page.locator("form[data-send]").getAttribute("data-send");
+if (sendMode === "post") {
+  // The endpoint fails: the visitor is told, stays put and keeps what they typed.
+  enquiryReply = { ok: false, error: "test" };
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  await page.getByText("That didn’t go through.", { exact: false }).waitFor({ timeout: 5000 }).catch(() => {});
+  check((await page.getByText("That didn’t go through.", { exact: false }).isVisible()) && /start-a-project/.test(page.url()) && (await page.getByLabel("Your name").inputValue()) === "Test Person", "a failed send says so, stays on the form and keeps the answers");
+  enquiryReply = { ok: true };
+  enquiries.length = 0;
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  const sent = enquiries[0];
+  check(/\/thanks\/?$/.test(new URL(page.url()).pathname), `a confirmed send lands on /thanks (${page.url()})`);
+  check(enquiries.length === 1 && /^text\/plain/.test(sent.type) && sent.body.name === "Test Person" && sent.body.email === "test@brand.com" && sent.body.brief === "A launch film." && sent.body.format === "an animated explainer" && /agency/.test(sent.body.audience) && !!sent.body.timing && sent.body.source === "Start a project" && /New enquiry/.test(sent.body.subject), `the enquiry carries every answer, as a simple text/plain request (${JSON.stringify(sent?.body)})`);
+} else {
+  // No endpoint in this build: the email app opens and the page asks them to press Send there.
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  await page.waitForTimeout(800);
+  check(/start-a-project/.test(page.url()) && (await page.getByText("Press Send there", { exact: false }).isVisible()), "without an endpoint: the email app opens and the page asks them to press Send (no Thanks yet)");
+  await page.goto(`${base}/thanks/`, { waitUntil: "networkidle" });
+}
 check(await page.getByText("Cut. Print. Talk soon.").isVisible(), "Thanks footer sign-off");
 check((await page.getByRole("link", { name: "Start a project" }).first().getAttribute("aria-current")) === "page", "nav CTA marked current on Thanks");
+// The homepage form sends the same way, and drops what a bot fills into the hidden field.
+const homeForm = async () => {
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  const f = page.locator("#contact form");
+  await f.scrollIntoViewIfNeeded();
+  await f.getByLabel("Your name").fill("Home Tester");
+  await f.getByLabel("Email").fill("home@brand.com");
+  await f.getByLabel("The story so far").fill("A 30s ad film.");
+  return f;
+};
+if (sendMode === "post") {
+  enquiries.length = 0;
+  await (await homeForm()).getByRole("button", { name: "Send it over" }).click();
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  check(/\/thanks\/?$/.test(new URL(page.url()).pathname) && enquiries.length === 1 && enquiries[0].body.source === "Homepage" && enquiries[0].body.name === "Home Tester", `homepage form sends (source: Homepage) and lands on /thanks`);
+  enquiries.length = 0;
+  const f = await homeForm();
+  await f.locator('input[name="website"]').evaluate((el) => { el.value = "http://spam.example"; });
+  await f.getByRole("button", { name: "Send it over" }).click();
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  check(enquiries.length === 0 && /\/thanks\/?$/.test(new URL(page.url()).pathname), "a bot that fills the hidden field sees Thanks, but nothing is sent");
+} else {
+  await (await homeForm()).getByRole("button", { name: "Send it over" }).click();
+  await page.waitForTimeout(800);
+  check(new URL(page.url()).pathname === "/" && (await page.getByText("Press Send there", { exact: false }).isVisible()), "homepage form without an endpoint: asks them to press Send in their email app");
+}
 
 console.log("Legal, 404");
 await page.goto(`${base}/privacy/`, { waitUntil: "networkidle" });

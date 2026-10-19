@@ -7,7 +7,8 @@ import { ChipGroup } from "@/components/site/ChipGroup";
 import { pillAccent } from "@/components/site/blocks";
 import s from "@/components/site/site.module.css";
 import { AUDIENCES, FORMATS, WHENS, bare } from "@/content/enquiry-options";
-import { useEnquiryForm } from "@/shared/enquiry";
+import { Honeypot } from "@/components/site/Honeypot";
+import { SEND_MODE, useEnquiryForm } from "@/shared/enquiry";
 
 const FMT_OPTS = FORMATS.map((f) => ({ id: f.id, label: bare(f.phrase) }));
 const WHO_OPTS = AUDIENCES.map((a) => ({ id: a.id, label: bare(a.phrase) }));
@@ -91,8 +92,10 @@ export function EnquiryForm() {
       onSubmit={onSubmit}
       noValidate
       aria-label="Start a project"
-      className="flex flex-col gap-[44px] rounded-[24px] bg-[var(--surface)] p-[24px] sm:p-[40px] lg:gap-[56px] lg:rounded-[32px] lg:p-[64px]"
+      data-send={SEND_MODE}
+      className="relative flex flex-col gap-[44px] rounded-[24px] bg-[var(--surface)] p-[24px] sm:p-[40px] lg:gap-[56px] lg:rounded-[32px] lg:p-[64px]"
     >
+      <Honeypot />
       {/* Pills use 1em corners, not 999px: identical on one line, and a long typed answer wraps into a rounded box. */}
       <p className="m-0 text-[26px] leading-[1.45] font-extrabold tracking-[-0.03em] md:text-[34px] lg:text-[40px]" aria-live="polite">
         You need{" "}

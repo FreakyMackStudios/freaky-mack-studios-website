@@ -2,7 +2,8 @@
 
 import { Reveal } from "@/components/motion/Reveal";
 import { CONTACT } from "@/shared/config";
-import { useEnquiryForm } from "@/shared/enquiry";
+import { Honeypot } from "@/components/site/Honeypot";
+import { SEND_MODE, useEnquiryForm } from "@/shared/enquiry";
 import s from "../home.module.css";
 import { CHAPTER, PX } from "@/shared/ui";
 
@@ -38,8 +39,10 @@ export function Contact() {
         onSubmit={onSubmit}
         noValidate
         aria-label="Start a project"
-        className="flex flex-col gap-[20px] rounded-[28px] bg-[var(--surface)] p-[24px] [transform:rotate(1deg)] sm:p-[36px]"
+        data-send={SEND_MODE}
+        className="relative flex flex-col gap-[20px] rounded-[28px] bg-[var(--surface)] p-[24px] [transform:rotate(1deg)] sm:p-[36px]"
       >
+        <Honeypot />
         <div className="flex flex-col gap-[8px]">
           <label htmlFor="fm-name" className={LABEL}>Your name</label>
           <input id="fm-name" name="name" type="text" required aria-invalid={!!errors.name} aria-describedby={errors.name ? "fm-name-err" : undefined} placeholder="Hi, I’m…" className={`${FIELD} h-[52px]`} />
