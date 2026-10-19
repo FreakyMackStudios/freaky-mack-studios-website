@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Reveal } from "@/components/motion/Reveal";
+import { Still } from "@/components/site/Still";
+import { ON_LOCATION } from "@/content/bts";
 import { SAY_HELLO_EVENT } from "@/components/site/SayHelloLink";
 import { CONTACT } from "@/shared/config";
 import { Honeypot } from "@/components/site/Honeypot";
@@ -105,6 +107,10 @@ export function Contact() {
         <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[16px] text-[var(--ink-2)]`}>
           or WhatsApp us · {CONTACT.whatsappNumber} ↗
         </a>
+        {/* Directing on location: fills the space beside the form on large screens. */}
+        <div className="mt-[24px] hidden max-w-[540px] [transform:rotate(-2deg)] lg:block">
+          <Still still={ON_LOCATION} sizes="540px" className="rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.3)]" />
+        </div>
       </Reveal>
       <Reveal from={{ y: 80 }} delay={0.12} className="mt-[48px] lg:col-span-5 lg:col-start-8 lg:mt-[96px]">
       <form

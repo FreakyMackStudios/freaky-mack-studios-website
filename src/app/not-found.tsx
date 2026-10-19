@@ -6,6 +6,8 @@ import { DraggableMark } from "@/components/motion/DraggableMark";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, Intro, Kicker, PX } from "@/components/site/ui";
+import { Still } from "@/components/site/Still";
+import { OUT_OF_FOCUS } from "@/content/bts";
 
 export const metadata: Metadata = {
   title: "Scene missing",
@@ -50,6 +52,18 @@ export default function NotFound() {
         <RevealItem className="relative mt-[8px] flex flex-wrap justify-center gap-[12px] sm:gap-[16px]">
           <Link href="/" className={BTN_ACCENT}>Back to the start</Link>
           <Link href="/work" className={BTN_OUTLINE}>See the work</Link>
+        </RevealItem>
+        {/* A take that didn't make the edit either: out of focus, marked NG ("no good"). */}
+        <RevealItem from={{ y: 60, rotate: 8 }} className="relative mt-[24px] w-full max-w-[560px] lg:mt-[32px]">
+          <div className="[transform:rotate(3deg)]">
+            <Still still={OUT_OF_FOCUS} sizes="(min-width: 640px) 560px, 90vw" className="rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.25)]" />
+          </div>
+          <span
+            aria-hidden="true"
+            className={`${s.it} absolute -top-[14px] -left-[10px] rounded-full bg-[var(--accent)] px-[16px] py-[5px] text-[18px] text-[var(--on-accent)] [transform:rotate(-6deg)] lg:text-[20px]`}
+          >
+            NG take
+          </span>
         </RevealItem>
       </Reveal>
     </SiteShell>

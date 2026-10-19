@@ -171,7 +171,7 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 6.1 | `[ On set — behind the scenes still ]` | `src/app/(site)/studio/page.tsx:69` | Large behind-the-scenes photo, landscape, at least 2400px wide | CLIENT | |
+| 6.1 | ~~`[ On set — behind the scenes still ]`~~ | `src/app/(site)/studio/page.tsx` | Large behind-the-scenes photo, landscape, at least 2400px wide | CLIENT | **Done:** from the studio's photo folder (Oct 2026), with a strip of eight more frames (`src/content/bts.ts`, `public/bts/`) |
 | 6.2 | `on set, [Year]` | `studio/page.tsx:81` | Year that photo was taken | CLIENT | |
 | 6.3 | ~~`Chapter 1 · [Year]`~~ | `src/content/studio.ts:3` | **Removed:** the timeline cards show "Chapter 1–4" with no years | — | Done |
 | 6.4 | `Chapter 2 · [Year]` | `studio.ts:4` | Year McDonald's, Google and Adidas Originals came on board | CLIENT | |
@@ -284,7 +284,7 @@ Contact details already filled in and real: freakymackstudios@gmail.com, +91 971
 | Full showreel | 1 | Master file (for Stream) or YouTube link | Home reel |
 | Project films | 8 | Master files (for Stream) or YouTube/Vimeo links | Project pages |
 | Project stills | 3 per project (24) | 16:9 JPG, at least 2400px wide | Project pages, /work cards, homepage preview |
-| Behind-the-scenes photo | 1 | Landscape JPG, at least 2400px wide | Studio |
+| Behind-the-scenes photo | 1 | Landscape JPG, at least 2400px wide | Studio | **Done** |
 | Founder portrait | 1 | Portrait JPG, at least 1600px tall | People, Home |
 | Crew portraits | 8 (3 also used on Home) | Portrait JPG, same crop and light | People, Home |
 | Testimonial avatars | 8 | Square, at least 240px, headshot or brand logo, provided or approved by the person | Home |

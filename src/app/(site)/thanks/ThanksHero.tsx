@@ -8,6 +8,8 @@ import { DraggableMark } from "@/components/motion/DraggableMark";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, Intro, PX } from "@/components/site/ui";
 import { CONTACT } from "@/shared/config";
+import { Still } from "@/components/site/Still";
+import { WRAP } from "@/content/bts";
 import { curtainIsUp, uncoverScreen } from "@/shared/send-flight";
 
 type From = "top" | "bottom" | "left" | "right";
@@ -78,6 +80,12 @@ export function ThanksHero() {
           <Link href="/work" className={BTN_OUTLINE}>See the work</Link>
         </Fly>
       </div>
+      {/* Wrap day: a polaroid of the crew at the end of a shoot. */}
+      <Fly from="bottom" delay={t(5.5)} className="mt-[16px] flex">
+        <div className="w-[200px] bg-white p-[10px] pb-[34px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] [transform:rotate(5deg)] lg:w-[230px]">
+          <Still still={WRAP} sizes="230px" />
+        </div>
+      </Fly>
     </section>
   );
 }

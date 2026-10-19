@@ -8,6 +8,8 @@ import { ScrollIn } from "@/components/motion/ScrollIn";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, PX } from "@/components/site/ui";
 import { COLLABORATORS, CREW, FOUNDER_BIO, PORTRAITS } from "@/content/people";
+import { CREW_TOGETHER } from "@/content/bts";
+import { Still } from "@/components/site/Still";
 
 export const metadata: Metadata = {
   title: "People",
@@ -143,32 +145,40 @@ export default function PeoplePage() {
         </Reveal>
       </section>
 
-      <section aria-label="Collaborators" className={`grid grid-cols-1 items-start gap-y-[36px] lg:grid-cols-12 lg:gap-x-[32px] ${SECTION}`}>
-        <Reveal className="flex flex-col gap-[16px] lg:col-span-5">
-          <Label>The wider crew</Label>
-          <h2 className="m-0 text-[34px] leading-[1.08] font-extrabold tracking-[-0.03em] md:text-[42px] lg:text-[48px]">
-            Every film brings its own crew.
-          </h2>
-        </Reveal>
-        {/* The role chips pop in one after another; each chip keeps its tilt inside the animated item. */}
-        <Reveal
-          as="ul"
-          stagger={0.06}
-          delay={0.1}
-          amount={0.3}
-          className="m-0 flex list-none flex-wrap gap-[12px] p-0 lg:col-span-6 lg:col-start-7 lg:gap-[14px] lg:pt-[12px]"
-        >
-          {COLLABORATORS.map((c) => (
-            <RevealItem as="li" key={c.label} from={{ y: 30, scale: 0.6, rotate: c.tilt * 4 }} className="flex">
-            <span
-              className={`${s.chipTilt} rounded-full border px-[18px] py-[10px] text-[16px] font-medium lg:px-[22px] lg:py-[12px] lg:text-[18px] ${CHIP[c.style ?? "plain"]}`}
-              style={{ transform: `rotate(${c.tilt}deg)` }}
-            >
-              {c.label}
-            </span>
-            </RevealItem>
-          ))}
-        </Reveal>
+      <section aria-label="Collaborators" className={`grid grid-cols-1 items-center gap-y-[48px] lg:grid-cols-12 lg:gap-x-[32px] ${SECTION}`}>
+        <div className="flex flex-col gap-[28px] lg:col-span-6 lg:gap-[36px]">
+          <Reveal className="flex flex-col gap-[16px]">
+            <Label>The wider crew</Label>
+            <h2 className="m-0 text-[34px] leading-[1.08] font-extrabold tracking-[-0.03em] md:text-[42px] lg:text-[48px]">
+              Every film brings its own crew.
+            </h2>
+          </Reveal>
+          {/* The role chips pop in one after another; each chip keeps its tilt inside the animated item. */}
+          <Reveal
+            as="ul"
+            stagger={0.06}
+            delay={0.1}
+            amount={0.3}
+            className="m-0 flex list-none flex-wrap gap-[12px] p-0 lg:gap-[14px]"
+          >
+            {COLLABORATORS.map((c) => (
+              <RevealItem as="li" key={c.label} from={{ y: 30, scale: 0.6, rotate: c.tilt * 4 }} className="flex">
+              <span
+                className={`${s.chipTilt} rounded-full border px-[18px] py-[10px] text-[16px] font-medium lg:px-[22px] lg:py-[12px] lg:text-[18px] ${CHIP[c.style ?? "plain"]}`}
+                style={{ transform: `rotate(${c.tilt}deg)` }}
+              >
+                {c.label}
+              </span>
+              </RevealItem>
+            ))}
+          </Reveal>
+        </div>
+        {/* The crew together on set: the whole photo, in its own shape. */}
+        <ScrollIn scale={0.9} rotate={5} y={60} className="lg:col-span-5 lg:col-start-8">
+          <div className={`${s.still} mx-auto max-w-[460px] [transform:rotate(2deg)]`}>
+            <Still still={CREW_TOGETHER} sizes="(min-width: 1024px) 460px, 90vw" className="rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.18)]" />
+          </div>
+        </ScrollIn>
       </section>
 
       <InverseSlab

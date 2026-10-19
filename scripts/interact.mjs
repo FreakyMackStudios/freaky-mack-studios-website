@@ -771,6 +771,17 @@ console.log("Motion (other pages)");
   await sp.waitForTimeout(1800);
   const h1 = await sp.evaluate(() => getComputedStyle(document.querySelector("h1").closest("[data-reveal]")).opacity);
   check(h1 === "1", "People hero plays in on load");
+  // Behind-the-scenes photos (src/content/bts.ts): each page's photos load, at a real size, with alt text.
+  for (const [r, want] of [["/studio/", 9], ["/people/", 1], ["/", 1], ["/start-a-project/", 1], ["/thanks/", 1], ["/missing-page/", 1]]) {
+    await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
+    const shots = await sp.evaluate(async () => {
+      const imgs = [...document.querySelectorAll('img[src*="/bts/"]')];
+      for (const i of imgs) { i.loading = "eager"; i.scrollIntoView({ block: "center" }); await i.decode().catch(() => {}); }
+      return imgs.map((i) => ({ ok: i.naturalWidth > 0 && i.getBoundingClientRect().width > 60, alt: i.alt.length > 10 }));
+    });
+    check(shots.length === want && shots.every((x) => x.ok && x.alt), `${r}: ${want} behind-the-scenes photo${want > 1 ? "s" : ""} load at a real size, with alt text (${shots.length} found)`);
+  }
+  await sp.setViewportSize({ width: 1440, height: 900 });
   // Team photos: every crew member (and the founder) has a loaded portrait; no "[ PHOTO ]" left.
   for (const r of ["/people/", "/"]) {
     await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
