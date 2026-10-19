@@ -13,8 +13,8 @@ const FRAME = "relative block overflow-hidden rounded-[20px] bg-[#0d0d0d] text-l
  */
 export function FilmPlayer({ videoUrl, duration, poster, title }: { videoUrl: string; duration?: string; poster?: StillData; title?: string }) {
   const [playing, setPlaying] = useState(false);
-  // The player takes the film's own shape (from its poster frame), so nothing is cropped. A vertical film
-  // is capped at 80% of the window height and centred.
+  // The player takes the film's shape (16:9, or 9:16 for a vertical film, from its poster frame). A
+  // vertical film is capped at 80% of the window height and centred.
   const shape: CSSProperties = poster
     ? {
         aspectRatio: `${poster.width} / ${poster.height}`,
@@ -48,7 +48,7 @@ export function FilmPlayer({ videoUrl, duration, poster, title }: { videoUrl: st
     >
       {poster ? (
         <>
-          <Still still={poster} fit="contain" sizes="100vw" priority className="absolute! inset-0" />
+          <Still still={poster} sizes="100vw" priority className="absolute! inset-0 h-full" />
           <div aria-hidden="true" className="absolute inset-0 bg-black/25" />
         </>
       ) : (

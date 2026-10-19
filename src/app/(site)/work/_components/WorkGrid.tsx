@@ -19,7 +19,7 @@ function Card({ p, i }: { p: Project; i: number }) {
       className={`${s.card} flex flex-col gap-[18px]`}
       style={{ transform: `rotate(${TILTS[i % 4]}deg)` }}
     >
-      {/* The cover keeps the film's own shape (16:9, 9:16, 4:3…); vertical films are capped in height. */}
+      {/* The cover is 16:9, or 9:16 for a vertical film; vertical films are capped in height. */}
       <Still still={p.stills[0]} maxVh={isTall(p.stills[0]) ? 72 : undefined} sizes="(min-width: 768px) 50vw, 100vw" className="rounded-[24px]">
         <span className="absolute top-[20px] left-[20px] rounded-full bg-[var(--accent)] px-[16px] py-[7px] text-[13px] font-semibold text-[var(--on-accent)] [transform:rotate(-4deg)]">
           {p.category}

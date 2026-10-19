@@ -381,10 +381,12 @@ await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight
 await page.waitForTimeout(800);
 const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
 check(frames.length === 7 && frames.every((f) => f.ok && f.alt.length > 5), `all 7 McWings stills load at full resolution with alt text (${frames.length} images)`);
+// Project images come in film shapes only: 16:9, or 9:16 for vertical films. McWings (2.55:1 frames),
+// Harshita Gaur (vertical) and Zykaz Cafe (4:3) cover each case.
 for (const slug of ["mcdonalds-chicken-mcwings", "harshita-gaur", "zykaz-cafe"]) {
   await page.goto(`${base}/work/${slug}/`, { waitUntil: "networkidle" });
-  const c = await croppedOn();
-  check(c.length === 0, `${slug}: every frame shown whole, in its own shape (${c.length} cropped)`);
+  const c = await offShape();
+  check(c.length === 0, `${slug}: every frame sits in a 16:9 (or 9:16 vertical) box (${c.length} off${c[0] ? ": " + JSON.stringify(c[0]) : ""})`);
 }
 await page.goto(`${base}/work/mcdonalds-chicken-mcwings/`, { waitUntil: "networkidle" });
 await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
@@ -407,19 +409,19 @@ check(ytOnly.cover && ytOnly.title && !ytOnly.credits && !ytOnly.frames, `a YouT
 await page.getByRole("button", { name: "Play Neeta Lulla Show" }).click();
 check((await page.locator('iframe[src*="youtube-nocookie.com/embed/ii-EsNFShMY"]').count()) === 1, "a YouTube-only film plays from YouTube");
 await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
-// No still is cropped: every cover-fitted image sits in a box of its own shape (16:9, 9:16, 4:3, 2.39:1…).
-async function croppedOn() {
+// Project images: every cover-fitted image sits in a 16:9 box, or 9:16 when the frame is vertical.
+async function offShape() {
   return page.evaluate(async () => {
     for (let y = 0; y < document.body.scrollHeight; y += 500) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
     await new Promise((r) => setTimeout(r, 600));
     return [...document.querySelectorAll("main img")]
-      .filter((i) => i.alt && getComputedStyle(i).objectFit === "cover" && i.naturalWidth)
-      .map((i) => ({ box: i.clientWidth / i.clientHeight, img: i.naturalWidth / i.naturalHeight, src: i.getAttribute("src") }))
-      .filter((r) => Math.abs(r.box / r.img - 1) > 0.015);
+      .filter((i) => i.alt && getComputedStyle(i).objectFit === "cover" && i.naturalWidth && i.clientHeight)
+      .map((i) => ({ box: +(i.clientWidth / i.clientHeight).toFixed(3), tall: i.naturalHeight > i.naturalWidth, src: i.getAttribute("src") }))
+      .filter((r) => Math.abs(r.box / (r.tall ? 9 / 16 : 16 / 9) - 1) > 0.015);
   });
 }
-const cropWork = await croppedOn();
-check(cropWork.length === 0, `work cards show each still whole, in its own shape (${cropWork.length} cropped${cropWork[0] ? ": " + cropWork[0].src : ""})`);
+const offWork = await offShape();
+check(offWork.length === 0, `work cards: every cover is 16:9 (or 9:16 vertical) (${offWork.length} off${offWork[0] ? ": " + JSON.stringify(offWork[0]) : ""})`);
 await page.evaluate(() => scrollTo(0, 0));
 const workText = await page.evaluate(() => document.querySelector("main").innerText);
 check(!/\[(Client|Year|STILL)/.test(workText), "work cards show real stills and no [Client], [Year] or [ STILL ] placeholders");

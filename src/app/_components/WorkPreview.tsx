@@ -30,7 +30,7 @@ const ratio = (st: Still) => st.width / st.height;
 
 /**
  * The mosaic under the list: the cover large on the left, two frames stacked on the right. Widths are
- * solved from each frame's own shape so the right column ends exactly level with the cover: nothing is
+ * solved from each frame's shape (16:9 or 9:16) so the right column ends exactly level with the cover: nothing is
  * cropped and nothing is left hanging. Vertical films (or fewer than three frames) sit in one even row.
  */
 /** Widths (in %) for one even row: every frame the same height, widths in proportion to their shapes. */

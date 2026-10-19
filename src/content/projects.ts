@@ -91,6 +91,13 @@ const youtubeCover = (id: string, title: string): Still => ({
   alt: `${title}: the film’s YouTube thumbnail`,
 });
 
+/**
+ * Project images are shown in film shapes only: 16:9, or 9:16 for vertical films. A frame of another shape
+ * (cinemascope 2.39:1, 4:3…) fills that shape, centred, so its edges are trimmed (the studio's call, Oct
+ * 2026: one clean grid over every frame shown whole).
+ */
+const filmShape = (st: Still): Still => (st.height > st.width ? { ...st, width: 1080, height: 1920 } : { ...st, width: 1920, height: 1080 });
+
 const film = ({ blank, ...f }: Film, i: number): Project => {
   const link = f.youtube ?? YOUTUBE_LINKS[f.slug];
   const id = youtubeId(link);
@@ -102,7 +109,7 @@ const film = ({ blank, ...f }: Film, i: number): Project => {
     videoUrl: id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1` : "",
     aspect: f.aspect ?? "16:9",
     credits: f.credits.map(([role, who]) => ({ role, who })),
-    stills: own.length ? own : id ? [youtubeCover(id, f.title)] : [],
+    stills: (own.length ? own : id ? [youtubeCover(id, f.title)] : []).map(filmShape),
     published: !!id || (own.length > 0 && !blank),
     youtube: link ?? YOUTUBE_PLACEHOLDER,
   };

@@ -148,7 +148,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             </Reveal>
           ) : (
             <>
-              {/* Every frame keeps its own shape. The wide frame grows in, the pair comes in from each side. */}
+              {/* Frames are 16:9 (or 9:16 for vertical films). The wide frame grows in, the pair comes in from each side. */}
               <ScrollIn scale={0.92} y={90}>
                 <Still still={wide} sizes="100vw" className={`${s.still} rounded-[20px] lg:rounded-[28px]`} style={{ transform: "rotate(-0.8deg)" }} />
               </ScrollIn>

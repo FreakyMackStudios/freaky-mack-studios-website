@@ -8,10 +8,11 @@ export const ratioOf = (s: StillData) => `${s.width} / ${s.height}`;
 export const isTall = (s: StillData) => s.height > s.width;
 
 /**
- * A film still, never cropped.
+ * A film still.
  *
- * - `fit="natural"` (default): the box takes the still's own shape (16:9 stays 16:9, 9:16 stays 9:16,
- *   1:1 stays 1:1) and the frame fills it exactly. `className` sets width, radius and tilt, not height.
+ * - `fit="natural"` (default): the box takes the shape given by the still's width and height, and the frame
+ *   fills it. For a photo that is its own shape (shown whole); project frames are given 16:9 or 9:16
+ *   (src/content/projects.ts), so a frame of another shape fills that box, centred. `className` sets width, radius and tilt, not height.
  *   `maxVh` caps how tall it gets (tall frames shrink in width and centre, keeping their shape).
  * - `fit="contain"`: for a box whose size is fixed elsewhere: the whole frame shows, centred, over a
  *   blurred copy of itself that fills the rest.
