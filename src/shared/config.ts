@@ -17,7 +17,8 @@ export const CONTACT = {
   replyTime: "24 hours",
   /**
    * Where both enquiry forms send: the Google Apps Script web app that emails freakymackstudios@gmail.com
-   * and saves a row in the studio's Google Sheet (setup: docs/enquiry-form-google-sheet.md). Paste its
+   * and saves a row in the Google Sheet on zellarinternational@gmail.com (setup:
+   * docs/enquiry-form-google-sheet.md). Paste its
    * ".../exec" address here, or set NEXT_PUBLIC_ENQUIRY_ENDPOINT. It isn't secret: it ships in the page.
    * Empty: "Send it over" opens the visitor's email app with the enquiry filled in instead.
    */

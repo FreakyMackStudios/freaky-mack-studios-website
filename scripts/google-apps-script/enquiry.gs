@@ -1,19 +1,22 @@
 /**
  * Freaky Mack Studios: website enquiries → Google Sheet + email.
  *
- * Paste this whole file into the Apps Script editor of the studio's "Website enquiries" Google Sheet
- * (Extensions → Apps Script), then deploy it as a web app. Step-by-step: docs/enquiry-form-google-sheet.md.
+ * Paste this whole file into the Apps Script editor of the "Website enquiries" Google Sheet, owned by
+ * zellarinternational@gmail.com (Extensions → Apps Script), then deploy it as a web app from that account.
+ * Step-by-step: docs/enquiry-form-google-sheet.md.
  *
  * Both website forms (homepage and /start-a-project) POST a JSON enquiry here. For each one it:
  *   1. checks it (name, a valid email and the brief are required; the hidden "website" field must be empty),
  *   2. adds a row to the "Enquiries" tab (made, with a header row, on the first enquiry),
- *   3. emails NOTIFY_TO, with Reply-To set to the sender so you can answer straight from Gmail,
+ *   3. emails NOTIFY_TO (the studio's inbox; sent from the account that owns the script), with Reply-To
+ *      set to the sender so the studio can answer straight from Gmail,
  *   4. answers {"ok": true}. The website only shows its "Thanks" page after that answer.
  *
- * Free: it runs on your own Google account. Gmail lets a script send about 100 emails a day on a personal
- * account; every enquiry is still saved in the sheet if that is ever reached.
+ * Free: it runs on the zellarinternational@gmail.com Google account. Gmail lets a script send about 100
+ * emails a day on a personal account; every enquiry is still saved in the sheet if that is ever reached.
  */
 
+/** Who gets an email for each enquiry. Several addresses: separate them with commas. */
 const NOTIFY_TO = "freakymackstudios@gmail.com";
 const SHEET_NAME = "Enquiries";
 
