@@ -11,7 +11,22 @@ import { FilmPlayer } from "./FilmPlayer";
 
 export const dynamicParams = false;
 
-const GALLERY_TILT = [-1, 0.8, -0.6, 1.2, -1.2, 0.6];
+/**
+ * Landscape frames as a balanced collage: a pair, then one full width, then a pair… Never a lone half-width
+ * frame: one left over at a pair's turn goes full width, and two left at a full-width turn stay a pair.
+ */
+function collageRows<T>(frames: T[]): T[][] {
+  const rows: T[][] = [];
+  let pair = true;
+  for (let i = 0; i < frames.length; ) {
+    const left = frames.length - i;
+    const two = pair ? left >= 2 : left === 2;
+    rows.push(frames.slice(i, i + (two ? 2 : 1)));
+    i += two ? 2 : 1;
+    pair = !pair;
+  }
+  return rows;
+}
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
@@ -36,8 +51,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   // A YouTube thumbnail cover isn't one of our frames, so a film with only that has no frames section.
   const own = p.stills.filter((st) => !st.fallback);
   const frames = own.length > 3 ? own.slice(1) : own;
-  const [wide, left, right, ...more] = frames;
-  const tall = !!wide && isTall(wide);
+  const tall = frames.length > 0 && isTall(frames[0]);
   const story = [
     { label: "The brief", text: p.brief, lead: true },
     { label: "The idea", text: p.idea, lead: false },
@@ -127,56 +141,46 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       </section>
       )}
 
-      {wide && (
+      {frames.length > 0 && (
         <section aria-label="Stills" className={`flex flex-col gap-[32px] pb-[96px] lg:gap-[48px] lg:pb-[160px] ${PX}`}>
           <Reveal>
             <Label>Frames from the film</Label>
           </Reveal>
           {tall ? (
-            // Vertical films: every frame side by side at its own 9:16 shape.
-            <Reveal stagger={0.08} amount={0.1} className="grid grid-cols-2 items-start gap-[20px] md:grid-cols-3 lg:gap-[32px]">
+            // Vertical films: 9:16 frames in rows of three (two on phones); a short last row is centred.
+            <Reveal stagger={0.08} amount={0.1} className="flex flex-wrap justify-center gap-[16px] lg:gap-[32px]">
               {frames.map((f, i) => (
-                <RevealItem key={f.src} from={{ y: 50 }}>
+                <RevealItem key={f.src} from={{ y: 50 }} className="w-[calc((100%-16px)/2)] md:w-[calc((100%-32px)/3)] lg:w-[calc((100%-64px)/3)]">
                   <Still
                     still={f}
                     sizes="(min-width: 768px) 33vw, 50vw"
                     className={`${s.still} rounded-[20px]`}
-                    style={{ transform: `rotate(${GALLERY_TILT[i % GALLERY_TILT.length]}deg)` }}
+                    style={{ transform: `rotate(${i % 2 ? 1 : -1}deg)` }}
                   />
                 </RevealItem>
               ))}
             </Reveal>
           ) : (
-            <>
-              {/* Frames are 16:9 (or 9:16 for vertical films). The wide frame grows in, the pair comes in from each side. */}
-              <ScrollIn scale={0.92} y={90}>
-                <Still still={wide} sizes="100vw" className={`${s.still} rounded-[20px] lg:rounded-[28px]`} style={{ transform: "rotate(-0.8deg)" }} />
-              </ScrollIn>
-              {left && right && (
-                <div className="grid grid-cols-1 items-start gap-[32px] md:grid-cols-2 lg:gap-[40px]">
-                  <Reveal from={{ x: -70, y: 30 }} duration={1}>
-                    <Still still={left} className={`${s.still} rounded-[24px]`} style={{ transform: "rotate(1.2deg)" }} />
-                  </Reveal>
-                  <Reveal from={{ x: 70, y: 60 }} duration={1} delay={0.12}>
-                    <Still still={right} className={`${s.still} rounded-[24px] md:mt-[64px] lg:mt-[80px]`} style={{ transform: "rotate(-1.4deg)" }} />
-                  </Reveal>
-                </div>
+            // Landscape films: a balanced collage of 16:9 frames, a pair side by side, then one full width,
+            // and so on. Rows are worked out from the count, so no row is ever left half empty.
+            <div className="flex flex-col gap-[16px] md:gap-[32px] lg:gap-[40px]">
+              {collageRows(frames).map((row, r) =>
+                row.length === 2 ? (
+                  <div key={r} className="grid grid-cols-2 gap-[16px] md:gap-[32px] lg:gap-[40px]">
+                    <Reveal from={{ x: -70, y: 30 }} duration={1}>
+                      <Still still={row[0]} sizes="(min-width: 768px) 50vw, 50vw" className={`${s.still} rounded-[14px] md:rounded-[24px]`} style={{ transform: "rotate(-1deg)" }} />
+                    </Reveal>
+                    <Reveal from={{ x: 70, y: 30 }} duration={1} delay={0.12}>
+                      <Still still={row[1]} sizes="(min-width: 768px) 50vw, 50vw" className={`${s.still} rounded-[14px] md:rounded-[24px]`} style={{ transform: "rotate(1deg)" }} />
+                    </Reveal>
+                  </div>
+                ) : (
+                  <ScrollIn key={r} scale={0.92} y={90}>
+                    <Still still={row[0]} sizes="100vw" className={`${s.still} rounded-[16px] lg:rounded-[28px]`} style={{ transform: `rotate(${r % 4 === 1 ? 0.6 : -0.6}deg)` }} />
+                  </ScrollIn>
+                ),
               )}
-              {more.length > 0 && (
-                <Reveal stagger={0.08} amount={0.1} className="columns-1 gap-[24px] pt-[8px] sm:columns-2 lg:columns-3 lg:gap-[32px] lg:pt-[24px]">
-                  {more.map((f, i) => (
-                    <RevealItem key={f.src} from={{ y: 50 }} className="mb-[24px] break-inside-avoid lg:mb-[32px]">
-                      <Still
-                        still={f}
-                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                        className={`${s.still} rounded-[20px]`}
-                        style={{ transform: `rotate(${GALLERY_TILT[i % GALLERY_TILT.length]}deg)` }}
-                      />
-                    </RevealItem>
-                  ))}
-                </Reveal>
-              )}
-            </>
+            </div>
           )}
         </section>
       )}

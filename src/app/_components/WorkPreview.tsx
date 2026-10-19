@@ -182,7 +182,8 @@ export function WorkPreview() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start justify-between">{p.stills.map((st, j) => photo(st, j, m.widths[j]))}</div>
+                // A single frame sits centred; two or three spread edge to edge.
+                <div className={`flex items-start ${p.stills.length === 1 ? "justify-center" : "justify-between"}`}>{p.stills.map((st, j) => photo(st, j, m.widths[j]))}</div>
               )}
               <div className={`${s.workCaption} mt-[20px] flex items-baseline justify-between gap-[16px] px-[4px] lg:mt-[28px] ${on ? "translate-y-0" : "translate-y-[8px]"}`}>
                 <span className={`${s.it} min-w-0 text-[19px] leading-[1.15] sm:text-[22px] lg:text-[26px]`}>{p.title}</span>

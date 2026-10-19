@@ -349,7 +349,11 @@ await page.waitForURL(`${base}/`, { timeout: 5000 }).catch(() => {});
 check(new URL(page.url()).pathname === "/", `/option-b/ lands on / (${page.url()})`);
 
 console.log("Work & project pages");
-await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
+// "load", not "networkidle": the grid's 40-odd links prefetch their pages as they scroll into view, which can
+// keep the network busy long enough that it never counts as idle.
+await page.goto(`${base}/work/`, { waitUntil: "load" });
+await page.locator('section a[href^="/work/"]:not([href="/work/"])').first().waitFor();
+await page.waitForTimeout(600);
 const CARD = 'section a[href^="/work/"]:not([href="/work/"])';
 const cards = page.locator(CARD);
 const allCount = await cards.count();
@@ -361,6 +365,16 @@ check((await cards.count()) === 6 && allCount === 42 && !(await page.getByText(/
 check(!(await page.getByRole("radio", { name: "Documentaries" }).count()) && (await page.getByRole("radio", { name: "Music videos" }).count()) === 1, "formats with no published film have no filter chip (Documentaries); Music videos now has films");
 await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "Event films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
+// An odd number of films: the last card sits centred under the two columns.
+await page.getByRole("radio", { name: "Short films & series" }).click();
+await page.waitForTimeout(1000);
+const oddTail = await page.evaluate(() => {
+  const cards = [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')];
+  const sec = cards[0].closest("section").getBoundingClientRect();
+  const last = cards.at(-1).getBoundingClientRect();
+  return { n: cards.length, off: Math.round(last.left + last.width / 2 - (sec.left + sec.width / 2)) };
+});
+check(oddTail.n % 2 === 1 && Math.abs(oddTail.off) < 12, `an odd last card is centred under the columns (${JSON.stringify(oddTail)})`);
 await page.getByRole("radio", { name: "All work" }).click();
 await cards.first().click();
 await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
@@ -381,6 +395,18 @@ await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight
 await page.waitForTimeout(800);
 const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
 check(frames.length === 7 && frames.every((f) => f.ok && f.alt.length > 5), `all 7 McWings stills load at full resolution with alt text (${frames.length} images)`);
+// The frames collage is balanced: each frame is either full width or one of a side-by-side pair, never a
+// lone half-width frame (Changa 3 frames, Zykaz Cafe 4, Rock.it 5).
+for (const slug of ["changa", "zykaz-cafe", "rock-it"]) {
+  await page.goto(`${base}/work/${slug}/`, { waitUntil: "networkidle" });
+  const g = await page.evaluate(() => {
+    const sec = document.querySelector('section[aria-label="Stills"]');
+    const full = sec.querySelector("div").getBoundingClientRect().width;
+    const ws = [...sec.querySelectorAll("img")].map((i) => i.closest("[class*=rounded]").offsetWidth / full);
+    return { full: ws.filter((w) => w > 0.9).length, half: ws.filter((w) => w > 0.4 && w < 0.55).length, other: ws.filter((w) => w <= 0.4 || (w >= 0.55 && w <= 0.9)).length };
+  });
+  check(g.other === 0 && g.half % 2 === 0, `${slug}: frames sit as full-width shots and even pairs (${JSON.stringify(g)})`);
+}
 // Project images come in film shapes only: 16:9, or 9:16 for vertical films. McWings (2.55:1 frames),
 // Harshita Gaur (vertical) and Zykaz Cafe (4:3) cover each case.
 for (const slug of ["mcdonalds-chicken-mcwings", "harshita-gaur", "zykaz-cafe"]) {

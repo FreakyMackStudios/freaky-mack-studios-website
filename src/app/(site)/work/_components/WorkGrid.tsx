@@ -61,12 +61,15 @@ function Column({ items, shown, className }: { items: Project[]; shown: Project[
   );
 }
 
-/** Work board: filter chips (`filter`) re-flow the two staggered, tilted columns. */
+/** Work board: filter chips (`filter`) re-flow the two staggered, tilted columns (an odd last card centred below). */
 export function WorkGrid() {
   const [filter, setFilter] = useState<string>("All");
   const shown = PROJECTS.filter((p) => filter === "All" || p.category === filter);
-  const left = shown.filter((_, i) => i % 2 === 0);
-  const right = shown.filter((_, i) => i % 2 === 1);
+  // An odd card out sits centred under the two columns, so the grid never ends lopsided on one side.
+  const paired = shown.length % 2 ? shown.slice(0, -1) : shown;
+  const tail = shown.length % 2 ? shown.slice(-1) : [];
+  const left = paired.filter((_, i) => i % 2 === 0);
+  const right = paired.filter((_, i) => i % 2 === 1);
   return (
     <>
       <Reveal as="section" onMount delay={0.45} aria-label="Filter by format" className={`flex flex-col gap-[20px] pb-[56px] lg:pb-[72px] ${PX}`}>
@@ -79,6 +82,7 @@ export function WorkGrid() {
       <section className={`grid grid-cols-1 items-start gap-y-[56px] pb-[96px] md:grid-cols-2 md:gap-x-[32px] lg:gap-x-[48px] lg:pb-[160px] ${PX}`}>
         <Column items={left} shown={shown} className="flex flex-col gap-[56px] lg:gap-[72px]" />
         <Column items={right} shown={shown} className="flex flex-col gap-[56px] md:pt-[100px] lg:gap-[72px] lg:pt-[140px]" />
+        <Column items={tail} shown={shown} className="md:col-span-2 md:mx-auto md:w-[calc(50%-16px)] lg:w-[calc(50%-24px)]" />
       </section>
       {PUBLISHING_SOON.length > 0 && <PublishingSoon />}
     </>
