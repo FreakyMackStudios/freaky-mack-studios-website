@@ -428,17 +428,32 @@ await page.getByRole("button", { name: "Send it over →" }).click();
 check((await page.getByText("That email doesn’t look quite right.").isVisible()), "bad email is caught");
 await page.getByLabel("Email").fill("test@brand.com");
 const sendMode = await page.locator("form[data-send]").getAttribute("data-send");
+// The contrast sweeps above switch the page to reduced motion; the send sequence needs full motion.
+await page.emulateMedia({ reducedMotion: "no-preference" });
 if (sendMode === "post") {
   // The endpoint fails: the visitor is told, stays put and keeps what they typed.
   enquiryReply = { ok: false, error: "test" };
   await page.getByRole("button", { name: "Send it over →" }).click();
-  await page.getByText("That didn’t go through.", { exact: false }).waitFor({ timeout: 5000 }).catch(() => {});
-  check((await page.getByText("That didn’t go through.", { exact: false }).isVisible()) && /start-a-project/.test(page.url()) && (await page.getByLabel("Your name").inputValue()) === "Test Person", "a failed send says so, stays on the form and keeps the answers");
+  await page.getByText("That didn’t go through.", { exact: false }).waitFor({ timeout: 10000 }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById("fm-curtain"), null, { timeout: 4000 }).catch(() => {});
+  const back = await page.evaluate(() => ({ curtain: !!document.getElementById("fm-curtain"), envelope: !!document.getElementById("fm-envelope"), form: getComputedStyle(document.querySelector("form[data-send]")).visibility }));
+  check((await page.getByText("That didn’t go through.", { exact: false }).isVisible()) && /start-a-project/.test(page.url()) && (await page.getByLabel("Your name").inputValue()) === "Test Person" && !back.curtain && !back.envelope && back.form === "visible", `a failed send: the curtain goes back, the form returns with the answers, and it says so (${JSON.stringify(back)})`);
   enquiryReply = { ok: true };
   enquiries.length = 0;
   await page.getByRole("button", { name: "Send it over →" }).click();
+  // The send sequence: the form folds into an envelope that flies off, then the black curtain covers the
+  // screen; no "Sending…" line shows (it is only announced to screen readers).
+  const env = await page.waitForSelector("#fm-envelope", { timeout: 2000 }).then(() => true, () => false);
+  const quiet = await page.evaluate(() => { const st = document.querySelector("form[data-send] [role=status]"); return !st || st.classList.contains("sr-only"); });
+  const curtain = await page.waitForSelector("#fm-curtain", { timeout: 5000 }).then(() => true, () => false);
+  check(env && quiet && curtain, `sending: envelope, then the black curtain; no visible "Sending" text (envelope ${env}, curtain ${curtain})`);
   await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
   const sent = enquiries[0];
+  // On Thanks the curtain slides away and the pieces fly in and settle.
+  await page.waitForFunction(() => !document.getElementById("fm-curtain"), null, { timeout: 4000 }).catch(() => {});
+  await page.waitForTimeout(1600);
+  const settled = await page.evaluate(() => [...document.querySelectorAll("main [data-reveal]")].slice(0, 6).map((n) => getComputedStyle(n)).every((cs) => cs.opacity === "1" && (cs.transform === "none" || cs.transform === "matrix(1, 0, 0, 1, 0, 0)")));
+  check(!(await page.evaluate(() => !!document.getElementById("fm-curtain"))) && settled, "Thanks: the curtain slides away and every piece lands in place");
   check(/\/thanks\/?$/.test(new URL(page.url()).pathname), `a confirmed send lands on /thanks (${page.url()})`);
   check(enquiries.length === 1 && /^text\/plain/.test(sent.type) && sent.body.name === "Test Person" && sent.body.email === "test@brand.com" && sent.body.brief === "A launch film." && sent.body.format === "an animated explainer" && /agency/.test(sent.body.audience) && !!sent.body.timing && sent.body.source === "Start a project" && /New enquiry/.test(sent.body.subject), `the enquiry carries every answer, as a simple text/plain request (${JSON.stringify(sent?.body)})`);
 } else {
@@ -476,6 +491,7 @@ if (sendMode === "post") {
   await page.waitForTimeout(800);
   check(new URL(page.url()).pathname === "/" && (await page.getByText("Press Send there", { exact: false }).isVisible()), "homepage form without an endpoint: asks them to press Send in their email app");
 }
+await page.emulateMedia({ reducedMotion: "reduce" }); // back to how the checks below expect it
 
 console.log("Legal, 404");
 await page.goto(`${base}/privacy/`, { waitUntil: "networkidle" });

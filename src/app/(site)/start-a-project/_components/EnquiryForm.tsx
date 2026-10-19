@@ -181,7 +181,7 @@ export function EnquiryForm() {
         </button>
       </div>
       {message && (
-        <p role="status" className="m-0 text-[14px] text-[var(--ink-2)]">
+        <p role="status" className={status === "sending" ? "sr-only" : "m-0 text-[14px] text-[var(--ink-2)]"}>
           {message}
         </p>
       )}

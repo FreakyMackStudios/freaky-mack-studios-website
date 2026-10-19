@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { CONTACT } from "./config";
+import { coverScreen, flyEnvelope, prefersReducedMotion, restoreForm, uncoverScreen } from "./send-flight";
 
 /** Everything an enquiry can carry: the chip answers and every field (CLAUDE.md → Enquiry form). */
 export type Enquiry = {
@@ -108,19 +109,41 @@ export function useEnquiryForm(extra?: Partial<Enquiry>) {
       return;
     }
     setStatus("sending");
-    try {
-      const how = await submitEnquiry(enquiry);
-      setStatus(how);
-      // Only a confirmed send goes to Thanks. When the email app opens instead, the visitor still has to
-      // press Send there, so the page says so rather than thanking them for a message we haven't got.
-      if (how === "sent") router.push("/thanks");
-    } catch {
+    if (SEND_MODE === "email") {
+      // The email app opens; the visitor still has to press Send there, so the page says so rather than
+      // thanking them for a message we haven't got.
+      setStatus(await submitEnquiry(enquiry));
+      return;
+    }
+    // Send straight away, while the envelope folds and flies off (src/shared/send-flight.ts). Settled into
+    // a plain result so a quick failure isn't left unhandled while the animation is still playing.
+    const form = ev.currentTarget;
+    const result = submitEnquiry(enquiry).then(
+      () => true,
+      () => false,
+    );
+    const animate = !prefersReducedMotion();
+    if (animate) {
+      await flyEnvelope(form);
+      await coverScreen();
+    }
+    if (await result) {
+      setStatus("sent");
+      // The curtain stays up across the route change; Thanks slides it away. If that never happens, it
+      // lifts itself.
+      router.push("/thanks");
+      window.setTimeout(() => void uncoverScreen("left"), 6000);
+    } else {
+      if (animate) {
+        await uncoverScreen("right");
+        restoreForm(form);
+      }
       setStatus("error");
     }
   };
   const message =
     status === "sending"
-      ? "Sending…"
+      ? "Sending your enquiry…"
       : status === "email"
         ? "Your email app should open with your message filled in. Press Send there and it reaches us."
         : status === "error"
