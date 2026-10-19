@@ -273,7 +273,25 @@ const sentence = (await page.locator("#ch3 p").first().innerText()).replace(/\s+
 check(/a music video/.test(sentence) && /a face on screen/.test(sentence), `sentence builder → "${sentence}"`);
 const ch4 = page.locator("#ch4");
 check((await ch4.getByText("Coming", { exact: false }).count()) > 0 && (await ch4.getByText("On air soon").isVisible()), "podcast chapter shows Coming soon");
-check(/^mailto:/.test((await ch4.getByRole("link", { name: /Say hello/ }).getAttribute("href")) ?? "") && !(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: email CTA, no episode placeholders");
+check(!(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: no episode placeholders");
+// "Want to be on it? Say hello" brings you to Chapter 06, and white bubbles point out what to fill in.
+const hintState = () => page.evaluate(() => {
+  const r = document.querySelector("#contact form").getBoundingClientRect();
+  return {
+    inView: r.top < innerHeight && r.bottom > 0,
+    shown: [...document.querySelectorAll("#contact [data-hint]")].map((h) => getComputedStyle(h).opacity === "1"),
+    focus: document.activeElement?.id,
+  };
+});
+await ch4.getByRole("link", { name: /Say hello/ }).click();
+await page.waitForFunction(() => [...document.querySelectorAll("#contact [data-hint]")].every((h) => getComputedStyle(h).opacity === "1"), null, { timeout: 4000 }).catch(() => {});
+let hs = await hintState();
+check(hs.inView && hs.shown.length === 3 && hs.shown.every(Boolean) && hs.focus === "fm-name", `Say hello → Chapter 06, three bubbles, cursor in "Your name" (${JSON.stringify(hs)})`);
+await page.locator("#fm-name").fill("Podcast Guest");
+await page.waitForTimeout(500);
+hs = await hintState();
+check(!hs.shown[0] && hs.shown[1] && hs.shown[2], `a bubble goes once its field is filled (${JSON.stringify(hs.shown)})`);
+await page.locator("#fm-name").fill("");
 
 console.log("Theme switch");
 const bg = () => root(page).evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -388,6 +406,15 @@ await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
 const pod = page.locator("#podcast");
 check((await pod.getByRole("heading", { name: /Coming\s+soon/ }).isVisible()) && (await pod.locator("li").count()) === 3, "Originals podcast: Coming soon heading and what-to-expect list");
 check((await pod.locator("button").count()) === 0 && !(await page.getByText(/Latest episode|Every episode|\[Guest\]/).count()), "Originals podcast: no player or episode placeholders");
+await pod.getByRole("link", { name: /Say hello/ }).click();
+await page.waitForURL((u) => new URL(u).pathname === "/", { timeout: 8000 }).catch(() => {});
+await page.waitForFunction(() => [...document.querySelectorAll("#contact [data-hint]")].every((h) => getComputedStyle(h).opacity === "1"), null, { timeout: 6000 }).catch(() => {});
+const fromOriginals = await page.evaluate(() => ({
+  url: location.pathname + location.search + location.hash,
+  shown: [...document.querySelectorAll("#contact [data-hint]")].filter((h) => getComputedStyle(h).opacity === "1").length,
+  inView: (() => { const r = document.querySelector("#contact form").getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })(),
+}));
+check(fromOriginals.url === "/#contact" && fromOriginals.shown === 3 && fromOriginals.inView, `Originals' Say hello lands on the homepage form with the bubbles, and tidies the address (${JSON.stringify(fromOriginals)})`);
 
 console.log("Start a project");
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -552,6 +579,19 @@ await phone.waitForTimeout(900);
 ps = await panelState();
 check(ps[2].open && ps[2].h > 80 && ps[2].imgs === 2 && !ps[0].open && ps[0].h < 2, `phone: tapping another film opens it and closes the one before (${JSON.stringify(ps.map((p) => p.h))})`);
 check((await phone.locator("#ch1-panel-2").getByRole("link", { name: "Open project →" }).getAttribute("href"))?.startsWith("/work/pc-jeweller-tvc"), "phone: the open film links to its project");
+// Phones: "Say hello" goes to the form, with no bubbles.
+{
+  await phone.goto(`${base}/`, { waitUntil: "networkidle" });
+  const link = phone.locator("#ch4").getByRole("link", { name: /Say hello/ });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await phone.waitForTimeout(1800);
+  const ph = await phone.evaluate(() => ({
+    inView: (() => { const r = document.querySelector("#contact form").getBoundingClientRect(); return r.top >= -2 && r.top < innerHeight / 2; })(),
+    bubbles: [...document.querySelectorAll("#contact [data-hint]")].filter((h) => getComputedStyle(h).display !== "none" && getComputedStyle(h).opacity !== "0").length,
+  }));
+  check(ph.inView && ph.bubbles === 0, `phone: Say hello scrolls to the form, no bubbles (${JSON.stringify(ph)})`);
+}
 // Phones: only the ten major brands, as plain tags; no cards.
 await phone.locator('section[aria-label="Clients"]').scrollIntoViewIfNeeded();
 await phone.waitForTimeout(1000);

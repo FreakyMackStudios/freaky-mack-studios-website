@@ -1,6 +1,6 @@
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
-import { CONTACT } from "@/shared/config";
 import { pillAccent } from "./blocks";
+import { SayHelloLink } from "./SayHelloLink";
 import c from "./coming-soon.module.css";
 import { AccentWord } from "./ui";
 
@@ -21,8 +21,6 @@ const EXPECT = [
   "The stories behind the films we make",
   "New episodes on YouTube",
 ];
-
-const PITCH = `mailto:${CONTACT.email}?subject=${encodeURIComponent("The Freaky Mack Podcast")}`;
 
 /**
  * The podcast before launch: no episode art or embeds yet, so it is type only. Used on the homepage
@@ -52,9 +50,10 @@ export function PodcastComingSoon({ expect = false, heading: Heading = "h3" }: {
           </RevealItem>
         )}
         <RevealItem className="flex">
-          <a href={PITCH} className={pillAccent("h-[52px] px-[24px] text-[14px] lg:h-[56px] lg:text-[15px]")}>
+          {/* Goes to the homepage enquiry form (Chapter 06), which points out what to fill in. */}
+          <SayHelloLink className={pillAccent("h-[52px] px-[24px] text-[14px] lg:h-[56px] lg:text-[15px]")}>
             Want to be on it? Say hello →
-          </a>
+          </SayHelloLink>
         </RevealItem>
       </Reveal>
     </div>
