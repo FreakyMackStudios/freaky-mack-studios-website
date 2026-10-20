@@ -30,7 +30,7 @@ const ratio = (st: Still) => st.width / st.height;
 
 /**
  * The mosaic under the list: the cover large on the left, two frames stacked on the right. Widths are
- * solved from each frame's own shape so the right column ends exactly level with the cover: nothing is
+ * solved from each frame's shape (16:9 or 9:16) so the right column ends exactly level with the cover: nothing is
  * cropped and nothing is left hanging. Vertical films (or fewer than three frames) sit in one even row.
  */
 /** Widths (in %) for one even row: every frame the same height, widths in proportion to their shapes. */
@@ -42,6 +42,8 @@ const rowWidths = (stills: Still[], gap = GAP) => {
 
 function mosaic(stills: Still[]) {
   const [a, b, c] = stills;
+  // One frame (a film whose cover is its YouTube thumbnail): about the size of the others' big frame.
+  if (stills.length === 1) return { kind: "row" as const, widths: [64] };
   if (!a || !b || !c || stills.some((st) => st.height > st.width)) {
     return { kind: "row" as const, widths: rowWidths(stills) };
   }
@@ -180,7 +182,8 @@ export function WorkPreview() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start justify-between">{p.stills.map((st, j) => photo(st, j, m.widths[j]))}</div>
+                // A single frame sits centred; two or three spread edge to edge.
+                <div className={`flex items-start ${p.stills.length === 1 ? "justify-center" : "justify-between"}`}>{p.stills.map((st, j) => photo(st, j, m.widths[j]))}</div>
               )}
               <div className={`${s.workCaption} mt-[20px] flex items-baseline justify-between gap-[16px] px-[4px] lg:mt-[28px] ${on ? "translate-y-0" : "translate-y-[8px]"}`}>
                 <span className={`${s.it} min-w-0 text-[19px] leading-[1.15] sm:text-[22px] lg:text-[26px]`}>{p.title}</span>

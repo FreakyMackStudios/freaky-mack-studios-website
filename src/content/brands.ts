@@ -19,7 +19,7 @@ export const BRANDS: Brand[] = [
   { name: "Government of Haryana", project: "pkcc", major: true },
   { name: "CITTA", project: "citta-moisturizing-baby-balm" },
   { name: "Zypp Electric", project: "zypp-electric", accent: true },
-  { name: "Fabindia", project: "fabindia-01", major: true },
+  { name: "Fabindia", major: true },
   { name: "Ace Group", project: "film-for-ace" },
   { name: "Siddhidhata Ayurveda", project: "jaldi-bidai" },
   { name: "NoughtOne", project: "noughtone", accent: true },

@@ -15,7 +15,11 @@ Paths are relative to the repo root.
 
 > **Content form applied (Oct 2026).** The client's filled-in form is now on the site: every film's client, credits and story (the form printed each film's answers under the *next* film's heading, so answers were matched by the details in each box), the homepage's six films, the address, WhatsApp, Instagram/YouTube links, the 24-hour reply time, the crew and Izaan's bio. Films the client filled in completely show their full story; partly filled and blank films show only what was given, with no placeholders. **Still open:** Kara Feel (asked for on the homepage, but no file), Film 39's "same as above" (read as the Republic Day team), "The Last Precence" (shown as "The Last Presence"), the founder quote, Vimeo/LinkedIn, budget ranges ("no fixed budget"), the legal details in section 1, stills and film links. Rows 1.1, 1.2, 1.4, 1.5, 1.7 and 1.8 (Instagram) below are done.
 
+> **Films on the site (Oct 2026).** Only films with a public YouTube video are shown (`src/content/youtube.ts`). At the studio's request, the seven films without one were removed: Fabindia Film 01 and 02, Voting Campaign, Rudraprayag, Soanbhadra, Zykaz Interview and PC Jeweller × Sonalika Sahay. The Last Presence (Teaser) stays in the data, hidden, until its public YouTube link comes (the sheet only had a private YouTube Studio link). There is no "Publishing soon" list any more.
+
 > **Stills and publishing (Oct 2026).** Three stills per film came in for 28 films (`public/work/<slug>/`, data in `src/content/stills.ts`, taken at each film's own resolution; burnt-in letterbox bars trimmed). A film is **published** only when it has both stills and written content: 26 films are live. The rest are listed by name only under **"Publishing soon"** on /work, with no page: 12 have content but no stills (their source files weren't on the Mac when the stills were pulled: pTron, India Fashion Awards, Albela, TOIFA Aftermovie, The Midnight Hour, Rudraprayag, Kashi, Falaknama — Film 01, BharatBenz × Dhingra Trucking, Soanbhadra, Nayi Soch Wali Azadi, The Last Presence — Teaser), 2 have stills but no written content (Changa, PC Jeweller × Sonalika Sahay), and Zykaz Interview has neither. Each one goes live by itself once the missing piece arrives.
+
+> **Frames from YouTube (Oct 2026).** The 15 films that had only their YouTube video now carry frames from YouTube's own automatic grabs (three per video, 1280×720 at most), letterbox bars and side blur trimmed, frames with on-screen graphics or logos left out: 2–3 per film for Albela, BharatBenz × Dhingra Trucking, Falaknama — Film 01, India Fashion Awards, Kashi, Narendra Kumar, Nayi Soch Wali Azadi, Neeta Lulla Show, Sang Tu Chalen, The Midnight Hour, Times Men of the Year, Times Power Women Awards, TOIFA Aftermovie and Zypp Electric App — Film 02. They're lower resolution than the studio's own stills (as low as ~950px wide), so swap in proper stills whenever the masters turn up. **pTron** still shows its YouTube thumbnail: YouTube only kept 480px grabs for it, too small to use.
 
 ---
 
@@ -125,7 +129,6 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `toifa-aftermovie` | TOIFA Aftermovie | Event film | `[Client]` | `[Year]` | 2:02 | 16:9 | `[Name]` | `Event Films/TOIFA_Aftermovie.mov` |
 | `the-midnight-hour` | The Midnight Hour | Short film | `[Client]` | `[Year]` | 3:11 | 16:9 | `[Name]` | `Short Films/The Midnight Hour.mp4` |
 | `dbs-lifestyle` | DBS Lifestyle | Corporate film | DBS Lifestyle | 2023 | 4:08 | 16:9 | `[Name]` | `Corporate Videos/DBS Lifestyle  I  Corporate Film 2023  I  Freaky Mack Films - Freaky Mack (1080p, h264).mp4` |
-| `rudraprayag` | Rudraprayag | Documentary | `[Client]` | `[Year]` | 3:47 | 16:9 | `[Name]` | `Documentaries/Renew_Rudraprayag.mov` |
 | `rock-it` | Rock.it | Ad film | Rock.it | `[Year]` | 1:44 | 2.39:1 | Izaan Khan | `Ad. Films/Rock.it  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4` |
 | `kashi` | Kashi | Short film | `[Client]` | `[Year]` | 4:29 | 16:9 | `[Name]` | `Short Films/Kashi_ColorGrade.m4v` |
 | `pkcc` | PKCC | Govt. ad | `[Client]` | `[Year]` | 2:27 | 16:9 | `[Name]` | `Govt. Ads/PKCC FINAL_1080p.mp4` |
@@ -139,20 +142,14 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `falaknama-02` | Falaknama — Film 02 | Ad film | `[Client]` | `[Year]` | 0:30 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4` |
 | `falaknama-03` | Falaknama — Film 03 | Ad film | `[Client]` | `[Year]` | 0:23 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33.mp4` |
 | `zykaz-cafe` | Zykaz Cafe | Ad film | Zykaz | `[Year]` | 0:35 | 4:3 | `[Name]` | `Ad. Films/Zykaz_Cafe_Square.mov.mp4` |
-| `zykaz-interview` | Zykaz Interview | Ad film | Zykaz | `[Year]` | 0:32 | 16:9 | `[Name]` | `Ad. Films/Zykaz_Interview_FinalCut.mov` |
 | `bharatbenz-dhingra-trucking` | BharatBenz × Dhingra Trucking | Corporate film | Dhingra Trucking | `[Year]` | 7:42 | 16:9 | `[Name]` | `Corporate Videos/Bharat Benz   Dhingra Trucking - DHINGRA TRUCKING (1080p, h264).mp4` |
-| `soanbhadra` | Soanbhadra | Documentary | `[Client]` | `[Year]` | 9:45 | 16:9 | `[Name]` | `Documentaries/DA_Soanbhadra.mp4` |
 | `bombay-times-fashion-week` | Bombay Times Fashion Week — Green Room | Event film | Bombay Times | 2020 | 3:13 | 16:9 | `[Name]` | `Event Films/Bombay Times Fashion Week  I  March 2020  I  Green Room  I  Film by Freaky Mack_720p.mp4` |
 | `sawe-international-excellence-awards` | SAWE International Excellence Awards | Event film | SAWE | `[Year]` | 1:24 | 16:9 | `[Name]` | `Event Films/SAWE International Excellence Awards  I  Dubai  I  Creative Partner - Freaky Mack.mp4` |
 | `noughtone-show` | NoughtOne Show | Event film | NoughtOne | `[Year]` | 0:54 | 9:16 | `[Name]` | `Event Films/NoughtOne Show.mp4` |
-| `pc-jeweller-sonalika-sahay` | PC Jeweller × Sonalika Sahay | Fashion film | PC Jeweller | `[Year]` | 0:46 | 16:9 | `[Name]` | `Fashion Films/PC Jeweller  I  Sonalika Sahay  I  Freaky Mack - Advertising Agency - Freaky Mack (1080p, h264) (1).mp4` |
 | `noughtone` | NoughtOne | Fashion film | NoughtOne | `[Year]` | 1:21 | 16:9 | `[Name]` | `Fashion Films/NoughtOne.mp4` |
 | `harshita-gaur` | Harshita Gaur | Fashion film | Harshita Gaur | `[Year]` | 0:52 | 9:16 | `[Name]` | `Fashion Films/Film Harshita Gaur.mp4` |
-| `fabindia-01` | Fabindia — Film 01 | Fashion film | Fabindia | `[Year]` | 1:00 | 16:9 | `[Name]` | `Fashion Films/Fabindia.mp4` |
-| `fabindia-02` | Fabindia — Film 02 | Fashion film | Fabindia | `[Year]` | 0:58 | 16:9 | `[Name]` | `Fashion Films/Fabindia 2.mp4` |
 | `sex-sorted` | Sex Sorted | Govt. ad | Haryana Government | `[Year]` | 2:32 | 16:9 | `[Name]` | `Govt. Ads/SEX SORTED whats app file_1080p.mp4` |
 | `sexual-harassment-haryana` | Sexual Harassment | Govt. ad | Haryana Government | `[Year]` | 2:49 | 2.35:1 | `[Name]` | `Govt. Ads/Saxual Harrasment for Haryana Govt.mov` |
-| `voting-campaign` | Voting Campaign | Govt. ad | Haryana Government | `[Year]` | 1:41 | 16:9 | `[Name]` | `Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4` |
 | `happy-republic-day` | Happy Republic Day | Short film | `[Client]` | `[Year]` | 2:19 | 16:9 | Izaan Khan | `Short Films/Happy Republic Day  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4` |
 | `nayi-soch-wali-azadi` | Nayi Soch Wali Azadi | Short film | `[Client]` | `[Year]` | 3:58 | 4:3 | `[Name]` | `Short Films/Nayi Soch Wali Azadi_Final Cut.mp4` |
 | `s-and-s-trailer` | S&S — Trailer | Short film | `[Client]` | `[Year]` | 1:00 | 16:9 | `[Name]` | `Short Films/S&S_Trailer.mov` |
@@ -171,7 +168,7 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 6.1 | `[ On set — behind the scenes still ]` | `src/app/(site)/studio/page.tsx:69` | Large behind-the-scenes photo, landscape, at least 2400px wide | CLIENT | |
+| 6.1 | ~~`[ On set — behind the scenes still ]`~~ | `src/app/(site)/studio/page.tsx` | Large behind-the-scenes photo, landscape, at least 2400px wide | CLIENT | **Done:** from the studio's photo folder (Oct 2026), with a strip of eight more frames (`src/content/bts.ts`, `public/bts/`) |
 | 6.2 | `on set, [Year]` | `studio/page.tsx:81` | Year that photo was taken | CLIENT | |
 | 6.3 | ~~`Chapter 1 · [Year]`~~ | `src/content/studio.ts:3` | **Removed:** the timeline cards show "Chapter 1–4" with no years | — | Done |
 | 6.4 | `Chapter 2 · [Year]` | `studio.ts:4` | Year McDonald's, Google and Adidas Originals came on board | CLIENT | |
@@ -201,12 +198,12 @@ Source: `src/content/originals.ts` and the posters in `src/app/(site)/originals/
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
-| 8.1 | `[ Portrait — Izaan ]` | `src/app/(site)/people/page.tsx:57` | Founder portrait (the same photo works on the homepage), at least 1600px tall | CLIENT | |
+| 8.1 | `[ Portrait — Izaan ]` | `src/app/(site)/people/page.tsx:57` | Founder portrait (the same photo works on the homepage), at least 1600px tall | CLIENT | **Done** (`public/people/izaan-khan-portrait.webp`, 1207×1600) |
 | 8.2 | `"[A line from Izaan on why he started Freaky Mack Studios.]"` | `people/page.tsx:82` | Founder quote, one sentence | CLIENT | |
 | 8.3 | `[Two or three lines of bio — how he got into film, six years at Freaky Mack, what he wants the studio to make next.]` | `people/page.tsx:86` | Founder bio | CLIENT | |
 | 8.4 | Founder Instagram and LinkedIn | `src/shared/config.ts:35-36` | Izaan's personal profile links. They currently point to the platforms' home pages. | CLIENT | |
 | 8.5 | `[Name]` · `[Role]` ×8 | `src/content/people.ts:7-15` | Core crew. The count of 8 can change. | CLIENT | See the table below |
-| 8.6 | `[ Photo ]` ×8 | `people/page.tsx:114` | Crew portraits, same crop for all | CLIENT | |
+| 8.6 | `[ Photo ]` ×8 | `people/page.tsx:114` | Crew portraits, same crop for all | CLIENT | **Done** for all four crew: AB Rahim Shah, Ashok Kumar Naik, Tridip K Maity, Salan Lamare (`public/people/`). Bigger photos of Rahim and Ashok would still help (theirs are 372×569 and 493×677). |
 | 8.7 | `[One line on the directors, cinematographers and editors Freaky Mack works with project by project.]` | `people/page.tsx:138` | Intro line for the collaborators section | CLIENT | |
 
 | Crew # | Name | Role |
@@ -263,7 +260,7 @@ These are drafts under India's DPDP Act 2023. **A lawyer must review both before
 | # | Item | Where | Purpose | Answer |
 |---|---|---|---|---|
 | 11.1 | **Domain** | `NEXT_PUBLIC_SITE_URL` (Vercel env), `src/shared/config.ts:8` | The live address. It feeds the sitemap, robots.txt, social previews and Terms. Buy it and point it at Vercel. | |
-| 11.2 | **Enquiry form endpoint** | `NEXT_PUBLIC_FORMSPREE_ENDPOINT` (Vercel env), used in `src/shared/enquiry.ts:54` | Without it, "Send it over" opens the visitor's email app instead of sending. Create a Formspree form that delivers to freakymackstudios@gmail.com. | |
+| 11.2 | **Enquiry form endpoint** | `CONTACT.enquiryEndpoint` in `src/shared/config.ts` (or `NEXT_PUBLIC_ENQUIRY_ENDPOINT`) | The Google Apps Script web app URL that saves enquiries to a Google Sheet and emails the studio (free). Setup: `docs/enquiry-form-google-sheet.md`. Without it, "Send it over" opens the visitor's email app and asks them to press Send. | STUDIO | **Done:** Apps Script web app on zellarinternational@gmail.com, set in `config.ts` |
 | 11.3 | **Hide the theme picker at launch** | `NEXT_PUBLIC_PITCH_MODE=off` (Vercel env) | The Light/Dark/accent picker is for pitching only. Also tell me the final theme and accent (currently Dark + Grey). | |
 | 11.4 | **Vercel plan** | Vercel dashboard | Hobby (free) is for non-commercial use, so move to Pro before the client launch. | |
 | 11.5 | **Cloudflare Stream** | Cloudflare dashboard, then `REEL` in `config.ts` and the project videos | Buy the **Starter Bundle ($5/month)**, upload the films, then send me your `customer-xxxx` code and each video's ID. Allow only your domain and `*.vercel.app` to play them. | Customer code: <br> Video IDs: |
@@ -284,7 +281,7 @@ Contact details already filled in and real: freakymackstudios@gmail.com, +91 971
 | Full showreel | 1 | Master file (for Stream) or YouTube link | Home reel |
 | Project films | 8 | Master files (for Stream) or YouTube/Vimeo links | Project pages |
 | Project stills | 3 per project (24) | 16:9 JPG, at least 2400px wide | Project pages, /work cards, homepage preview |
-| Behind-the-scenes photo | 1 | Landscape JPG, at least 2400px wide | Studio |
+| Behind-the-scenes photo | 1 | Landscape JPG, at least 2400px wide | Studio | **Done** |
 | Founder portrait | 1 | Portrait JPG, at least 1600px tall | People, Home |
 | Crew portraits | 8 (3 also used on Home) | Portrait JPG, same crop and light | People, Home |
 | Testimonial avatars | 8 | Square, at least 240px, headshot or brand logo, provided or approved by the person | Home |

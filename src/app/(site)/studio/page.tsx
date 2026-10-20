@@ -6,6 +6,8 @@ import { YourTurnCta } from "@/components/site/blocks";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, MX, PX } from "@/components/site/ui";
 import { BELIEFS, PROCESS, SERVICES, TIMELINE } from "@/content/studio";
+import { ON_SET, ON_SET_STRIP } from "@/content/bts";
+import { Still } from "@/components/site/Still";
 import { ClientScatter } from "@/app/_components/ClientScatter";
 
 export const metadata: Metadata = {
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
 };
 
 const SECTION = `pb-[96px] lg:pb-[180px] ${PX}`;
+
+const STRIP_TILT = [-1.6, 1.2, -0.8, 1.6, 1.2, -1.4, 0.8, -1];
 
 const TONE = {
   surface: { card: "bg-[var(--surface)]", label: "text-[var(--muted-2)]" },
@@ -63,11 +67,13 @@ export default function StudioPage() {
       <section className={`relative pb-[96px] lg:pb-[160px] ${PX}`}>
         {/* The still straightens and grows into place as it scrolls in; the sticker pops on after it. */}
         <ScrollIn scale={0.9} rotate={-4} y={80}>
-        <div
-          className="flex h-[320px] items-center justify-center rounded-[24px] px-[24px] text-center text-[12px] tracking-[0.22em] text-white/60 uppercase shadow-[0_30px_80px_rgba(0,0,0,0.14)] [transform:rotate(-1deg)] md:h-[460px] lg:h-[600px] lg:rounded-[32px]"
-          style={{ background: "radial-gradient(ellipse at 45% 50%, #4a4a48 0%, #1a1a1a 60%, #0a0a0a 100%)" }}
-        >
-          [ On set — behind the scenes still ]
+        <div className="[transform:rotate(-1deg)]">
+          <Still
+            still={ON_SET}
+            priority
+            sizes="(min-width: 1440px) 1248px, 100vw"
+            className="rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.14)] lg:rounded-[32px]"
+          />
         </div>
         </ScrollIn>
         <Reveal
@@ -81,6 +87,22 @@ export default function StudioPage() {
           >
             on set, [Year]
           </span>
+        </Reveal>
+        {/* More frames from set: each photo whole, in its own shape, with a slight alternating tilt. */}
+        <Reveal
+          as="ul"
+          stagger={0.06}
+          amount={0.15}
+          aria-label="More from set"
+          className="m-0 mt-[40px] grid list-none grid-cols-2 gap-[14px] p-0 md:grid-cols-4 lg:mt-[64px] lg:gap-[24px]"
+        >
+          {ON_SET_STRIP.map((st, i) => (
+            <RevealItem as="li" key={st.src} from={{ y: 50 }}>
+              <div className={s.still} style={{ transform: `rotate(${STRIP_TILT[i % STRIP_TILT.length]}deg)` }}>
+                <Still still={st} sizes="(min-width: 768px) 25vw, 50vw" className="rounded-[14px] lg:rounded-[18px]" />
+              </div>
+            </RevealItem>
+          ))}
         </Reveal>
       </section>
 

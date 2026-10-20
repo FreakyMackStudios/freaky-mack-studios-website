@@ -4,7 +4,14 @@
  * Letterbox bars burnt into some masters are trimmed off; the picture itself is never scaled.
  * Generated from the extraction manifest. Films missing here had no source file on the studio's Mac yet.
  */
-export type Still = { src: string; width: number; height: number; alt: string };
+export type Still = {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  /** Only on a YouTube thumbnail cover: the image to use if `src` turns out to be YouTube's grey stand-in. */
+  fallback?: string;
+};
 
 export const STILLS: Record<string, Still[]> = {
   "mcdonalds-chicken-mcwings": [
@@ -140,11 +147,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/noughtone-show/02.jpg", width: 720, height: 1280, alt: "Model in blue racing separates walking" },
     { src: "/work/noughtone-show/03.jpg", width: 720, height: 1280, alt: "Model in a green bomber, audience behind" },
   ],
-  "pc-jeweller-sonalika-sahay": [
-    { src: "/work/pc-jeweller-sonalika-sahay/01.jpg", width: 1920, height: 1080, alt: "Bride seated on the sofa in full jewellery" },
-    { src: "/work/pc-jeweller-sonalika-sahay/02.jpg", width: 1920, height: 1080, alt: "Veiled portrait looking down" },
-    { src: "/work/pc-jeweller-sonalika-sahay/03.jpg", width: 1920, height: 1080, alt: "Cocktail rings, hand on brocade" },
-  ],
   "noughtone": [
     { src: "/work/noughtone/01.jpg", width: 1280, height: 720, alt: "Lone figure on the ridge at sunrise" },
     { src: "/work/noughtone/02.jpg", width: 1280, height: 720, alt: "Figure walking, mirrored in the water" },
@@ -154,16 +156,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/harshita-gaur/01.jpg", width: 1080, height: 1920, alt: "Twirling in a shower of rose petals" },
     { src: "/work/harshita-gaur/02.jpg", width: 1080, height: 1920, alt: "At the mirror holding the necklace" },
     { src: "/work/harshita-gaur/03.jpg", width: 1080, height: 1920, alt: "Close-up, hand at her face in a shaft of light" },
-  ],
-  "fabindia-01": [
-    { src: "/work/fabindia-01/01.jpg", width: 720, height: 326, alt: "Couple laughing among marigold garlands" },
-    { src: "/work/fabindia-01/02.jpg", width: 720, height: 326, alt: "Couple in the arched doorway" },
-    { src: "/work/fabindia-01/03.jpg", width: 720, height: 326, alt: "Couple in close-up" },
-  ],
-  "fabindia-02": [
-    { src: "/work/fabindia-02/01.jpg", width: 720, height: 326, alt: "Couple stepping out of the orange archway" },
-    { src: "/work/fabindia-02/02.jpg", width: 720, height: 326, alt: "Couple laughing in close-up" },
-    { src: "/work/fabindia-02/03.jpg", width: 720, height: 326, alt: "Woman in a coral sari, portrait" },
   ],
   "sex-sorted": [
     { src: "/work/sex-sorted/01.jpg", width: 1920, height: 820, alt: "Wide of the village square under the banyan, men and a cow" },
@@ -175,11 +167,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/sexual-harassment-haryana/02.jpg", width: 852, height: 362, alt: "Woman in profile at her desk" },
     { src: "/work/sexual-harassment-haryana/03.jpg", width: 852, height: 362, alt: "Two colleagues talking over tea" },
   ],
-  "voting-campaign": [
-    { src: "/work/voting-campaign/01.jpg", width: 848, height: 400, alt: "Village women and children walking up the lane" },
-    { src: "/work/voting-campaign/02.jpg", width: 848, height: 400, alt: "Two women in orange and purple dupattas" },
-    { src: "/work/voting-campaign/03.jpg", width: 848, height: 400, alt: "Woman and a boy sitting outside, cow behind" },
-  ],
   "happy-republic-day": [
     { src: "/work/happy-republic-day/01.jpg", width: 1920, height: 1080, alt: "Wide of the balloon seller's cycle on the street" },
     { src: "/work/happy-republic-day/02.jpg", width: 1920, height: 1080, alt: "Balloon seller with flags and balloons" },
@@ -189,5 +176,72 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/s-and-s-trailer/01.jpg", width: 1920, height: 804, alt: "Boy in the old-city lane" },
     { src: "/work/s-and-s-trailer/02.jpg", width: 1920, height: 804, alt: "Boy sitting against a brick wall" },
     { src: "/work/s-and-s-trailer/03.jpg", width: 1920, height: 804, alt: "Hands over a lit carrom board" },
+  ],
+  // Frames YouTube keeps from each film (1280×720 at most), for films that came with only their YouTube link
+  // (Oct 2026): letterbox bars and side blur trimmed, on-screen graphics and logos left out.
+  "albela": [
+    { src: "/work/albela/01.webp", width: 1280, height: 720, alt: "Woman in a pink dupatta among the trees" },
+    { src: "/work/albela/02.webp", width: 1280, height: 720, alt: "Close-up, hand raised against a red backdrop" },
+    { src: "/work/albela/03.webp", width: 1280, height: 720, alt: "Two women in yellow, outdoors" },
+  ],
+  "bharatbenz-dhingra-trucking": [
+    { src: "/work/bharatbenz-dhingra-trucking/01.webp", width: 1266, height: 712, alt: "A BharatBenz tractor unit in the yard" },
+    { src: "/work/bharatbenz-dhingra-trucking/02.webp", width: 1266, height: 712, alt: "A painted bay number on the yard floor" },
+    { src: "/work/bharatbenz-dhingra-trucking/03.webp", width: 1266, height: 712, alt: "A driver in a red shirt in front of his truck" },
+  ],
+  "narendra-kumar": [
+    { src: "/work/narendra-kumar/01.webp", width: 1280, height: 720, alt: "Three models in streetwear and masks" },
+    { src: "/work/narendra-kumar/02.webp", width: 1280, height: 720, alt: "Model in a sequinned jacket and sunglasses" },
+    { src: "/work/narendra-kumar/03.webp", width: 1280, height: 720, alt: "Two models posing on a court" },
+  ],
+  "times-men-of-the-year": [
+    { src: "/work/times-men-of-the-year/01.webp", width: 1280, height: 720, alt: "A guest smiling at his table, pink light" },
+    { src: "/work/times-men-of-the-year/02.webp", width: 1280, height: 720, alt: "A guest listening, chin in hand" },
+    { src: "/work/times-men-of-the-year/03.webp", width: 1280, height: 720, alt: "A guest applauding from his table" },
+  ],
+  "neeta-lulla-show": [
+    { src: "/work/neeta-lulla-show/01.webp", width: 1280, height: 720, alt: "Model in an orange lehenga on the night runway" },
+    { src: "/work/neeta-lulla-show/02.webp", width: 1280, height: 720, alt: "Close-up of a model under the night lights" },
+  ],
+  "the-midnight-hour": [
+    { src: "/work/the-midnight-hour/01.webp", width: 1036, height: 583, alt: "A face half in shadow" },
+    { src: "/work/the-midnight-hour/02.webp", width: 1036, height: 583, alt: "Two men in low light" },
+  ],
+  "kashi": [
+    { src: "/work/kashi/01.webp", width: 946, height: 532, alt: "Man sitting by the boats on the ghats" },
+    { src: "/work/kashi/02.webp", width: 946, height: 532, alt: "Close-up at night, city lights behind" },
+  ],
+  "toifa-aftermovie": [
+    { src: "/work/toifa-aftermovie/01.webp", width: 1038, height: 584, alt: "An embrace on stage in front of the audience" },
+    { src: "/work/toifa-aftermovie/02.webp", width: 1038, height: 584, alt: "Guests greeting each other in the hall" },
+    { src: "/work/toifa-aftermovie/03.webp", width: 1038, height: 584, alt: "Hosts on the TOIFA stage" },
+  ],
+  "times-power-women-awards": [
+    { src: "/work/times-power-women-awards/01.webp", width: 1020, height: 574, alt: "A guest smiling in the audience" },
+    { src: "/work/times-power-women-awards/02.webp", width: 1020, height: 574, alt: "A guest in a red jacket, laughing" },
+    { src: "/work/times-power-women-awards/03.webp", width: 1020, height: 574, alt: "Guests applauding" },
+  ],
+  "india-fashion-awards": [
+    { src: "/work/india-fashion-awards/01.webp", width: 953, height: 536, alt: "Guests posing together under fairy lights" },
+    { src: "/work/india-fashion-awards/02.webp", width: 953, height: 536, alt: "An interview on the red carpet" },
+    { src: "/work/india-fashion-awards/03.webp", width: 953, height: 536, alt: "A guest in the crowd, blue light" },
+  ],
+  "zypp-electric-02": [
+    { src: "/work/zypp-electric-02/01.webp", width: 946, height: 532, alt: "Two men at a desk with a Zypp box" },
+    { src: "/work/zypp-electric-02/02.webp", width: 946, height: 532, alt: "Close-up of a man talking to camera" },
+  ],
+  "nayi-soch-wali-azadi": [
+    { src: "/work/nayi-soch-wali-azadi/01.webp", width: 956, height: 538, alt: "A family seated together at the table" },
+    { src: "/work/nayi-soch-wali-azadi/02.webp", width: 956, height: 538, alt: "A woman in an orange saree" },
+    { src: "/work/nayi-soch-wali-azadi/03.webp", width: 956, height: 538, alt: "Two women embracing" },
+  ],
+  "sang-tu-chalen": [
+    { src: "/work/sang-tu-chalen/01.webp", width: 1156, height: 650, alt: "A woman smiling in front of a red curtain" },
+    { src: "/work/sang-tu-chalen/02.webp", width: 1156, height: 650, alt: "Close-up of a woman, a man beside her" },
+    { src: "/work/sang-tu-chalen/03.webp", width: 1156, height: 650, alt: "A woman looking back from a doorway" },
+  ],
+  "falaknama": [
+    { src: "/work/falaknama/01.webp", width: 405, height: 720, alt: "A young man holding a red rose" },
+    { src: "/work/falaknama/02.webp", width: 405, height: 720, alt: "A young man at a café table" },
   ],
 };

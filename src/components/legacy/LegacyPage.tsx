@@ -9,7 +9,11 @@ export const metadata: Metadata = { title: "Freaky Mack Studios", robots: { inde
 export default function LegacyPage() {
   return (
     <>
-      <meta httpEquiv="refresh" content="0;url=/" />
+      {/* One redirect at a time: with JavaScript, LegacyRedirect; without it, the refresh tag. Both at once
+          raced, and the browser could cancel the pair and leave the visitor on this page. */}
+      <noscript>
+        <meta httpEquiv="refresh" content="0;url=/" />
+      </noscript>
       <LegacyRedirect />
       <p style={{ fontFamily: "system-ui, sans-serif", padding: 24 }}>
         This page has moved. <Link href="/">Go to the homepage →</Link>

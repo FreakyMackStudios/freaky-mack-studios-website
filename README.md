@@ -81,7 +81,7 @@ The default look is `DEFAULT_THEME` / `DEFAULT_ACCENT` / `DEFAULT_GROUND` in `sr
 | Variable | Purpose |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for metadata, sitemap and robots. On Vercel it falls back to the production domain. |
-| `NEXT_PUBLIC_FORMSPREE_ENDPOINT` | Where the enquiry form posts (e.g. `https://formspree.io/f/xxxx`). Without it, sending opens a pre-filled email to freakymackstudios@gmail.com. |
+| `NEXT_PUBLIC_ENQUIRY_ENDPOINT` | Where both enquiry forms post: the studio's Google Apps Script web app, which saves each enquiry in a Google Sheet and emails freakymackstudios@gmail.com (free; setup in `docs/enquiry-form-google-sheet.md`). Can also be set in `src/shared/config.ts` (`CONTACT.enquiryEndpoint`). Without it, sending opens a pre-filled email in the visitor's email app. |
 | `NEXT_PUBLIC_PITCH_MODE` | `off` hides the theme picker and locks the defaults. |
 
 ## Content still owed by the client

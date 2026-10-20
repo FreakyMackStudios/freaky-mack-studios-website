@@ -5,6 +5,8 @@ import s from "@/components/site/site.module.css";
 import { ContactRow, PhoneIcon, PhoneLine, WhatsAppIcon } from "@/components/site/ContactDetails";
 import { H1, Intro, Kicker, Label, PX } from "@/components/site/ui";
 import { EnquiryForm } from "./_components/EnquiryForm";
+import { Still } from "@/components/site/Still";
+import { SHOT_LIST } from "@/content/bts";
 
 export const metadata: Metadata = {
   title: "Start a project",
@@ -98,6 +100,12 @@ export default function StartAProjectPage() {
               ))}
             </ol>
           </div>
+          </RevealItem>
+          {/* From set: the shot list being written up beside the camera. */}
+          <RevealItem from={{ y: 60 }} className="w-full md:col-span-2 md:max-w-[520px] xl:max-w-none">
+            <div className="[transform:rotate(-2deg)]">
+              <Still still={SHOT_LIST} sizes="(min-width: 1280px) 400px, (min-width: 768px) 520px, 90vw" className="rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.2)]" />
+            </div>
           </RevealItem>
         </Reveal>
       </section>

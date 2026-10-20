@@ -8,17 +8,19 @@ const LIFT = [0, 40, 0, 24, 32, 0, 40, 0];
 /** Team portraits (public/people). `position` keeps the face in frame when the photo fills a shaped box. */
 export type Portrait = { src: string; alt: string; position: string };
 export const PORTRAITS = {
-  izaan: { src: "/people/izaan-khan.webp", alt: "Izaan Khan, founder and producer of Freaky Mack Studios", position: "50% 38%" },
+  izaan: { src: "/people/izaan-khan-portrait.webp", alt: "Izaan Khan, founder and producer of Freaky Mack Studios", position: "62% 40%" },
   rahim: { src: "/people/ab-rahim-shah.webp", alt: "AB Rahim Shah, Director & Chief Business Officer", position: "50% 18%" },
   ashok: { src: "/people/ashok-kumar-naik.webp", alt: "Ashok Kumar Naik, Director & Chief Operating Officer", position: "50% 20%" },
+  tridip: { src: "/people/tridip-k-maity.webp", alt: "Tridip K Maity, Editor", position: "50% 28%" },
+  salan: { src: "/people/salan-lamare.webp", alt: "Salan Lamare, Cinematographer", position: "50% 30%" },
 } satisfies Record<string, Portrait>;
 
 /** Izaan (the founder) has his own section above the grid. The studio will add two more people later. */
 const PEOPLE: { name: string; role: string; photo?: Portrait }[] = [
   { name: "AB Rahim Shah", role: "Director & Chief Business Officer (CBO)", photo: PORTRAITS.rahim },
   { name: "Ashok Kumar Naik", role: "Director & Chief Operating Officer (COO)", photo: PORTRAITS.ashok },
-  { name: "Tridip K Maity", role: "Editor" },
-  { name: "Salan Lamare", role: "Cinematographer" },
+  { name: "Tridip K Maity", role: "Editor", photo: PORTRAITS.tridip },
+  { name: "Salan Lamare", role: "Cinematographer", photo: PORTRAITS.salan },
 ];
 
 export const CREW = PEOPLE.map((p, i) => ({

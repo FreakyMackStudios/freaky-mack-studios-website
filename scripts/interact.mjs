@@ -62,7 +62,26 @@ async function contrastSweep(page) {
 }
 
 const browser = await chromium.launch();
+// YouTube is out of reach in some test environments: thumbnails are answered with one of the site's own
+// 16:9 frames, and the player itself isn't loaded. Every page and context the checks open goes through this.
+const youtubeStandIn = async (target) => {
+  await target.route("https://i.ytimg.com/**", (r) => r.fulfill({ path: "public/work/dbs-lifestyle/01.jpg", contentType: "image/jpeg" }));
+  await target.route(/youtube(-nocookie)?\.com\//, (r) => r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>YouTube</title>" }));
+};
+const origNewPage = browser.newPage.bind(browser);
+browser.newPage = async (...a) => { const pg = await origNewPage(...a); await youtubeStandIn(pg); return pg; };
+const origNewContext = browser.newContext.bind(browser);
+browser.newContext = async (...a) => { const c = await origNewContext(...a); await youtubeStandIn(c); return c; };
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+// Enquiries never leave the test: the studio's Google Apps Script endpoint is answered here instead, and
+// what the forms send is kept for the checks. `enquiryReply` switches the answer (ok, or a failure).
+const enquiries = [];
+let enquiryReply = { ok: true };
+await page.route("https://script.google.com/**", async (route) => {
+  const req = route.request();
+  enquiries.push({ type: req.headers()["content-type"], body: JSON.parse(req.postData() || "{}") });
+  await route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(enquiryReply) });
+});
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -226,7 +245,7 @@ const cardOk = await card.evaluate((a) => {
   const img = a.querySelector("img[alt]:not([alt=''])");
   return { op: getComputedStyle(box).opacity, href: a.getAttribute("href"), target: a.target, img: !!img && img.naturalWidth > 0 };
 });
-check(cardOk.op === "1" && cardOk.href === "https://www.youtube.com/" && cardOk.target === "_blank" && cardOk.img, `hovering a brand shows its film's cover, linking to YouTube (${JSON.stringify(cardOk)})`);
+check(cardOk.op === "1" && cardOk.href === "https://youtu.be/nbpE1OmMjmU" && cardOk.target === "_blank" && cardOk.img, `hovering a brand shows its film's cover, linking to the film on YouTube (${JSON.stringify(cardOk)})`);
 await page.mouse.move(5, 5);
 await page.waitForTimeout(600);
 check((await card.evaluate((a) => getComputedStyle(a.closest("[id^='brand-card-']")).opacity)) === "0", "the brand card fades away when the pointer leaves");
@@ -264,7 +283,25 @@ const sentence = (await page.locator("#ch3 p").first().innerText()).replace(/\s+
 check(/a music video/.test(sentence) && /a face on screen/.test(sentence), `sentence builder → "${sentence}"`);
 const ch4 = page.locator("#ch4");
 check((await ch4.getByText("Coming", { exact: false }).count()) > 0 && (await ch4.getByText("On air soon").isVisible()), "podcast chapter shows Coming soon");
-check(/^mailto:/.test((await ch4.getByRole("link", { name: /Say hello/ }).getAttribute("href")) ?? "") && !(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: email CTA, no episode placeholders");
+check(!(await ch4.getByText(/EPISODE ART|Episode title|Now playing/).count()), "podcast chapter: no episode placeholders");
+// "Want to be on it? Say hello" brings you to Chapter 06, and white bubbles point out what to fill in.
+const hintState = () => page.evaluate(() => {
+  const r = document.querySelector("#contact form").getBoundingClientRect();
+  return {
+    inView: r.top < innerHeight && r.bottom > 0,
+    shown: [...document.querySelectorAll("#contact [data-hint]")].map((h) => getComputedStyle(h).opacity === "1"),
+    focus: document.activeElement?.id,
+  };
+});
+await ch4.getByRole("link", { name: /Say hello/ }).click();
+await page.waitForFunction(() => [...document.querySelectorAll("#contact [data-hint]")].every((h) => getComputedStyle(h).opacity === "1"), null, { timeout: 4000 }).catch(() => {});
+let hs = await hintState();
+check(hs.inView && hs.shown.length === 3 && hs.shown.every(Boolean) && hs.focus === "fm-name", `Say hello → Chapter 06, three bubbles, cursor in "Your name" (${JSON.stringify(hs)})`);
+await page.locator("#fm-name").fill("Podcast Guest");
+await page.waitForTimeout(500);
+hs = await hintState();
+check(!hs.shown[0] && hs.shown[1] && hs.shown[2], `a bubble goes once its field is filled (${JSON.stringify(hs.shown)})`);
+await page.locator("#fm-name").fill("");
 
 console.log("Theme switch");
 const bg = () => root(page).evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -280,7 +317,15 @@ const tb = await toggle.boundingBox();
 check(tb && tb.x + tb.width > 1440 - 40 && tb.y + tb.height > 900 - 40 && (await toggle.getAttribute("aria-checked")) === "true", "theme switch sits bottom-right, on (Dark)");
 // The circle is a plain CSS animation on the transition layer (no CSS variables or script-driven animation
 // there, which Safari handled unevenly: the light page popped in at once going to Light).
-const circleOn = () => page.evaluate(() => new Promise((res) => setTimeout(() => res(document.getAnimations().filter((a) => a.animationName === "fm-vt").map((a) => a.effect.pseudoElement)), 120)));
+// Polled, not read once at a fixed delay: on a cold start the browser can take a moment to snapshot the
+// page before the transition (and its circle) begins.
+const circleOn = () =>
+  page
+    .waitForFunction(() => {
+      const on = document.getAnimations().filter((a) => a.animationName === "fm-vt").map((a) => a.effect.pseudoElement);
+      return on.length ? on : null;
+    }, null, { timeout: 2000, polling: 16 })
+    .then((h) => h.jsonValue(), () => []);
 await toggle.click();
 const growOn = await circleOn();
 check(growOn.length === 1 && growOn[0] === "::view-transition-new(root)", `to Light: the new (light) page grows out of the switch as a CSS-animated circle (${growOn})`);
@@ -312,7 +357,11 @@ await page.waitForURL(`${base}/`, { timeout: 5000 }).catch(() => {});
 check(new URL(page.url()).pathname === "/", `/option-b/ lands on / (${page.url()})`);
 
 console.log("Work & project pages");
-await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
+// "load", not "networkidle": the grid's 40-odd links prefetch their pages as they scroll into view, which can
+// keep the network busy long enough that it never counts as idle.
+await page.goto(`${base}/work/`, { waitUntil: "load" });
+await page.locator('section a[href^="/work/"]:not([href="/work/"])').first().waitFor();
+await page.waitForTimeout(600);
 const CARD = 'section a[href^="/work/"]:not([href="/work/"])';
 const cards = page.locator(CARD);
 const allCount = await cards.count();
@@ -320,58 +369,123 @@ await page.getByRole("radio", { name: "Fashion films" }).click();
 await page.waitForTimeout(900); // leaving cards animate out, the rest glide into place
 const settled = await page.evaluate(() => [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')].map((a) => getComputedStyle(a.parentElement).opacity));
 check(settled.every((o) => o === "1"), `filtered cards settle fully visible (${settled.join(", ")})`);
-check((await cards.count()) === 4 && allCount === 26 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 4 of ${allCount}, with no visible count`);
-check(!(await page.getByRole("radio", { name: "Music videos" }).count()), "formats with no published film have no filter chip");
+check((await cards.count()) === 4 && allCount === 39 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 4 of ${allCount}, with no visible count`);
+check(!(await page.getByRole("radio", { name: "Documentaries" }).count()) && (await page.getByRole("radio", { name: "Music videos" }).count()) === 1, "formats with no published film have no filter chip (Documentaries); Music videos now has films");
 await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "Event films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
+// An odd number of films: the last card sits centred under the two columns.
+await page.getByRole("radio", { name: "Short films & series" }).click();
+await page.waitForTimeout(1000);
+const oddTail = await page.evaluate(() => {
+  const cards = [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')];
+  const sec = cards[0].closest("section").getBoundingClientRect();
+  const last = cards.at(-1).getBoundingClientRect();
+  return { n: cards.length, off: Math.round(last.left + last.width / 2 - (sec.left + sec.width / 2)) };
+});
+check(oddTail.n % 2 === 1 && Math.abs(oddTail.off) < 12, `an odd last card is centred under the columns (${JSON.stringify(oddTail)})`);
 await page.getByRole("radio", { name: "All work" }).click();
+await page.waitForTimeout(1200);
+// Tall vertical films are spread out, so neither column runs on alone past the other at the bottom.
+const ends = await page.evaluate(() => {
+  const sec = document.querySelector('section a[href^="/work/"]:not([href="/work/"])').closest("section");
+  const [l, r] = [...sec.children].slice(0, 2).map((c) => [...c.querySelectorAll("a")]);
+  const bottom = (a) => Math.round(a.at(-1).getBoundingClientRect().bottom);
+  return { left: l.length, right: r.length, gap: Math.abs(bottom(l) - bottom(r)), card: Math.round(l[0].getBoundingClientRect().height) };
+});
+check(ends.gap < ends.card * 0.6 && Math.abs(ends.left - ends.right) <= 3, `All work: both columns end level (${JSON.stringify(ends)})`);
 await cards.first().click();
 await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
 check(await page.getByText(`Film 01 of ${allCount}`).isVisible(), `project counter reads Film 01 of ${allCount}`);
-const film = page.getByRole("button", { name: "Play the film" });
+// The film plays from YouTube: pressing play swaps the poster for the YouTube player.
+const film = page.getByRole("button", { name: "Play McDonald’s Chicken McWings" });
 await film.click();
-check((await page.getByRole("button", { name: "Pause the film" }).getAttribute("aria-pressed")) === "true" && (await page.getByText(/Now playing/).isVisible()), "project play toggle → Now playing");
+const player = page.locator('iframe[src*="youtube-nocookie.com/embed/-Qhrky4ojhw"]');
+check((await player.count()) === 1 && /autoplay=1/.test((await player.getAttribute("src")) ?? "") && (await player.getAttribute("title")) === "McDonald’s Chicken McWings on YouTube", "play → the film's YouTube player (privacy-enhanced, autoplay)");
 check((await page.locator('a[href="/work/mcdonalds-veg-surprise/"], a[href="/work/mcdonalds-veg-surprise"]').count()) > 0, "Next up links to the second film");
 // A film the studio filled in completely shows every part of its story; one it left partly blank shows only what it gave.
 const storyOf = () => page.evaluate(() => ["The brief", "The idea", "On screen"].filter((l) => [...document.querySelectorAll("main *")].some((e) => e.children.length === 0 && e.textContent.trim() === l)));
 check((await storyOf()).length === 3, "a fully filled film shows its brief, idea and on-screen story");
 // Stills: the film's frames load as real images (poster + three frames), with alt text from the extraction.
+// (Reloaded first: pressing play above swapped the poster for the YouTube player.)
+await page.reload({ waitUntil: "networkidle" });
 await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } });
 await page.waitForTimeout(800);
 const frames = await page.evaluate(() => [...document.querySelectorAll('main img[src*="/work/mcdonalds-chicken-mcwings/"]')].filter((i) => i.alt).map((i) => ({ ok: i.complete && i.naturalWidth >= 1920, alt: i.alt })));
 check(frames.length === 7 && frames.every((f) => f.ok && f.alt.length > 5), `all 7 McWings stills load at full resolution with alt text (${frames.length} images)`);
+// The frames collage is balanced: each frame is either full width or one of a side-by-side pair, never a
+// lone half-width frame (Changa 3 frames, Zykaz Cafe 4, Rock.it 5).
+for (const slug of ["changa", "zykaz-cafe", "rock-it"]) {
+  await page.goto(`${base}/work/${slug}/`, { waitUntil: "networkidle" });
+  const g = await page.evaluate(() => {
+    const sec = document.querySelector('section[aria-label="Stills"]');
+    const full = sec.querySelector("div").getBoundingClientRect().width;
+    const ws = [...sec.querySelectorAll("img")].map((i) => i.closest("[class*=rounded]").offsetWidth / full);
+    return { full: ws.filter((w) => w > 0.9).length, half: ws.filter((w) => w > 0.4 && w < 0.55).length, other: ws.filter((w) => w <= 0.4 || (w >= 0.55 && w <= 0.9)).length };
+  });
+  check(g.other === 0 && g.half % 2 === 0, `${slug}: frames sit as full-width shots and even pairs (${JSON.stringify(g)})`);
+}
+// Project images come in film shapes only: 16:9, or 9:16 for vertical films. McWings (2.55:1 frames),
+// Harshita Gaur (vertical) and Zykaz Cafe (4:3) cover each case.
 for (const slug of ["mcdonalds-chicken-mcwings", "harshita-gaur", "zykaz-cafe"]) {
   await page.goto(`${base}/work/${slug}/`, { waitUntil: "networkidle" });
-  const c = await croppedOn();
-  check(c.length === 0, `${slug}: every frame shown whole, in its own shape (${c.length} cropped)`);
+  const c = await offShape();
+  check(c.length === 0, `${slug}: every frame sits in a 16:9 (or 9:16 vertical) box (${c.length} off${c[0] ? ": " + JSON.stringify(c[0]) : ""})`);
 }
 await page.goto(`${base}/work/mcdonalds-chicken-mcwings/`, { waitUntil: "networkidle" });
 await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
 const partial = await page.evaluate(() => document.querySelector("main").innerText);
 check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /R Balki/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
+// A film added from the YouTube links sheet, with frames taken from YouTube's own grabs: one of them is the
+// cover, the frames show as a pair, it plays from YouTube, and with no credits or story the page has none.
+await page.goto(`${base}/work/neeta-lulla-show/`, { waitUntil: "networkidle" });
+const ytOnly = await page.evaluate(() => {
+  const main = document.querySelector("main");
+  const imgs = [...main.querySelectorAll('img[src*="/work/neeta-lulla-show/"]')];
+  return {
+    images: imgs.length,
+    loaded: imgs.every((i) => i.complete && i.naturalWidth >= 1280),
+    credits: /Credits/.test(main.innerText),
+    frames: /Frames from the film/.test(main.innerText),
+    title: /NEETA LULLA SHOW/i.test(main.innerText),
+  };
+});
+check(ytOnly.images === 3 && ytOnly.loaded && ytOnly.title && !ytOnly.credits && ytOnly.frames, `a YouTube-sheet film: its own frames (cover + a pair), title, no empty credits (${JSON.stringify(ytOnly)})`);
+// The frames came from YouTube's grabs for every video-only film but pTron (whose grabs are too small): it keeps
+// its YouTube thumbnail as the cover, and has no frames section.
+await page.goto(`${base}/work/ptron/`, { waitUntil: "networkidle" });
+const thumbOnly = await page.evaluate(() => {
+  const main = document.querySelector("main");
+  const cover = main.querySelector('img[src*="i.ytimg.com/vi/C6qfJ5-5CkM/"]');
+  return { cover: !!cover && cover.complete && cover.naturalWidth > 120, frames: /Frames from the film/.test(main.innerText) };
+});
+check(thumbOnly.cover && !thumbOnly.frames, `pTron: YouTube thumbnail cover, no frames section (${JSON.stringify(thumbOnly)})`);
+await page.goto(`${base}/work/neeta-lulla-show/`, { waitUntil: "networkidle" });
+await page.getByRole("button", { name: "Play Neeta Lulla Show" }).click();
+check((await page.locator('iframe[src*="youtube-nocookie.com/embed/ii-EsNFShMY"]').count()) === 1, "a YouTube-only film plays from YouTube");
 await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
-// No still is cropped: every cover-fitted image sits in a box of its own shape (16:9, 9:16, 4:3, 2.39:1…).
-async function croppedOn() {
+// Project images: every cover-fitted image sits in a 16:9 box, or 9:16 when the frame is vertical.
+async function offShape() {
   return page.evaluate(async () => {
     for (let y = 0; y < document.body.scrollHeight; y += 500) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
     await new Promise((r) => setTimeout(r, 600));
     return [...document.querySelectorAll("main img")]
-      .filter((i) => i.alt && getComputedStyle(i).objectFit === "cover" && i.naturalWidth)
-      .map((i) => ({ box: i.clientWidth / i.clientHeight, img: i.naturalWidth / i.naturalHeight, src: i.getAttribute("src") }))
-      .filter((r) => Math.abs(r.box / r.img - 1) > 0.015);
+      .filter((i) => i.alt && getComputedStyle(i).objectFit === "cover" && i.naturalWidth && i.clientHeight)
+      .map((i) => ({ box: +(i.clientWidth / i.clientHeight).toFixed(3), tall: i.naturalHeight > i.naturalWidth, src: i.getAttribute("src") }))
+      .filter((r) => Math.abs(r.box / (r.tall ? 9 / 16 : 16 / 9) - 1) > 0.015);
   });
 }
-const cropWork = await croppedOn();
-check(cropWork.length === 0, `work cards show each still whole, in its own shape (${cropWork.length} cropped${cropWork[0] ? ": " + cropWork[0].src : ""})`);
+const offWork = await offShape();
+check(offWork.length === 0, `work cards: every cover is 16:9 (or 9:16 vertical) (${offWork.length} off${offWork[0] ? ": " + JSON.stringify(offWork[0]) : ""})`);
 await page.evaluate(() => scrollTo(0, 0));
 const workText = await page.evaluate(() => document.querySelector("main").innerText);
 check(!/\[(Client|Year|STILL)/.test(workText), "work cards show real stills and no [Client], [Year] or [ STILL ] placeholders");
-// Films without stills or without written content are listed by name only, under "Publishing soon", and get no page.
-const soon = page.locator('section[aria-label="Publishing soon"]');
-check((await soon.getByText("pTron", { exact: true }).count()) === 1 && (await soon.locator("a").count()) === 0, "unfinished films are listed by name under Publishing soon, without links");
-check((await page.request.get(`${base}/work/ptron/`)).status() === 404, "an unpublished film has no page yet");
+// Only films with a public video are on the site: no "Publishing soon" list, and the films without one
+// (removed, or The Last Presence until its public link comes) have no page.
+check((await page.locator('section[aria-label="Publishing soon"]').count()) === 0 && !(await page.getByText(/Publishing soon/i).count()), "no Publishing soon list");
+const gone = await Promise.all(["fabindia-01", "fabindia-02", "voting-campaign", "rudraprayag", "soanbhadra", "zykaz-interview", "pc-jeweller-sonalika-sahay", "tlp-teaser"].map(async (s) => (await page.request.get(`${base}/work/${s}/`)).status()));
+check(gone.every((st) => st === 404) && (await page.request.get(`${base}/work/ptron/`)).status() === 200, `films without a video have no page; one with a video does (${gone.join(",")})`);
 check((await page.getByRole("link", { name: "Work" }).first().getAttribute("aria-current")) === "page", "nav marks Work active on a project page");
-await page.goto(`${base}/work/s-and-s-trailer/`, { waitUntil: "networkidle" });
+await page.goto(`${base}/work/sang-tu-chalen/`, { waitUntil: "networkidle" });
 check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
 
 console.log("Originals");
@@ -379,6 +493,15 @@ await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
 const pod = page.locator("#podcast");
 check((await pod.getByRole("heading", { name: /Coming\s+soon/ }).isVisible()) && (await pod.locator("li").count()) === 3, "Originals podcast: Coming soon heading and what-to-expect list");
 check((await pod.locator("button").count()) === 0 && !(await page.getByText(/Latest episode|Every episode|\[Guest\]/).count()), "Originals podcast: no player or episode placeholders");
+await pod.getByRole("link", { name: /Say hello/ }).click();
+await page.waitForURL((u) => new URL(u).pathname === "/", { timeout: 8000 }).catch(() => {});
+await page.waitForFunction(() => [...document.querySelectorAll("#contact [data-hint]")].every((h) => getComputedStyle(h).opacity === "1"), null, { timeout: 6000 }).catch(() => {});
+const fromOriginals = await page.evaluate(() => ({
+  url: location.pathname + location.search + location.hash,
+  shown: [...document.querySelectorAll("#contact [data-hint]")].filter((h) => getComputedStyle(h).opacity === "1").length,
+  inView: (() => { const r = document.querySelector("#contact form").getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })(),
+}));
+check(fromOriginals.url === "/#contact" && fromOriginals.shown === 3 && fromOriginals.inView, `Originals' Say hello lands on the homepage form with the bubbles, and tidies the address (${JSON.stringify(fromOriginals)})`);
 
 console.log("Start a project");
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -418,11 +541,71 @@ await page.getByLabel("The story so far").fill("A launch film.");
 await page.getByRole("button", { name: "Send it over →" }).click();
 check((await page.getByText("That email doesn’t look quite right.").isVisible()), "bad email is caught");
 await page.getByLabel("Email").fill("test@brand.com");
-await page.getByRole("button", { name: "Send it over →" }).click();
-await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
-check(/\/thanks\/?$/.test(new URL(page.url()).pathname), `valid submit lands on /thanks (${page.url()})`);
+const sendMode = await page.locator("form[data-send]").getAttribute("data-send");
+// The contrast sweeps above switch the page to reduced motion; the send sequence needs full motion.
+await page.emulateMedia({ reducedMotion: "no-preference" });
+if (sendMode === "post") {
+  // The endpoint fails: the visitor is told, stays put and keeps what they typed.
+  enquiryReply = { ok: false, error: "test" };
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  await page.getByText("That didn’t go through.", { exact: false }).waitFor({ timeout: 10000 }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById("fm-curtain"), null, { timeout: 4000 }).catch(() => {});
+  const back = await page.evaluate(() => ({ curtain: !!document.getElementById("fm-curtain"), envelope: !!document.getElementById("fm-envelope"), form: getComputedStyle(document.querySelector("form[data-send]")).visibility }));
+  check((await page.getByText("That didn’t go through.", { exact: false }).isVisible()) && /start-a-project/.test(page.url()) && (await page.getByLabel("Your name").inputValue()) === "Test Person" && !back.curtain && !back.envelope && back.form === "visible", `a failed send: the curtain goes back, the form returns with the answers, and it says so (${JSON.stringify(back)})`);
+  enquiryReply = { ok: true };
+  enquiries.length = 0;
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  // The send sequence: the form folds into an envelope that flies off, then the black curtain covers the
+  // screen; no "Sending…" line shows (it is only announced to screen readers).
+  const env = await page.waitForSelector("#fm-envelope", { timeout: 2000 }).then(() => true, () => false);
+  const quiet = await page.evaluate(() => { const st = document.querySelector("form[data-send] [role=status]"); return !st || st.classList.contains("sr-only"); });
+  const curtain = await page.waitForSelector("#fm-curtain", { timeout: 5000 }).then(() => true, () => false);
+  check(env && quiet && curtain, `sending: envelope, then the black curtain; no visible "Sending" text (envelope ${env}, curtain ${curtain})`);
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  const sent = enquiries[0];
+  // On Thanks the curtain slides away and the pieces fly in and settle.
+  await page.waitForFunction(() => !document.getElementById("fm-curtain"), null, { timeout: 4000 }).catch(() => {});
+  await page.waitForTimeout(1600);
+  const settled = await page.evaluate(() => [...document.querySelectorAll("main [data-reveal]")].slice(0, 6).map((n) => getComputedStyle(n)).every((cs) => cs.opacity === "1" && (cs.transform === "none" || cs.transform === "matrix(1, 0, 0, 1, 0, 0)")));
+  check(!(await page.evaluate(() => !!document.getElementById("fm-curtain"))) && settled, "Thanks: the curtain slides away and every piece lands in place");
+  check(/\/thanks\/?$/.test(new URL(page.url()).pathname), `a confirmed send lands on /thanks (${page.url()})`);
+  check(enquiries.length === 1 && /^text\/plain/.test(sent.type) && sent.body.name === "Test Person" && sent.body.email === "test@brand.com" && sent.body.brief === "A launch film." && sent.body.format === "an animated explainer" && /agency/.test(sent.body.audience) && !!sent.body.timing && sent.body.source === "Start a project" && /New enquiry/.test(sent.body.subject), `the enquiry carries every answer, as a simple text/plain request (${JSON.stringify(sent?.body)})`);
+} else {
+  // No endpoint in this build: the email app opens and the page asks them to press Send there.
+  await page.getByRole("button", { name: "Send it over →" }).click();
+  await page.waitForTimeout(800);
+  check(/start-a-project/.test(page.url()) && (await page.getByText("Press Send there", { exact: false }).isVisible()), "without an endpoint: the email app opens and the page asks them to press Send (no Thanks yet)");
+  await page.goto(`${base}/thanks/`, { waitUntil: "networkidle" });
+}
 check(await page.getByText("Cut. Print. Talk soon.").isVisible(), "Thanks footer sign-off");
 check((await page.getByRole("link", { name: "Start a project" }).first().getAttribute("aria-current")) === "page", "nav CTA marked current on Thanks");
+// The homepage form sends the same way, and drops what a bot fills into the hidden field.
+const homeForm = async () => {
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  const f = page.locator("#contact form");
+  await f.scrollIntoViewIfNeeded();
+  await f.getByLabel("Your name").fill("Home Tester");
+  await f.getByLabel("Email").fill("home@brand.com");
+  await f.getByLabel("The story so far").fill("A 30s ad film.");
+  return f;
+};
+if (sendMode === "post") {
+  enquiries.length = 0;
+  await (await homeForm()).getByRole("button", { name: "Send it over" }).click();
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  check(/\/thanks\/?$/.test(new URL(page.url()).pathname) && enquiries.length === 1 && enquiries[0].body.source === "Homepage" && enquiries[0].body.name === "Home Tester", `homepage form sends (source: Homepage) and lands on /thanks`);
+  enquiries.length = 0;
+  const f = await homeForm();
+  await f.locator('input[name="website"]').evaluate((el) => { el.value = "http://spam.example"; });
+  await f.getByRole("button", { name: "Send it over" }).click();
+  await page.waitForURL(/\/thanks\/?$/, { timeout: 8000 }).catch(() => {});
+  check(enquiries.length === 0 && /\/thanks\/?$/.test(new URL(page.url()).pathname), "a bot that fills the hidden field sees Thanks, but nothing is sent");
+} else {
+  await (await homeForm()).getByRole("button", { name: "Send it over" }).click();
+  await page.waitForTimeout(800);
+  check(new URL(page.url()).pathname === "/" && (await page.getByText("Press Send there", { exact: false }).isVisible()), "homepage form without an endpoint: asks them to press Send in their email app");
+}
+await page.emulateMedia({ reducedMotion: "reduce" }); // back to how the checks below expect it
 
 console.log("Legal, 404");
 await page.goto(`${base}/privacy/`, { waitUntil: "networkidle" });
@@ -483,6 +666,19 @@ await phone.waitForTimeout(900);
 ps = await panelState();
 check(ps[2].open && ps[2].h > 80 && ps[2].imgs === 2 && !ps[0].open && ps[0].h < 2, `phone: tapping another film opens it and closes the one before (${JSON.stringify(ps.map((p) => p.h))})`);
 check((await phone.locator("#ch1-panel-2").getByRole("link", { name: "Open project →" }).getAttribute("href"))?.startsWith("/work/pc-jeweller-tvc"), "phone: the open film links to its project");
+// Phones: "Say hello" goes to the form, with no bubbles.
+{
+  await phone.goto(`${base}/`, { waitUntil: "networkidle" });
+  const link = phone.locator("#ch4").getByRole("link", { name: /Say hello/ });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await phone.waitForTimeout(1800);
+  const ph = await phone.evaluate(() => ({
+    inView: (() => { const r = document.querySelector("#contact form").getBoundingClientRect(); return r.top >= -2 && r.top < innerHeight / 2; })(),
+    bubbles: [...document.querySelectorAll("#contact [data-hint]")].filter((h) => getComputedStyle(h).display !== "none" && getComputedStyle(h).opacity !== "0").length,
+  }));
+  check(ph.inView && ph.bubbles === 0, `phone: Say hello scrolls to the form, no bubbles (${JSON.stringify(ph)})`);
+}
 // Phones: only the ten major brands, as plain tags; no cards.
 await phone.locator('section[aria-label="Clients"]').scrollIntoViewIfNeeded();
 await phone.waitForTimeout(1000);
@@ -609,7 +805,7 @@ console.log("Motion (other pages)");
     op: getComputedStyle(a.closest("[id^='brand-card-']")).opacity,
     href: a.getAttribute("href"),
   }));
-  check(studioCard.op === "1" && studioCard.href === "https://www.youtube.com/", `Studio brand hover opens the film card (${JSON.stringify(studioCard)})`);
+  check(studioCard.op === "1" && studioCard.href === "https://youtu.be/-Qhrky4ojhw", `Studio brand hover opens the film card, linking to the film (${JSON.stringify(studioCard)})`);
   // Footer: each contact detail has its icon, and the three phones share one line, split by "|".
   for (const w of [1440, 1024, 768]) {
     await sp.setViewportSize({ width: w, height: 900 });
@@ -626,6 +822,33 @@ console.log("Motion (other pages)");
   await sp.waitForTimeout(1800);
   const h1 = await sp.evaluate(() => getComputedStyle(document.querySelector("h1").closest("[data-reveal]")).opacity);
   check(h1 === "1", "People hero plays in on load");
+  // Behind-the-scenes photos (src/content/bts.ts): each page's photos load, at a real size, with alt text.
+  for (const [r, want] of [["/studio/", 9], ["/people/", 1], ["/", 1], ["/start-a-project/", 1], ["/thanks/", 1], ["/missing-page/", 1]]) {
+    await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
+    const shots = await sp.evaluate(async () => {
+      const imgs = [...document.querySelectorAll('img[src*="/bts/"]')];
+      for (const i of imgs) { i.loading = "eager"; i.scrollIntoView({ block: "center" }); await i.decode().catch(() => {}); }
+      return imgs.map((i) => ({ ok: i.naturalWidth > 0 && i.getBoundingClientRect().width > 60, alt: i.alt.length > 10 }));
+    });
+    check(shots.length === want && shots.every((x) => x.ok && x.alt), `${r}: ${want} behind-the-scenes photo${want > 1 ? "s" : ""} load at a real size, with alt text (${shots.length} found)`);
+  }
+  await sp.setViewportSize({ width: 1440, height: 900 });
+  // Team photos: every crew member (and the founder) has a loaded portrait; no "[ PHOTO ]" left.
+  for (const r of ["/people/", "/"]) {
+    await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
+    await sp.evaluate(async () => {
+      for (const img of document.querySelectorAll('img[src*="/people/"]')) {
+        img.loading = "eager";
+        await img.decode().catch(() => {});
+      }
+    });
+    const team = await sp.evaluate(() => ({
+      imgs: [...document.querySelectorAll('img[src*="/people/"]')].map((i) => [i.alt.split(",")[0], i.naturalWidth > 0]),
+      placeholder: document.body.innerText.includes("[ PHOTO ]"),
+    }));
+    const want = r === "/" ? 4 : 5;
+    check(team.imgs.length === want && team.imgs.every(([, ok]) => ok) && !team.placeholder, `${r}: team portraits all load, no [ PHOTO ] left (${team.imgs.map(([n]) => n).join(", ")})`);
+  }
   await ctx.close();
   // Without JavaScript nothing is hidden on any page.
   const nojs = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { CONTACT } from "./config";
+import { coverScreen, flyEnvelope, prefersReducedMotion, restoreForm, uncoverScreen } from "./send-flight";
 
 /** Everything an enquiry can carry: the chip answers and every field (CLAUDE.md → Enquiry form). */
 export type Enquiry = {
@@ -18,7 +19,11 @@ export type Enquiry = {
   source?: string;
 };
 export type EnquiryErrors = Partial<Record<"name" | "email" | "brief", string>>;
-export type EnquiryStatus = "idle" | "sending" | "sent" | "error";
+/** "email": no endpoint is set, so the visitor's email app was opened with the enquiry filled in. */
+export type EnquiryStatus = "idle" | "sending" | "sent" | "email" | "error";
+
+/** How this build sends enquiries: straight to the studio ("post"), or through the visitor's email app. */
+export const SEND_MODE: "post" | "email" = CONTACT.enquiryEndpoint ? "post" : "email";
 
 const LABELS: [keyof Enquiry, string][] = [
   ["format", "Format"],
@@ -44,24 +49,29 @@ export function validateEnquiry(e: Enquiry): EnquiryErrors {
 
 /**
  * Sends an enquiry to freakymackstudios@gmail.com.
- * With NEXT_PUBLIC_FORMSPREE_ENDPOINT set (e.g. https://formspree.io/f/xxxx) it posts there;
- * otherwise it opens a pre-filled email so nothing is lost on a static deploy.
+ * With an endpoint (CONTACT.enquiryEndpoint: the studio's Google Apps Script web app) it posts there; the
+ * script saves a row in the Google Sheet and emails the studio, and answers {"ok": true} once both are done.
+ * It is sent as text/plain so the browser makes a simple request (no CORS preflight, which Apps Script
+ * can't answer). Without an endpoint it opens a pre-filled email, so nothing is lost on a static deploy.
+ * Resolves "sent" or "email"; throws if the studio's endpoint didn't confirm.
  */
-export async function submitEnquiry(e: Enquiry): Promise<void> {
+export async function submitEnquiry(e: Enquiry): Promise<"sent" | "email"> {
   const subject = `New enquiry${e.format ? ` — ${e.format}` : ""}${e.name ? ` from ${e.name}` : ""}`;
-  const endpoint = process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT;
-  const filled = LABELS.filter(([k]) => e[k]?.trim());
+  const endpoint = CONTACT.enquiryEndpoint;
   if (endpoint) {
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ ...Object.fromEntries(filled.map(([k, l]) => [l, e[k]])), Brief: e.brief, _subject: subject, _replyto: e.email }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ ...e, subject }),
     });
-    if (!res.ok) throw new Error(`Enquiry failed (${res.status})`);
-    return;
+    const reply = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+    if (!res.ok || !reply?.ok) throw new Error(`Enquiry not confirmed (${res.status})`);
+    return "sent";
   }
+  const filled = LABELS.filter(([k]) => e[k]?.trim());
   const body = [...filled.map(([k, l]) => `${l}: ${e[k]}`), "", e.brief].join("\n");
   window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return "email";
 }
 
 const text = (d: FormData, k: string) => String(d.get(k) ?? "");
@@ -93,16 +103,51 @@ export function useEnquiryForm(extra?: Partial<Enquiry>) {
       first?.focus();
       return;
     }
-    setStatus("sending");
-    try {
-      await submitEnquiry(enquiry);
-      setStatus("sent");
+    // A bot filled the hidden "website" field: act as if it went through, send nothing.
+    if (text(d, "website")) {
       router.push("/thanks");
-    } catch {
+      return;
+    }
+    setStatus("sending");
+    if (SEND_MODE === "email") {
+      // The email app opens; the visitor still has to press Send there, so the page says so rather than
+      // thanking them for a message we haven't got.
+      setStatus(await submitEnquiry(enquiry));
+      return;
+    }
+    // Send straight away, while the envelope folds and flies off (src/shared/send-flight.ts). Settled into
+    // a plain result so a quick failure isn't left unhandled while the animation is still playing.
+    const form = ev.currentTarget;
+    const result = submitEnquiry(enquiry).then(
+      () => true,
+      () => false,
+    );
+    const animate = !prefersReducedMotion();
+    if (animate) {
+      await flyEnvelope(form);
+      await coverScreen();
+    }
+    if (await result) {
+      setStatus("sent");
+      // The curtain stays up across the route change; Thanks slides it away. If that never happens, it
+      // lifts itself.
+      router.push("/thanks");
+      window.setTimeout(() => void uncoverScreen("left"), 6000);
+    } else {
+      if (animate) {
+        await uncoverScreen("right");
+        restoreForm(form);
+      }
       setStatus("error");
     }
   };
   const message =
-    status === "sending" ? "Sending…" : status === "error" ? `Something went wrong. Email us at ${CONTACT.email}.` : "";
+    status === "sending"
+      ? "Sending your enquiry…"
+      : status === "email"
+        ? "Your email app should open with your message filled in. Press Send there and it reaches us."
+        : status === "error"
+          ? `That didn’t go through. Please try again, or email us at ${CONTACT.email}.`
+          : "";
   return { status, onSubmit, message, errors };
 }
