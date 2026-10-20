@@ -4,7 +4,7 @@ import { Cinzel, Cormorant_Garamond } from "next/font/google";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, Intro, Kicker, PX } from "@/components/site/ui";
-import { COMPANIES, displayUrl, type Company } from "@/content/companies";
+import { LISTED, displayUrl, type Company } from "@/content/companies";
 
 // Luxury lettering for the House of Luxora card only.
 const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "600"], variable: "--fm-cinzel" });
@@ -12,7 +12,7 @@ const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400"
 
 export const metadata: Metadata = {
   title: "Sister companies",
-  description: "The companies in the Freaky Mack family: Zellar International and House of Luxora.",
+  description: `The companies in the Freaky Mack family: ${LISTED.map((c) => c.name).join(" and ")}.`,
   alternates: { canonical: "/sister-companies" },
 };
 
@@ -130,7 +130,7 @@ export default function SisterCompaniesPage() {
           </H1>
         </RevealItem>
         <RevealItem>
-          <Intro className="max-w-[640px]">Our sister companies — one already live, one on its way.</Intro>
+          <Intro className="max-w-[640px]">Our sister companies, from the same family as Freaky Mack Studios.</Intro>
         </RevealItem>
       </Reveal>
       <Reveal
@@ -140,8 +140,13 @@ export default function SisterCompaniesPage() {
         aria-label="Our sister companies"
         className={`grid grid-cols-1 items-start gap-[56px] pb-[120px] md:grid-cols-2 md:gap-[32px] lg:gap-[48px] lg:pb-[180px] ${PX}`}
       >
-        {COMPANIES.map((c, i) => (
-          <RevealItem key={c.key} from={{ y: 70 }} className={i % 2 ? "md:mt-[64px]" : ""}>
+        {LISTED.map((c, i) => (
+          // A company on its own (or an odd one out) sits centred across both columns.
+          <RevealItem
+            key={c.key}
+            from={{ y: 70 }}
+            className={i % 2 ? "md:mt-[64px]" : i === LISTED.length - 1 ? "md:col-span-2 md:mx-auto md:w-full md:max-w-[760px]" : ""}
+          >
             <CompanyCard c={c} i={i} />
           </RevealItem>
         ))}
