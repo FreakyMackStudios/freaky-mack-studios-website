@@ -169,7 +169,7 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
 |---|---|---|---|---|---|
 | 6.1 | ~~`[ On set — behind the scenes still ]`~~ | `src/app/(site)/studio/page.tsx` | Large behind-the-scenes photo, landscape, at least 2400px wide | CLIENT | **Done:** from the studio's photo folder (Oct 2026), with a strip of eight more frames (`src/content/bts.ts`, `public/bts/`) |
-| 6.2 | `on set, [Year]` | `studio/page.tsx:81` | Year that photo was taken | CLIENT | |
+| 6.2 | ~~`on set, [Year]`~~ | — | **Gone (Oct 2026):** the on-set photo and its sticker were replaced by the hero video and the "More from set" slideshow. | — | Done |
 | 6.3 | ~~`Chapter 1 · [Year]`~~ | `src/content/studio.ts:3` | **Removed:** the timeline cards show "Chapter 1–4" with no years | — | Done |
 | 6.4 | `Chapter 2 · [Year]` | `studio.ts:4` | Year McDonald's, Google and Adidas Originals came on board | CLIENT | |
 | 6.5 | `Chapter 3 · [Year]` | `studio.ts:5` | Year Mercedes-Benz, Fila, PC Jewellers and Times of India came on board | CLIENT | |

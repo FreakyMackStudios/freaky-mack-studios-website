@@ -6,8 +6,10 @@ import { YourTurnCta } from "@/components/site/blocks";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, H2, Intro, Kicker, Label, MX, PX } from "@/components/site/ui";
 import { BELIEFS, PROCESS, SERVICES, TIMELINE } from "@/content/studio";
-import { ON_SET, ON_SET_STRIP } from "@/content/bts";
-import { Still } from "@/components/site/Still";
+import { SET_REEL } from "@/content/bts";
+import { SetReel } from "@/components/site/SetReel";
+import { BackgroundLoop } from "@/components/site/BackgroundLoop";
+import type { CSSProperties } from "react";
 import { ClientScatter } from "@/app/_components/ClientScatter";
 
 export const metadata: Metadata = {
@@ -19,7 +21,25 @@ export const metadata: Metadata = {
 
 const SECTION = `pb-[96px] lg:pb-[180px] ${PX}`;
 
-const STRIP_TILT = [-1.6, 1.2, -0.8, 1.6, 1.2, -1.4, 0.8, -1];
+/**
+ * The silent loops behind the hero (no sound, end credits trimmed off). Wide screens: the landscape BTS cut
+ * from the Monte Carlo / Rock.it shoot (first 42.5s). Phones: the vertical BTS cut from the Zykaz shoot
+ * (first 41.9s), made for a phone's shape.
+ */
+const STUDIO_LOOP = {
+  wide: { webm: "/studio/studio-bts-loop.webm", mp4: "/studio/studio-bts-loop.mp4", poster: "/studio/studio-bts-poster.webp" },
+  tall: { webm: "/studio/studio-bts-loop-mobile.webm", mp4: "/studio/studio-bts-loop-mobile.mp4", poster: "/studio/studio-bts-poster-mobile.webp" },
+};
+/** Light text over the darkened video, whatever the theme. */
+const HERO_ON_VIDEO = {
+  "--ink": "#ffffff",
+  "--ink-2": "#e8e8e4",
+  "--muted": "#cfcfcb",
+  "--muted-2": "#cfcfcb",
+  "--accent-text": "#6f83ff",
+  color: "#ffffff",
+} as CSSProperties;
+
 
 const TONE = {
   surface: { card: "bg-[var(--surface)]", label: "text-[var(--muted-2)]" },
@@ -31,22 +51,30 @@ const TONE = {
 export default function StudioPage() {
   return (
     <>
+      {/* The hero plays over a silent behind-the-scenes loop (landscape on wide screens, vertical on phones),
+          darkened so the words stay readable; the text inside takes light colours in both themes. */}
+      <section
+        aria-label="The studio"
+        className={`relative isolate mt-[8px] mb-[72px] flex min-h-[560px] flex-col justify-end overflow-hidden rounded-[24px] bg-[#0a0a0a] lg:mb-[140px] lg:min-h-[680px] lg:rounded-[32px] ${MX}`}
+        style={HERO_ON_VIDEO}
+      >
+        <BackgroundLoop wide={STUDIO_LOOP.wide} tall={STUDIO_LOOP.tall} className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(10,10,10,0.45)_0%,rgba(10,10,10,0.62)_45%,rgba(10,10,10,0.86)_100%)]" />
       <Reveal
-        as="section"
         onMount
         stagger={0.12}
         delay={0.1}
-        className={`flex flex-col gap-[24px] pt-[64px] pb-[56px] lg:gap-[32px] lg:pt-[120px] lg:pb-[88px] ${PX}`}
+        className="flex flex-col gap-[24px] px-5 pt-[96px] pb-[40px] md:px-10 lg:gap-[32px] lg:px-[48px] lg:pt-[140px] lg:pb-[64px]"
       >
         <RevealItem>
           <Kicker>Chapter 02 — The studio</Kicker>
         </RevealItem>
         {/* Two lines from tablet up, one sentence each. "Advertising taught us precision." is 17.7em wide,
-            so the size tracks the column width (1248px at 1440 → 68px) instead of the board's 88px. */}
+            so the size tracks the text width inside the video card (1152px at 1440 → 63px) instead of the board's 88px. */}
         <RevealItem from={{ y: 60, blur: 8 }} duration={1.1}>
         <H1
           balance={false}
-          className="md:text-[min(68px,calc((100vw-80px)/18.2))] lg:text-[min(68px,calc((100vw-192px)/18.2))]"
+          className="md:text-[min(68px,calc((100vw-160px)/18.2))] lg:text-[min(68px,calc((100vw-288px)/18.2))]"
         >
           <span className="md:whitespace-nowrap">Advertising taught us precision.</span>
           <br />
@@ -63,47 +91,6 @@ export default function StudioPage() {
           </Intro>
         </RevealItem>
       </Reveal>
-
-      <section className={`relative pb-[96px] lg:pb-[160px] ${PX}`}>
-        {/* The still straightens and grows into place as it scrolls in; the sticker pops on after it. */}
-        <ScrollIn scale={0.9} rotate={-4} y={80}>
-        <div className="[transform:rotate(-1deg)]">
-          <Still
-            still={ON_SET}
-            priority
-            sizes="(min-width: 1440px) 1248px, 100vw"
-            className="rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.14)] lg:rounded-[32px]"
-          />
-        </div>
-        </ScrollIn>
-        <Reveal
-          from={{ scale: 0.3, rotate: 30, y: 0 }}
-          delay={0.3}
-          amount={0.5}
-          className="absolute top-[-18px] right-[36px] lg:top-[-22px] lg:right-[150px]"
-        >
-          <span
-            className={`${s.it} block rounded-full bg-[var(--accent)] px-[18px] py-[6px] text-[18px] text-[var(--on-accent)] [transform:rotate(5deg)] lg:px-[22px] lg:py-[8px] lg:text-[22px]`}
-          >
-            on set, [Year]
-          </span>
-        </Reveal>
-        {/* More frames from set: each photo whole, in its own shape, with a slight alternating tilt. */}
-        <Reveal
-          as="ul"
-          stagger={0.06}
-          amount={0.15}
-          aria-label="More from set"
-          className="m-0 mt-[40px] grid list-none grid-cols-2 gap-[14px] p-0 md:grid-cols-4 lg:mt-[64px] lg:gap-[24px]"
-        >
-          {ON_SET_STRIP.map((st, i) => (
-            <RevealItem as="li" key={st.src} from={{ y: 50 }}>
-              <div className={s.still} style={{ transform: `rotate(${STRIP_TILT[i % STRIP_TILT.length]}deg)` }}>
-                <Still still={st} sizes="(min-width: 768px) 25vw, 50vw" className="rounded-[14px] lg:rounded-[18px]" />
-              </div>
-            </RevealItem>
-          ))}
-        </Reveal>
       </section>
 
       <section className={`grid grid-cols-1 gap-y-[24px] lg:grid-cols-12 lg:gap-x-[32px] ${SECTION}`}>
@@ -125,6 +112,16 @@ export default function StudioPage() {
             original narratives. We combine the precision of advertising filmmaking with the creative ambition of
             independent cinema — building a slate of our own work alongside films for brands and cultural platforms.
           </RevealItem>
+        </Reveal>
+      </section>
+
+      {/* More from set: the crew at the camera, drifting left to right across the full width. */}
+      <section aria-label="More from set" className="flex flex-col gap-[24px] pb-[120px] lg:gap-[40px] lg:pb-[200px]">
+        <Reveal className={PX}>
+          <Label>More from set</Label>
+        </Reveal>
+        <Reveal from={{ y: 50 }} amount={0.2}>
+          <SetReel stills={SET_REEL} label="Photos from set" />
         </Reveal>
       </section>
 

@@ -8,19 +8,16 @@ import type { Still } from "./stills";
  */
 const bts = (name: string, width: number, height: number, alt: string): Still => ({ src: `/bts/${name}.webp`, width, height, alt });
 
-/** Studio: the big "on set" photo. */
-export const ON_SET = bts("on-set-hero", 2400, 1350, "On set: the director talks a scene through with an actor, the camera rig in the foreground");
-
-/** Studio: the strip of frames from set, under the big photo. */
-export const ON_SET_STRIP: Still[] = [
-  bts("strip-cafe-crew", 1600, 900, "A café set lit for a scene, the crew gathered by the bar"),
-  bts("strip-over-the-shoulder", 1600, 900, "Over the camera operator’s shoulder: the monitor, the boom and the actor"),
-  bts("strip-makeup-window", 1600, 900, "A make-up touch-up by the window between shots"),
-  bts("strip-cafe-lights", 1600, 900, "Lights and a bounce board rigged in the café before a take"),
-  bts("strip-cafe-cast", 1600, 900, "Cast in position at a café table, waiting for action"),
-  bts("strip-makeup-room", 1600, 900, "Make-up on set, in a room dressed for the scene"),
-  bts("strip-monitor-boom", 1600, 900, "The monitor and the boom mic during a take"),
-  bts("strip-between-takes", 1600, 900, "Cast and crew between takes"),
+/** Studio: the slideshow of the crew at the camera, under the big photo (WhatsApp Images, 17 Oct 2026, 12.32.18–12.32.25 PM). */
+export const SET_REEL: Still[] = [
+  bts("set-reel-01", 1280, 960, "The camera operator lines up a shot on the tripod, the crew watching over his shoulder"),
+  bts("set-reel-02", 1280, 960, "A close look at the shot, eyes on the camera"),
+  bts("set-reel-03", 1280, 960, "A run-through on a black-draped set, the camera rolling in the corner"),
+  bts("set-reel-04", 1280, 960, "The crew crowds round the camera as the operator frames up"),
+  bts("set-reel-05", 1280, 960, "Sitting down with the camera between set-ups, the crew gathered behind"),
+  bts("set-reel-06", 1072, 804, "Checking the frame through the camera's eyepiece"),
+  bts("set-reel-07", 1280, 960, "Crouched at the camera outdoors, the crew looking on"),
+  bts("set-reel-08", 896, 1600, "Two of the crew watching the monitor together"),
 ];
 
 /** People: the crew together. */

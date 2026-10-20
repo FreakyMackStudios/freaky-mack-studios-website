@@ -66,3 +66,20 @@
 @media (prefers-reduced-motion: reduce) {
   .blob, .eq span { animation: none; }
 }
+
+/* Studio "More from set" slideshow: one long row of photos (the set twice) drifting left to right for ever.
+   It pauses on hover, on keyboard focus and with its Pause button; with reduced motion it stands still and
+   scrolls sideways by hand instead. */
+.reelTrack { display: flex; width: max-content; animation: reel-ltr var(--reel-time, 70s) linear infinite; }
+.reelTrack > li { margin-right: 20px; }
+@media (min-width: 1024px) { .reelTrack > li { margin-right: 32px; } }
+@keyframes reel-ltr {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.reel:hover .reelTrack, .reel:focus-within .reelTrack, .reel[data-paused="true"] .reelTrack { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .reelTrack { animation: none; }
+  .reelTrack > [data-copy] { display: none; }
+  .reel { overflow-x: auto !important; }
+}
