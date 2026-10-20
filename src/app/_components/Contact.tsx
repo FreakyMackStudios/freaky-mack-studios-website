@@ -107,12 +107,13 @@ export function Contact() {
         <a href={CONTACT.whatsapp} className={`${s.link} self-start text-[16px] text-[var(--ink-2)]`}>
           or WhatsApp us · {CONTACT.whatsappNumber} ↗
         </a>
-        {/* Directing on location: fills the space beside the form on large screens. */}
-        <div className="mt-[24px] hidden max-w-[540px] [transform:rotate(-2deg)] lg:block">
+        {/* Directing on location: fills the space beside the form on large screens, its foot level with the form's. */}
+        <div className="hidden max-w-[540px] [transform:rotate(-2deg)] lg:mt-auto lg:block lg:pt-[24px]">
           <Still still={ON_LOCATION} sizes="540px" className="rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.3)]" />
         </div>
       </Reveal>
-      <Reveal from={{ y: 80 }} delay={0.12} className="mt-[48px] lg:col-span-5 lg:col-start-8 lg:mt-[96px]">
+      {/* Large screens: the form card starts and ends level with the left column (the brief box takes up the slack). */}
+      <Reveal from={{ y: 80 }} delay={0.12} className="mt-[48px] flex flex-col lg:col-span-5 lg:col-start-8 lg:mt-0">
       <form
         onSubmit={(e) => {
           setHinting(false);
@@ -121,7 +122,7 @@ export function Contact() {
         noValidate
         aria-label="Start a project"
         data-send={SEND_MODE}
-        className="relative flex flex-col gap-[20px] rounded-[28px] bg-[var(--surface)] p-[24px] [transform:rotate(1deg)] sm:p-[36px]"
+        className="relative flex flex-col gap-[20px] rounded-[28px] bg-[var(--surface)] p-[24px] [transform:rotate(1deg)] sm:p-[36px] lg:flex-1"
       >
         <Honeypot />
         <div className="relative flex flex-col gap-[8px]">
@@ -136,7 +137,7 @@ export function Contact() {
           <input onInput={typed("email")} id="fm-email" name="email" type="email" required aria-invalid={!!errors.email} aria-describedby={errors.email ? "fm-email-err" : undefined} placeholder="you@brand.com" className={`${FIELD} h-[52px]`} />
           {errors.email && <p id="fm-email-err" className={ERR}>{errors.email}</p>}
         </div>
-        <div className="relative flex flex-col gap-[8px]">
+        <div className="relative flex flex-col gap-[8px] lg:flex-1">
           <label htmlFor="fm-brief" className={LABEL}>The story so far</label>
           <Hint show={hint("brief")} delay={280}>{HINTS.brief}</Hint>
           <textarea
@@ -148,7 +149,7 @@ export function Contact() {
             aria-invalid={!!errors.brief}
             aria-describedby={errors.brief ? "fm-brief-err" : undefined}
             placeholder="Format, timeline, references — whatever you have."
-            className={`${FIELD} resize-y py-[14px]`}
+            className={`${FIELD} resize-y py-[14px] lg:flex-1 lg:resize-none`}
           />
           {errors.brief && <p id="fm-brief-err" className={ERR}>{errors.brief}</p>}
         </div>
