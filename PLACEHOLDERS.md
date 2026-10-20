@@ -19,6 +19,8 @@ Paths are relative to the repo root.
 
 > **Stills and publishing (Oct 2026).** Three stills per film came in for 28 films (`public/work/<slug>/`, data in `src/content/stills.ts`, taken at each film's own resolution; burnt-in letterbox bars trimmed). A film is **published** only when it has both stills and written content: 26 films are live. The rest are listed by name only under **"Publishing soon"** on /work, with no page: 12 have content but no stills (their source files weren't on the Mac when the stills were pulled: pTron, India Fashion Awards, Albela, TOIFA Aftermovie, The Midnight Hour, Rudraprayag, Kashi, Falaknama — Film 01, BharatBenz × Dhingra Trucking, Soanbhadra, Nayi Soch Wali Azadi, The Last Presence — Teaser), 2 have stills but no written content (Changa, PC Jeweller × Sonalika Sahay), and Zykaz Interview has neither. Each one goes live by itself once the missing piece arrives.
 
+> **Frames from YouTube (Oct 2026).** The 15 films that had only their YouTube video now carry frames from YouTube's own automatic grabs (three per video, 1280×720 at most), letterbox bars and side blur trimmed, frames with on-screen graphics or logos left out: 2–3 per film for Albela, BharatBenz × Dhingra Trucking, Falaknama — Film 01, India Fashion Awards, Kashi, Narendra Kumar, Nayi Soch Wali Azadi, Neeta Lulla Show, Sang Tu Chalen, The Midnight Hour, Times Men of the Year, Times Power Women Awards, TOIFA Aftermovie and Zypp Electric App — Film 02. They're lower resolution than the studio's own stills (as low as ~950px wide), so swap in proper stills whenever the masters turn up. **pTron** still shows its YouTube thumbnail: YouTube only kept 480px grabs for it, too small to use.
+
 ---
 
 ## 1. Fill once, used everywhere

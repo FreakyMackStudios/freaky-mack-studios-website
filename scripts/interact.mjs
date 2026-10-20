@@ -435,20 +435,31 @@ await page.goto(`${base}/work/mcdonalds-chicken-mcwings/`, { waitUntil: "network
 await page.goto(`${base}/work/pc-jeweller-tvc/`, { waitUntil: "networkidle" });
 const partial = await page.evaluate(() => document.querySelector("main").innerText);
 check((await storyOf()).length === 0 && !/\[(Client|Year|Name|One-line|Two or three|How we cracked|Where it ran)/.test(partial) && /R Balki/.test(partial), "a partly filled film shows only what the studio gave, with no placeholders");
-// A film added from the YouTube links sheet: its YouTube thumbnail is the cover, it plays from YouTube, and
-// with no credits, story or frames of its own the page shows just the film.
+// A film added from the YouTube links sheet, with frames taken from YouTube's own grabs: one of them is the
+// cover, the frames show as a pair, it plays from YouTube, and with no credits or story the page has none.
 await page.goto(`${base}/work/neeta-lulla-show/`, { waitUntil: "networkidle" });
 const ytOnly = await page.evaluate(() => {
   const main = document.querySelector("main");
-  const cover = main.querySelector('img[src*="i.ytimg.com/vi/ii-EsNFShMY/"]');
+  const imgs = [...main.querySelectorAll('img[src*="/work/neeta-lulla-show/"]')];
   return {
-    cover: !!cover && cover.complete && cover.naturalWidth > 120,
+    images: imgs.length,
+    loaded: imgs.every((i) => i.complete && i.naturalWidth >= 1280),
     credits: /Credits/.test(main.innerText),
     frames: /Frames from the film/.test(main.innerText),
     title: /NEETA LULLA SHOW/i.test(main.innerText),
   };
 });
-check(ytOnly.cover && ytOnly.title && !ytOnly.credits && !ytOnly.frames, `a YouTube-only film: thumbnail cover, title, no empty credits or frames (${JSON.stringify(ytOnly)})`);
+check(ytOnly.images === 3 && ytOnly.loaded && ytOnly.title && !ytOnly.credits && ytOnly.frames, `a YouTube-sheet film: its own frames (cover + a pair), title, no empty credits (${JSON.stringify(ytOnly)})`);
+// The frames came from YouTube's grabs for every video-only film but pTron (whose grabs are too small): it keeps
+// its YouTube thumbnail as the cover, and has no frames section.
+await page.goto(`${base}/work/ptron/`, { waitUntil: "networkidle" });
+const thumbOnly = await page.evaluate(() => {
+  const main = document.querySelector("main");
+  const cover = main.querySelector('img[src*="i.ytimg.com/vi/C6qfJ5-5CkM/"]');
+  return { cover: !!cover && cover.complete && cover.naturalWidth > 120, frames: /Frames from the film/.test(main.innerText) };
+});
+check(thumbOnly.cover && !thumbOnly.frames, `pTron: YouTube thumbnail cover, no frames section (${JSON.stringify(thumbOnly)})`);
+await page.goto(`${base}/work/neeta-lulla-show/`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: "Play Neeta Lulla Show" }).click();
 check((await page.locator('iframe[src*="youtube-nocookie.com/embed/ii-EsNFShMY"]').count()) === 1, "a YouTube-only film plays from YouTube");
 await page.goto(`${base}/work/`, { waitUntil: "networkidle" });
