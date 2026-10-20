@@ -53,26 +53,37 @@ export function ThanksHero() {
   const t = (i: number) => (behindCurtain ? 0.3 : 0.1) + i * 0.09;
 
   return (
-    <section className={`flex flex-col items-center gap-[24px] pt-[72px] pb-[80px] text-center lg:gap-[32px] lg:pt-[140px] lg:pb-[120px] ${PX}`}>
-      <Fly from="top" delay={t(0)} className="flex">
-        <DraggableMark className="relative h-[84px] w-[126px] lg:h-[120px] lg:w-[180px]" imgClassName={s.blob} />
-      </Fly>
-      <Fly from="left" delay={t(1)} className="flex">
-        <span className="rounded-full bg-[var(--accent)] px-[20px] py-[8px] text-[15px] font-semibold text-[var(--on-accent)] [transform:rotate(-3deg)]">
-          Brief received
-        </span>
-      </Fly>
-      <Fly from="right" delay={t(2)}>
-        <H1 big className="max-w-[1000px]">
-          That’s a <AccentWord big>wrap</AccentWord> for now.
-        </H1>
-      </Fly>
-      <Fly from="bottom" delay={t(3)}>
-        <Intro className="max-w-[620px]">
-          Thanks for telling us your story. We’ll be in touch at the email you gave us, within {CONTACT.replyTime}.
-        </Intro>
-      </Fly>
-      <div className="mt-[8px] flex flex-wrap justify-center gap-[12px] sm:gap-[16px]">
+    <section className={`flex flex-col items-center gap-[48px] pt-[56px] pb-[80px] lg:gap-[72px] lg:pt-[96px] lg:pb-[120px] ${PX}`}>
+      {/* Two columns on large screens: the message on the left, the wrap photo big on the right. Stacked on phones. */}
+      <div className="grid w-full grid-cols-1 items-center gap-[48px] lg:grid-cols-12 lg:gap-x-[32px]">
+        <div className="flex flex-col items-center gap-[24px] text-center lg:col-span-7 lg:items-start lg:gap-[32px] lg:text-left">
+          <Fly from="top" delay={t(0)} className="flex">
+            <DraggableMark className="relative h-[84px] w-[126px] lg:h-[110px] lg:w-[165px]" imgClassName={s.blob} />
+          </Fly>
+          <Fly from="left" delay={t(1)} className="flex">
+            <span className="rounded-full bg-[var(--accent)] px-[20px] py-[8px] text-[15px] font-semibold text-[var(--on-accent)] [transform:rotate(-3deg)]">
+              Brief received
+            </span>
+          </Fly>
+          <Fly from="left" delay={t(2)}>
+            <H1 big>
+              That’s a <AccentWord big>wrap</AccentWord> for now.
+            </H1>
+          </Fly>
+          <Fly from="bottom" delay={t(3)}>
+            <Intro className="max-w-[560px]">
+              Thanks for telling us your story. We’ll be in touch at the email you gave us, within {CONTACT.replyTime}.
+            </Intro>
+          </Fly>
+        </div>
+        {/* Wrap day: a polaroid of the crew at the end of a shoot. */}
+        <Fly from="right" delay={t(2.5)} className="flex justify-center lg:col-span-5">
+          <div className="w-[260px] bg-white p-[12px] pb-[44px] shadow-[0_24px_60px_rgba(0,0,0,0.35)] [transform:rotate(4deg)] sm:w-[320px] lg:w-[380px] lg:p-[14px] lg:pb-[52px] xl:w-[420px]">
+            <Still still={WRAP} sizes="(min-width: 1280px) 420px, (min-width: 1024px) 380px, 320px" />
+          </div>
+        </Fly>
+      </div>
+      <div className="flex flex-wrap justify-center gap-[12px] sm:gap-[16px]">
         <Fly from="left" delay={t(4)} className="flex">
           <Link href="/" className={BTN_INVERSE}>Back to the start</Link>
         </Fly>
@@ -80,12 +91,6 @@ export function ThanksHero() {
           <Link href="/work" className={BTN_OUTLINE}>See the work</Link>
         </Fly>
       </div>
-      {/* Wrap day: a polaroid of the crew at the end of a shoot. */}
-      <Fly from="bottom" delay={t(5.5)} className="mt-[16px] flex">
-        <div className="w-[200px] bg-white p-[10px] pb-[34px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] [transform:rotate(5deg)] lg:w-[230px]">
-          <Still still={WRAP} sizes="230px" />
-        </div>
-      </Fly>
     </section>
   );
 }
