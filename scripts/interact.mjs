@@ -686,6 +686,38 @@ await page.goto(`${base}/people/`, { waitUntil: "networkidle" });
 check((await root(page).getAttribute("data-theme")) === "light", "…and after a fresh load without the query");
 await page.goto(`${base}/?theme=dark`, { waitUntil: "networkidle" }); // back to the default
 
+console.log("Sister companies");
+{
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  await page.locator('header nav a[href^="/sister-companies"]').first().click();
+  await page.waitForURL(/\/sister-companies\/?$/);
+  await page.waitForTimeout(1500);
+  const sc = await page.evaluate(() => {
+    const main = document.querySelector("main");
+    const zellar = main.querySelector('a[href="https://zellarinternational.com/"]');
+    return {
+      active: document.querySelector('header nav a[aria-current="page"]')?.textContent.trim(),
+      zellar: zellar && { target: zellar.target, rel: zellar.rel, live: /Live/.test(zellar.textContent), shot: (() => { const i = zellar.querySelector('img[src*="zellar-international"]'); return !!i && i.complete && i.naturalWidth === 1440 && i.alt.length > 10; })() },
+      luxora: /House of Luxora/.test(main.innerText) && /Luxury wedding organiser/.test(main.innerText) && /Coming soon/i.test(main.innerText) && /under construction/i.test(main.innerText),
+      luxoraLinked: [...main.querySelectorAll("a")].some((a) => /Luxora/.test(a.textContent)),
+      footer: !!document.querySelector('footer a[href^="/sister-companies"]'),
+    };
+  });
+  check(/Sister companies/.test(sc.active ?? "") && sc.zellar?.target === "_blank" && /noopener/.test(sc.zellar.rel) && sc.zellar.live && sc.zellar.shot && sc.luxora && !sc.luxoraLinked && sc.footer, `Sister companies: in the menu and footer; Zellar is live, shows its homepage and opens its site; House of Luxora is coming soon, unlinked (${JSON.stringify(sc)})`);
+  // 1024px: the five chapters fit on one line beside the logo and the button.
+  await page.setViewportSize({ width: 1024, height: 768 });
+  const fit = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('header nav[aria-label="Main"] a')];
+    const tops = links.map((a) => Math.round(a.getBoundingClientRect().top));
+    const nav = document.querySelector('header nav[aria-label="Main"]').getBoundingClientRect();
+    const logo = document.querySelector('header a[aria-label="Freaky Mack Studios home"]').getBoundingClientRect();
+    const cta = document.querySelector('header a[href^="/start-a-project"]').getBoundingClientRect();
+    return { links: links.length, oneLine: new Set(tops).size === 1 && links.every((a) => a.getBoundingClientRect().height < 40), clear: nav.left >= logo.right + 16 && nav.right <= cta.left - 16 };
+  });
+  check(fit.links === 5 && fit.oneLine && fit.clear, `menu at 1024px: five chapters on one line, clear of the logo and button (${JSON.stringify(fit)})`);
+  await page.setViewportSize({ width: 1440, height: 900 });
+}
+
 console.log("Mobile menu");
 const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await phone.goto(`${base}/work/`, { waitUntil: "networkidle" });
@@ -698,6 +730,7 @@ await phone.keyboard.press("Escape");
 await menu.waitFor({ state: "detached", timeout: 2000 }).catch(() => {});
 check(!(await menu.isVisible()), "Esc closes the menu");
 await phone.getByRole("button", { name: "Open menu" }).click();
+check((await menu.getByRole("link", { name: /Sister companies/ }).count()) === 1, "phone menu lists Sister companies");
 await menu.getByRole("link", { name: /Originals/ }).click();
 await phone.waitForURL(/\/originals/);
 await phone.waitForTimeout(300);
@@ -751,7 +784,7 @@ check(!(await phone.evaluate(() => [...document.querySelectorAll("[id^='brand-ca
 await phone.close();
 
 console.log("Contrast sweep · every page");
-const PAGES = ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/pc-jeweller-tvc/", "/studio/", "/originals/", "/people/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
+const PAGES = ["/work/", "/work/mcdonalds-chicken-mcwings/", "/work/pc-jeweller-tvc/", "/studio/", "/originals/", "/people/", "/sister-companies/", "/start-a-project/", "/thanks/", "/privacy/", "/terms/", "/missing-page/"];
 for (const [label, q] of [["Light", "theme=light"], ["Dark", "theme=dark"]]) {
   const bad = [];
   for (const r of PAGES) {
