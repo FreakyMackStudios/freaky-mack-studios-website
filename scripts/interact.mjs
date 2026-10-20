@@ -76,6 +76,32 @@ browser.newPage = async (...a) => { const pg = await origNewPage(...a); await yo
 const origNewContext = browser.newContext.bind(browser);
 browser.newContext = async (...a) => { const c = await origNewContext(...a); await youtubeStandIn(c); await bannerAnswered(c); return c; };
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+// Brand tags pop in with a stagger as they scroll into view; hovering one mid-animation lets it slide out from
+// under the pointer (its card then closes again). Wait until the tag has stopped moving, then hover.
+const hoverWhenStill = async (loc) => {
+  await loc.evaluate(async (el) => {
+    let last = "";
+    for (let i = 0; i < 40; i++) {
+      const r = el.getBoundingClientRect();
+      const now = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)}`;
+      if (now === last) return;
+      last = now;
+      await new Promise((res) => setTimeout(res, 100));
+    }
+  });
+  await loc.hover();
+};
+// Hover a brand tag until its card is open: images loading higher up the page can still shift the layout and
+// slide the tag out from under the pointer, which (correctly) closes the card. Up to three tries.
+const hoverOpensCard = async (loc) => {
+  for (let i = 0; i < 3; i++) {
+    await hoverWhenStill(loc);
+    const opened = await page
+      .waitForFunction(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).opacity === "1"), null, { timeout: 1500 })
+      .then(() => true, () => false);
+    if (opened) return;
+  }
+};
 // Enquiries never leave the test: the studio's Google Apps Script endpoint is answered here instead, and
 // what the forms send is kept for the checks. `enquiryReply` switches the answer (ok, or a failure).
 const enquiries = [];
@@ -240,8 +266,7 @@ await page.evaluate(() => (document.documentElement.style.scrollBehavior = "auto
 await clients.scrollIntoViewIfNeeded();
 await page.waitForTimeout(1200);
 check((await clients.locator("[data-brand]").count()) >= 20 && (await clients.getByRole("button", { name: "Google", exact: true }).count()) === 0, "brand cloud lists 20 brands; brands without a film are plain tags");
-await clients.getByRole("button", { name: "Mercedes-Benz", exact: true }).hover();
-await page.waitForFunction(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).opacity === "1"), null, { timeout: 3000 }).catch(() => {});
+await hoverOpensCard(clients.getByRole("button", { name: "Mercedes-Benz", exact: true }));
 const card = clients.getByRole("link", { name: /Watch Mercedes-Benz Global Star .* on YouTube/ });
 const cardOk = await card.evaluate((a) => {
   const box = a.closest("[id^='brand-card-']");
@@ -698,12 +723,11 @@ console.log("Sister companies");
     return {
       active: document.querySelector('header nav a[aria-current="page"]')?.textContent.trim(),
       zellar: zellar && { target: zellar.target, rel: zellar.rel, live: /Live/.test(zellar.textContent), shot: (() => { const i = zellar.querySelector('img[src*="zellar-international"]'); return !!i && i.complete && i.naturalWidth === 1440 && i.alt.length > 10; })() },
-      luxora: /House of Luxora/.test(main.innerText) && /Luxury wedding organiser/.test(main.innerText) && /Coming soon/i.test(main.innerText) && /under construction/i.test(main.innerText),
-      luxoraLinked: [...main.querySelectorAll("a")].some((a) => /Luxora/.test(a.textContent)),
+      luxoraGone: !/Luxora/.test(main.innerText) && !/Luxora/.test(document.querySelector('meta[name="description"]')?.content ?? ""),
       footer: !!document.querySelector('footer a[href^="/sister-companies"]'),
     };
   });
-  check(/Sister companies/.test(sc.active ?? "") && sc.zellar?.target === "_blank" && /noopener/.test(sc.zellar.rel) && sc.zellar.live && sc.zellar.shot && sc.luxora && !sc.luxoraLinked && sc.footer, `Sister companies: in the menu and footer; Zellar is live, shows its homepage and opens its site; House of Luxora is coming soon, unlinked (${JSON.stringify(sc)})`);
+  check(/Sister companies/.test(sc.active ?? "") && sc.zellar?.target === "_blank" && /noopener/.test(sc.zellar.rel) && sc.zellar.live && sc.zellar.shot && sc.luxoraGone && sc.footer, `Sister companies: in the menu and footer; Zellar is live, shows its homepage and opens its site; House of Luxora is off the page for now (${JSON.stringify(sc)})`);
   // 1024px: the five chapters fit on one line beside the logo and the button.
   await page.setViewportSize({ width: 1024, height: 768 });
   const fit = await page.evaluate(() => {
@@ -888,7 +912,7 @@ console.log("Motion (other pages)");
   await studioClients.scrollIntoViewIfNeeded();
   await sp.waitForTimeout(1200);
   check((await studioClients.getByText("Films made for").count()) === 1 && (await studioClients.locator("[data-brand]").count()) >= 20, "Studio uses the shared brand cloud");
-  await studioClients.getByRole("button", { name: "McDonald’s", exact: true }).hover();
+  await hoverWhenStill(studioClients.getByRole("button", { name: "McDonald’s", exact: true }));
   await sp.waitForFunction(() => [...document.querySelectorAll("[id^='brand-card-']")].some((c) => getComputedStyle(c).opacity === "1"), null, { timeout: 3000 }).catch(() => {});
   const studioCard = await studioClients.getByRole("link", { name: /Watch .*McWings.* on YouTube/ }).evaluate((a) => ({
     op: getComputedStyle(a.closest("[id^='brand-card-']")).opacity,
