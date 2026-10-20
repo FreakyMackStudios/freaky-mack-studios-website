@@ -4,6 +4,7 @@ import { MotionRoot } from "@/components/motion/MotionRoot";
 import { ThemeHead } from "@/shared/theme/ThemeHead";
 import { DEFAULT_THEME, resolveTheme } from "@/shared/theme/theme";
 import { ThemeToggle } from "@/shared/theme/ThemeToggle";
+import { CookieBanner } from "@/components/site/CookieBanner";
 import { SITE_URL } from "@/shared/config";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <MotionRoot>{children}</MotionRoot>
         <ThemeToggle />
+        <CookieBanner />
       </body>
     </html>
   );

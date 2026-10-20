@@ -3,6 +3,9 @@ import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "./site.module.css";
 import { AccentWord, H1, Kicker, PX } from "./ui";
 
+/** When the Privacy policy and Terms were last changed (shown on both). Update it with every change to either. */
+export const LEGAL_UPDATED = "20 October 2026";
+
 /** Privacy / Terms layout (design/boards/Privacy.dc.html, Terms.dc.html): hero, pinned "On this page" nav, legal text. */
 export function LegalPage({
   lead,
@@ -36,7 +39,7 @@ export function LegalPage({
         </RevealItem>
         <RevealItem className="flex flex-col items-start gap-[14px] sm:flex-row sm:items-center">
           <span className="shrink-0 rounded-full border border-[var(--ink)] px-[16px] py-[6px] text-[14px] font-semibold [transform:rotate(-2deg)]">
-            Last updated [DATE]
+            Last updated {LEGAL_UPDATED}
           </span>
           <span className="text-[16px] text-[var(--muted)]">{subtitle}</span>
         </RevealItem>

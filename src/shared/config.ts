@@ -28,6 +28,15 @@ export const CONTACT = {
 };
 
 /**
+ * Analytics, loaded only after the visitor accepts in the cookie banner (src/components/site/CookieBanner.tsx).
+ * gaId: the Google Analytics 4 measurement ID ("G-…", from GA → Admin → Data streams). Empty: Google
+ * Analytics stays off. Vercel Analytics needs no ID; it's switched on in the Vercel project (Analytics tab).
+ */
+export const ANALYTICS = {
+  gaId: process.env.NEXT_PUBLIC_GA_ID || "",
+};
+
+/**
  * Originals page: false shows "Coming soon" at /originals (kept out of search and the sitemap); true brings
  * back the full page (hero, podcast, slate, pitch), parked in src/app/(site)/originals/_components/OriginalsFull.tsx.
  */

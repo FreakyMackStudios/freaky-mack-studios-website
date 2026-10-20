@@ -68,10 +68,13 @@ const youtubeStandIn = async (target) => {
   await target.route("https://i.ytimg.com/**", (r) => r.fulfill({ path: "public/work/dbs-lifestyle/01.jpg", contentType: "image/jpeg" }));
   await target.route(/youtube(-nocookie)?\.com\//, (r) => r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>YouTube</title>" }));
 };
+// The cookie banner is answered ("Decline") up front, so it doesn't sit over the pages being checked; the
+// banner's own checks open a context without this.
+const bannerAnswered = (target) => target.addInitScript(() => { try { if (!localStorage.getItem("fm-consent")) localStorage.setItem("fm-consent", "denied"); } catch {} });
 const origNewPage = browser.newPage.bind(browser);
-browser.newPage = async (...a) => { const pg = await origNewPage(...a); await youtubeStandIn(pg); return pg; };
+browser.newPage = async (...a) => { const pg = await origNewPage(...a); await youtubeStandIn(pg); await bannerAnswered(pg); return pg; };
 const origNewContext = browser.newContext.bind(browser);
-browser.newContext = async (...a) => { const c = await origNewContext(...a); await youtubeStandIn(c); return c; };
+browser.newContext = async (...a) => { const c = await origNewContext(...a); await youtubeStandIn(c); await bannerAnswered(c); return c; };
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 // Enquiries never leave the test: the studio's Google Apps Script endpoint is answered here instead, and
 // what the forms send is kept for the checks. `enquiryReply` switches the answer (ok, or a failure).
@@ -620,8 +623,55 @@ await page.waitForTimeout(300);
 const inView = await page.locator("#p7").evaluate((el) => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.top < 200; });
 check(page.url().endsWith("#p7") && inView, "Privacy anchor nav jumps to Cookies");
 check((await page.locator("#p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #p9, #p10, #p11, #p12, #p13").count()) === 13, "Privacy has 13 sections");
+// The studio's answers are in, and no [BRACKET] blanks are left on either page.
+const privacyText = await page.locator("main").innerText();
+check(
+  !/\[[A-Z][A-Z /]*\]/.test(privacyText) && /Last updated 20 October 2026/i.test(privacyText) && /Izaan Khan/.test(privacyText) && (await page.locator('main a[href="tel:+919318465829"]').count()) === 1 && /12 months/.test(privacyText) && /7 to 14 days/.test(privacyText) && /Google Analytics and Vercel Analytics/.test(privacyText),
+  "Privacy: every blank filled (date, analytics, providers, cookies, 12 months, grievance officer, 7 to 14 days)",
+);
 await page.goto(`${base}/terms/`, { waitUntil: "networkidle" });
 check((await page.locator('section[id^="t"]').count()) === 11, "Terms has 11 sections");
+const termsText = await page.locator("main").innerText();
+check(!/\[[A-Z][A-Z /]*\]/.test(termsText) && /freakymackstudios\.com/.test(termsText) && /Bombay High Court/.test(termsText) && /Last updated 20 October 2026/i.test(termsText), "Terms: every blank filled (domain, courts, date)");
+
+console.log("Cookie banner");
+{
+  // A first visit: nothing is answered yet. Analytics requests are caught and counted, never sent.
+  const ctx = await origNewContext({ viewport: { width: 1440, height: 900 } });
+  await youtubeStandIn(ctx);
+  const loads = [];
+  await ctx.route(/googletagmanager\.com|google-analytics\.com|\/_vercel\/insights\//, (r) => { loads.push(r.request().url()); return r.fulfill({ status: 200, contentType: "text/javascript", body: "" }); });
+  const cp = await ctx.newPage();
+  await cp.goto(`${base}/`, { waitUntil: "networkidle" });
+  const banner = cp.getByRole("region", { name: "Cookie choices" });
+  check((await banner.isVisible()) && loads.length === 0, `first visit: the cookie banner asks, and no analytics load before an answer (${loads.length} loads)`);
+  await banner.getByRole("button", { name: "Accept" }).click();
+  await cp.waitForTimeout(800);
+  check(!(await banner.isVisible()) && loads.some((u) => u.includes("/_vercel/insights/")), `Accept: the banner goes and Vercel Analytics loads (${loads.length} loads)`);
+  await cp.reload({ waitUntil: "networkidle" });
+  check(!(await banner.isVisible()), "the choice is remembered on the next visit");
+  // Withdrawing is as easy as accepting: Cookie settings in the footer, then Decline.
+  await cp.getByRole("button", { name: "Cookie settings" }).first().click();
+  check(await banner.isVisible(), "footer Cookie settings brings the banner back");
+  loads.length = 0;
+  await Promise.all([cp.waitForEvent("load"), banner.getByRole("button", { name: "Decline" }).click()]);
+  await cp.waitForTimeout(800);
+  check(!(await banner.isVisible()) && loads.length === 0 && (await cp.evaluate(() => localStorage.getItem("fm-consent"))) === "denied", `Decline after accepting: the page reloads without any analytics (${loads.length} loads)`);
+  await ctx.close();
+  // Phones: the banner sits above the theme switch, not over it.
+  const pctx = await origNewContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await youtubeStandIn(pctx);
+  const pp = await pctx.newPage();
+  await pp.goto(`${base}/work/`, { waitUntil: "load" });
+  await pp.getByRole("region", { name: "Cookie choices" }).waitFor();
+  const boxes = await pp.evaluate(() => {
+    const b = document.querySelector("[data-cookie-banner]").getBoundingClientRect();
+    const t = document.querySelector('[role="switch"]').getBoundingClientRect();
+    return { overlap: !(b.bottom <= t.top || t.bottom <= b.top || b.right <= t.left || t.right <= b.left), fits: b.left >= 0 && b.right <= innerWidth && b.top >= 0 };
+  });
+  check(!boxes.overlap && boxes.fits, `phone: the cookie banner fits and clears the theme switch (${JSON.stringify(boxes)})`);
+  await pctx.close();
+}
 const res = await page.goto(`${base}/missing-page/`, { waitUntil: "networkidle" });
 check(res.status() === 404 && (await page.getByText("This scene didn’t make the edit.").isVisible()), `unknown URL → 404 page (${res.status()})`);
 
