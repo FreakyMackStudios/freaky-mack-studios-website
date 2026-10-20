@@ -384,6 +384,15 @@ const oddTail = await page.evaluate(() => {
 });
 check(oddTail.n % 2 === 1 && Math.abs(oddTail.off) < 12, `an odd last card is centred under the columns (${JSON.stringify(oddTail)})`);
 await page.getByRole("radio", { name: "All work" }).click();
+await page.waitForTimeout(1200);
+// Tall vertical films are spread out, so neither column runs on alone past the other at the bottom.
+const ends = await page.evaluate(() => {
+  const sec = document.querySelector('section a[href^="/work/"]:not([href="/work/"])').closest("section");
+  const [l, r] = [...sec.children].slice(0, 2).map((c) => [...c.querySelectorAll("a")]);
+  const bottom = (a) => Math.round(a.at(-1).getBoundingClientRect().bottom);
+  return { left: l.length, right: r.length, gap: Math.abs(bottom(l) - bottom(r)), card: Math.round(l[0].getBoundingClientRect().height) };
+});
+check(ends.gap < ends.card * 0.6 && Math.abs(ends.left - ends.right) <= 3, `All work: both columns end level (${JSON.stringify(ends)})`);
 await cards.first().click();
 await page.waitForURL(/\/work\/mcdonalds-chicken-mcwings\/?$/);
 check(await page.getByText(`Film 01 of ${allCount}`).isVisible(), `project counter reads Film 01 of ${allCount}`);

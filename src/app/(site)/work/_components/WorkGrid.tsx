@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EASE, Reveal } from "@/components/motion/Reveal";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import s from "@/components/site/site.module.css";
@@ -38,13 +38,15 @@ function Card({ p, i }: { p: Project; i: number }) {
  * leaving cards shrink away and the rest glide to their new places (layout="position", so the tilted
  * cards move without being stretched). The wrapper animates; the card inside keeps its tilt and hover.
  */
-function Column({ items, shown, className }: { items: Project[]; shown: Project[]; className: string }) {
+function Column({ items, shown, className, measure }: { items: Project[]; shown: Project[]; className: string; measure: (el: HTMLElement | null) => void }) {
   return (
     <div className={`relative ${className}`}>
       <AnimatePresence mode="popLayout">
         {items.map((p) => (
           <motion.div
             key={p.slug}
+            ref={measure}
+            data-slug={p.slug}
             layout="position"
             data-reveal="move"
             initial={{ opacity: 0, y: 60 }}
@@ -61,15 +63,80 @@ function Column({ items, shown, className }: { items: Project[]; shown: Project[
   );
 }
 
-/** Work board: filter chips (`filter`) re-flow the two staggered, tilted columns (an odd last card centred below). */
+/** Gap between cards and the right column's head start, as in the column classes below (md / lg). */
+const SPACING = { md: { gap: 56, offset: 100 }, lg: { gap: 72, offset: 140 } };
+
+/**
+ * Splits the films between the two columns so both end level. Vertical films stand much taller than
+ * landscape ones, so alternating left/right would leave one column far longer; instead each film, in
+ * order, joins whichever column is shorter so far. The last one goes wherever leaves the columns ending
+ * closest to level: under one of them, or centred below both.
+ */
+function balance(shown: Project[], height: (p: Project) => number, { gap, offset }: { gap: number; offset: number }) {
+  const left: Project[] = [];
+  const right: Project[] = [];
+  let l = 0;
+  let r = offset;
+  for (const p of shown.slice(0, -1)) {
+    if (l <= r) {
+      left.push(p);
+      l += height(p) + gap;
+    } else {
+      right.push(p);
+      r += height(p) + gap;
+    }
+  }
+  const last = shown.at(-1);
+  const tail: Project[] = [];
+  if (last) {
+    // Wherever leaves the two column ends closest: under the left, under the right, or centred below both.
+    const h = height(last) + gap;
+    const miss = { tail: Math.abs(l - r), left: Math.abs(l + h - r), right: Math.abs(r + h - l) };
+    const best = (Object.keys(miss) as (keyof typeof miss)[]).reduce((a, b) => (miss[b] < miss[a] ? b : a));
+    ({ tail, left, right })[best].push(last);
+  }
+  return { left, right, tail };
+}
+
+/** Before the cards are measured (and without JavaScript): a landscape card ~400px tall, a vertical one ~710px. */
+const estimate = (p: Project) => (isTall(p.stills[0]) ? 710 : 400);
+
+/** Work board: filter chips (`filter`) re-flow the two staggered, tilted columns, balanced so both end level. */
 export function WorkGrid() {
   const [filter, setFilter] = useState<string>("All");
   const shown = PROJECTS.filter((p) => filter === "All" || p.category === filter);
-  // An odd card out sits centred under the two columns, so the grid never ends lopsided on one side.
-  const paired = shown.length % 2 ? shown.slice(0, -1) : shown;
-  const tail = shown.length % 2 ? shown.slice(-1) : [];
-  const left = paired.filter((_, i) => i % 2 === 0);
-  const right = paired.filter((_, i) => i % 2 === 1);
+  // Each card's real height (it doesn't depend on its column: both are the same width), and the spacing in use.
+  const [heights, setHeights] = useState<Record<string, number>>({});
+  const [spacing, setSpacing] = useState(SPACING.lg);
+  const observer = useRef<ResizeObserver | null>(null);
+  useEffect(() => {
+    const ro = new ResizeObserver((entries) => {
+      setHeights((prev) => {
+        let next = prev;
+        for (const e of entries) {
+          const el = e.target as HTMLElement;
+          const h = el.offsetHeight;
+          if (h > 0 && el.dataset.slug && prev[el.dataset.slug] !== h) next = { ...next, [el.dataset.slug]: h };
+        }
+        return next;
+      });
+    });
+    observer.current = ro;
+    document.querySelectorAll<HTMLElement>("[data-slug]").forEach((el) => ro.observe(el));
+    const lg = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setSpacing(lg.matches ? SPACING.lg : SPACING.md);
+    sync();
+    lg.addEventListener("change", sync);
+    return () => {
+      ro.disconnect();
+      observer.current = null;
+      lg.removeEventListener("change", sync);
+    };
+  }, []);
+  const measure = useCallback((el: HTMLElement | null) => {
+    if (el) observer.current?.observe(el);
+  }, []);
+  const { left, right, tail } = balance(shown, (p) => heights[p.slug] ?? estimate(p), spacing);
   return (
     <>
       <Reveal as="section" onMount delay={0.45} aria-label="Filter by format" className={`flex flex-col gap-[20px] pb-[56px] lg:pb-[72px] ${PX}`}>
@@ -80,9 +147,9 @@ export function WorkGrid() {
         </span>
       </Reveal>
       <section className={`grid grid-cols-1 items-start gap-y-[56px] pb-[96px] md:grid-cols-2 md:gap-x-[32px] lg:gap-x-[48px] lg:pb-[160px] ${PX}`}>
-        <Column items={left} shown={shown} className="flex flex-col gap-[56px] lg:gap-[72px]" />
-        <Column items={right} shown={shown} className="flex flex-col gap-[56px] md:pt-[100px] lg:gap-[72px] lg:pt-[140px]" />
-        <Column items={tail} shown={shown} className="md:col-span-2 md:mx-auto md:w-[calc(50%-16px)] lg:w-[calc(50%-24px)]" />
+        <Column items={left} shown={shown} measure={measure} className="flex flex-col gap-[56px] lg:gap-[72px]" />
+        <Column items={right} shown={shown} measure={measure} className="flex flex-col gap-[56px] md:pt-[100px] lg:gap-[72px] lg:pt-[140px]" />
+        <Column items={tail} shown={shown} measure={measure} className="md:col-span-2 md:mx-auto md:w-[calc(50%-16px)] lg:w-[calc(50%-24px)]" />
       </section>
     </>
   );
