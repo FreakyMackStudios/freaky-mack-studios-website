@@ -868,10 +868,16 @@ console.log("Motion (other pages)");
     const foot = await sp.evaluate(() => {
       const f = document.querySelector("footer");
       const tels = [...f.querySelectorAll("a[href^='tel:']")].map((a) => Math.round(a.getBoundingClientRect().top));
-      return { tels: tels.length, rows: new Set(tels).size, icons: f.querySelectorAll("li svg").length };
+      const globe = [...f.querySelectorAll("li")].find((li) => /India/.test(li.textContent));
+      const places = globe ? [...globe.querySelectorAll("span.whitespace-nowrap")].map((el) => [el.textContent.replace("|", "").trim(), Math.round(el.getBoundingClientRect().top)]) : [];
+      return { tels: tels.length, rows: new Set(tels).size, icons: f.querySelectorAll("li svg").length, places: places.map(([p]) => p).join(" | "), placeRows: new Set(places.map(([, y]) => y)).size };
     });
-    check(foot.tels === 3 && foot.rows === 1 && foot.icons === 4, `footer at ${w}px: icons on every contact line, three phones on one line (${JSON.stringify(foot)})`);
+    check(foot.tels === 3 && foot.rows === 1 && foot.icons === 5, `footer at ${w}px: icons on every contact line, three phones on one line (${JSON.stringify(foot)})`);
+    check(foot.places === "India | UAE | France" && foot.placeRows === 1, `footer at ${w}px: locations read India | UAE | France on one line (${foot.places})`);
   }
+  // The homepage has its own footer: the locations are there too.
+  await sp.goto(`${base}/`, { waitUntil: "networkidle" });
+  check((await sp.locator("footer").getByText("France", { exact: true }).count()) === 1 && (await sp.locator("footer").getByText("UAE", { exact: true }).count()) === 1, "homepage footer lists India | UAE | France too");
   await sp.setViewportSize({ width: 1440, height: 900 });
   // The hero plays in on load.
   await sp.goto(`${base}/people/`, { waitUntil: "networkidle" });

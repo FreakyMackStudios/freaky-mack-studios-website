@@ -46,6 +46,8 @@ export const ORIGINALS_LIVE = false;
 export const STUDIO = {
   name: "Freaky Mack Studios Pvt. Ltd.",
   address: ["1402, Arc One, Oshiwara", "Andheri West, Mumbai 400053"],
+  /** Where the studio works, shown under the address in the footers ("India | UAE | France"). */
+  locations: ["India", "UAE", "France"],
 };
 
 /**
