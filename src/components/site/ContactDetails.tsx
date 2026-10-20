@@ -46,6 +46,14 @@ export const PinIcon = () =>
     </>,
   );
 
+export const GlobeIcon = () =>
+  svg(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
+    </>,
+  );
+
 /** One contact line: an icon in a small ring, then the detail. */
 export function ContactRow({ icon, children, className = "" }: { icon: ReactNode; children: ReactNode; className?: string }) {
   return (
@@ -59,21 +67,19 @@ export function ContactRow({ icon, children, className = "" }: { icon: ReactNode
 }
 
 /**
- * The studio's three numbers on one line, split by "|". Where they don't fit (phones), they wrap and the
- * divider at the start of a wrapped line is clipped away, so no line begins with a bar.
+ * Items on one line, split by "|". Where they don't fit (phones), they wrap and the divider at the start of a
+ * wrapped line is clipped away, so no line begins with a bar.
  */
-export function PhoneLine({ className = "" }: { className?: string }) {
+function DividedLine({ items, className = "" }: { items: { key: string; node: ReactNode }[]; className?: string }) {
   return (
     <span className={`block overflow-hidden py-[3px] -my-[3px] ${className}`}>
       <span className="-ml-[29px] flex flex-wrap gap-y-[6px]">
-        {CONTACT.phones.map((ph) => (
-          <span key={ph.href} className="flex items-baseline whitespace-nowrap">
+        {items.map((it) => (
+          <span key={it.key} className="flex items-baseline whitespace-nowrap">
             <span aria-hidden="true" className="w-[29px] text-center text-[var(--muted-2)]">
               |
             </span>
-            <a href={ph.href} className={s.link}>
-              {ph.label}
-            </a>
+            {it.node}
           </span>
         ))}
       </span>
@@ -81,7 +87,29 @@ export function PhoneLine({ className = "" }: { className?: string }) {
   );
 }
 
-/** "Say hello" in the footers: email, the three phones, WhatsApp and the address, each with its icon. */
+/** The studio's three numbers on one line, split by "|". */
+export function PhoneLine({ className = "" }: { className?: string }) {
+  return (
+    <DividedLine
+      className={className}
+      items={CONTACT.phones.map((ph) => ({
+        key: ph.href,
+        node: (
+          <a href={ph.href} className={s.link}>
+            {ph.label}
+          </a>
+        ),
+      }))}
+    />
+  );
+}
+
+/** Where the studio works ("India | UAE | France"), split by "|" like the phones. */
+export function LocationLine({ className = "" }: { className?: string }) {
+  return <DividedLine className={className} items={STUDIO.locations.map((l) => ({ key: l, node: <span>{l}</span> }))} />;
+}
+
+/** "Say hello" in the footers: email, the three phones, WhatsApp, the address and the countries, each with its icon. */
 export function ContactDetails() {
   return (
     <ul className="m-0 flex list-none flex-col gap-[12px] p-0">
@@ -101,6 +129,10 @@ export function ContactDetails() {
       </ContactRow>
       <ContactRow icon={<PinIcon />}>
         <address className="text-[var(--muted)] not-italic">{STUDIO.address.join(", ")}</address>
+      </ContactRow>
+      <ContactRow icon={<GlobeIcon />}>
+        <span className="sr-only">Locations: </span>
+        <LocationLine className="text-[var(--muted)]" />
       </ContactRow>
     </ul>
   );
