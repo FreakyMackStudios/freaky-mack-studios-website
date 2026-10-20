@@ -30,6 +30,7 @@ export function Footer() {
             <Link href="/studio" className={s.link}>Studio</Link>
             <Link href="/originals" className={s.link}>Originals &amp; podcast</Link>
             <Link href="/people" className={s.link}>People</Link>
+            <Link href="/sister-companies" className={s.link}>Sister companies</Link>
             <Link href="/start-a-project" className={s.link}>Start a project</Link>
           </div>
           <div className="flex flex-col gap-[12px] text-[15px]">

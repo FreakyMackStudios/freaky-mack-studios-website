@@ -17,10 +17,10 @@ export function Nav() {
           <span className="text-[14px] font-extrabold tracking-[0.1em] whitespace-nowrap uppercase">Freaky Mack</span>
         </a>
       </div>
-      <nav data-exit="up" aria-label="Chapters" className="hidden items-center gap-[32px] text-[15px] font-medium lg:flex">
+      <nav data-exit="up" aria-label="Chapters" className="hidden items-center gap-[18px] text-[14px] font-medium whitespace-nowrap lg:flex xl:gap-[32px] xl:text-[15px]">
         {NAV_ITEMS.map((c) => (
           <Link key={c.no} href={c.href} className={`${s.link} flex items-baseline gap-[6px]`}>
-            <span className={`${s.it} text-[var(--muted-2)]`}>{c.no}</span>
+            <span className={`${s.it} hidden text-[var(--muted-2)] xl:inline`}>{c.no}</span>
             {c.label}
           </Link>
         ))}

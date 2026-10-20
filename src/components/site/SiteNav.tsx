@@ -9,7 +9,10 @@ import { NAV_ITEMS, activeFor } from "./nav-items";
 import s from "./site.module.css";
 import { PX } from "./ui";
 
-/** Shared header (design/boards/SiteNav.dc.html). The active item comes from the URL. */
+/**
+ * Shared header (design/boards/SiteNav.dc.html). The active item comes from the URL. Between 1024 and 1279px
+ * the five chapters sit a little tighter, without their numbers, so they fit beside the logo and the button.
+ */
 export function SiteNav() {
   const active = activeFor(usePathname());
   const onContact = active === "contact";
@@ -19,7 +22,7 @@ export function SiteNav() {
         <Mark className="h-[32px] w-[48px] shrink-0" />
         <span className="text-[14px] font-extrabold tracking-[0.1em] whitespace-nowrap uppercase">Freaky Mack</span>
       </Link>
-      <nav aria-label="Main" className="hidden items-center gap-[32px] text-[15px] font-medium lg:flex">
+      <nav aria-label="Main" className="hidden items-center gap-[18px] text-[14px] font-medium whitespace-nowrap lg:flex xl:gap-[32px] xl:text-[15px]">
         {NAV_ITEMS.map((it) => (
           <Link
             key={it.key}
@@ -29,7 +32,7 @@ export function SiteNav() {
               active === it.key ? "border-[var(--accent)]" : "border-transparent"
             }`}
           >
-            <span className={`${s.it} text-[var(--muted-2)]`}>{it.no}</span>
+            <span className={`${s.it} hidden text-[var(--muted-2)] xl:inline`}>{it.no}</span>
             {it.label}
           </Link>
         ))}

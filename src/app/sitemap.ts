@@ -4,7 +4,7 @@ import { PROJECTS, projectHref } from "@/content/projects";
 
 export const dynamic = "force-static";
 
-const ROUTES = ["/", "/work/", "/studio/", ...(ORIGINALS_LIVE ? ["/originals/"] : []), "/people/", "/start-a-project/", "/privacy/", "/terms/"];
+const ROUTES = ["/", "/work/", "/studio/", ...(ORIGINALS_LIVE ? ["/originals/"] : []), "/people/", "/sister-companies/", "/start-a-project/", "/privacy/", "/terms/"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const url = (path: string) => new URL(path, SITE_URL).toString();
