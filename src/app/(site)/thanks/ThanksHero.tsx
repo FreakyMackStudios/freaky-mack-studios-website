@@ -64,7 +64,7 @@ export function ThanksHero() {
       </Fly>
       <Fly from="right" delay={t(2)}>
         <H1 big className="max-w-[1000px]">
-          That’s a <AccentWord big>wrap</AccentWord> — for now.
+          That’s a <AccentWord big>wrap</AccentWord> for now.
         </H1>
       </Fly>
       <Fly from="bottom" delay={t(3)}>
