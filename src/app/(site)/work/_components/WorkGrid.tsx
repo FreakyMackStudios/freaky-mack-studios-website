@@ -3,12 +3,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
+import { EASE, Reveal } from "@/components/motion/Reveal";
 import { ChipGroup } from "@/components/site/ChipGroup";
 import s from "@/components/site/site.module.css";
-import { Label, PX } from "@/components/site/ui";
+import { PX } from "@/components/site/ui";
 import { Still, isTall } from "@/components/site/Still";
-import { FILTERS, PROJECTS, PUBLISHING_SOON, projectHref, whoAndYear, type Project } from "@/content/projects";
+import { FILTERS, PROJECTS, projectHref, whoAndYear, type Project } from "@/content/projects";
 
 const TILTS = [-1.2, 1, -0.6, 1.4];
 
@@ -84,35 +84,6 @@ export function WorkGrid() {
         <Column items={right} shown={shown} className="flex flex-col gap-[56px] md:pt-[100px] lg:gap-[72px] lg:pt-[140px]" />
         <Column items={tail} shown={shown} className="md:col-span-2 md:mx-auto md:w-[calc(50%-16px)] lg:w-[calc(50%-24px)]" />
       </section>
-      {PUBLISHING_SOON.length > 0 && <PublishingSoon />}
     </>
-  );
-}
-
-const SOON_TILT = [-1.5, 1, -0.5, 2, -2, 0.8, -1, 1.6];
-
-/** Films still waiting on their stills or their write-up: listed by name only, not linked. */
-function PublishingSoon() {
-  return (
-    <section aria-label="Publishing soon" className={`flex flex-col gap-[28px] pb-[96px] lg:gap-[36px] lg:pb-[140px] ${PX}`}>
-      <Reveal className="flex flex-col gap-[12px]">
-        <Label>Publishing soon</Label>
-        <p className="m-0 max-w-[640px] text-[17px] leading-[1.6] text-[var(--ink-2)] lg:text-[18px]">
-          More of our films are on their way to this page.
-        </p>
-      </Reveal>
-      <Reveal as="ul" stagger={0.04} amount={0.2} className="m-0 flex list-none flex-wrap gap-[12px] p-0 lg:gap-[14px]">
-        {PUBLISHING_SOON.map((p, i) => (
-          <RevealItem as="li" key={p.slug} from={{ y: 20 }} duration={0.5} className="flex">
-            <span
-              className="rounded-full border border-dashed border-[var(--ink)] px-[18px] py-[10px] text-[15px] font-medium lg:px-[22px] lg:py-[12px] lg:text-[17px]"
-              style={{ transform: `rotate(${SOON_TILT[i % SOON_TILT.length]}deg)` }}
-            >
-              {p.title}
-            </span>
-          </RevealItem>
-        ))}
-      </Reveal>
-    </section>
   );
 }

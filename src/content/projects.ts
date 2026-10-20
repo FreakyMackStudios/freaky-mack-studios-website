@@ -46,10 +46,7 @@ export type Project = {
    * uses its YouTube thumbnail as the cover (marked by `fallback`), and has no frames gallery.
    */
   stills: Still[];
-  /**
-   * On the site when it can be watched (it has a YouTube video), or when it has both stills and written
-   * content; otherwise it's listed by name under "Publishing soon".
-   */
+  /** On the site only when it can be watched: it has a public YouTube video (the studio's call, Oct 2026). */
   published: boolean;
   /** The film on YouTube (src/content/youtube.ts); YouTube's home page for films without a link yet. */
   youtube: string;
@@ -72,8 +69,6 @@ const BGS = [
 type Film = Omit<Project, "bg" | "videoUrl" | "aspect" | "credits" | "stills" | "published" | "youtube"> & {
   youtube?: string;
   aspect?: string;
-  /** The studio left this film blank on the content form: only the file name is known, so no written content. */
-  blank?: true;
   /** [role, name] pairs, in the order they show. */
   credits: [string, string][];
 };
@@ -98,7 +93,7 @@ const youtubeCover = (id: string, title: string): Still => ({
  */
 const filmShape = (st: Still): Still => (st.height > st.width ? { ...st, width: 1080, height: 1920 } : { ...st, width: 1920, height: 1080 });
 
-const film = ({ blank, ...f }: Film, i: number): Project => {
+const film = (f: Film, i: number): Project => {
   const link = f.youtube ?? YOUTUBE_LINKS[f.slug];
   const id = youtubeId(link);
   const own = STILLS[f.slug] ?? [];
@@ -110,7 +105,7 @@ const film = ({ blank, ...f }: Film, i: number): Project => {
     aspect: f.aspect ?? "16:9",
     credits: f.credits.map(([role, who]) => ({ role, who })),
     stills: (own.length ? own : id ? [youtubeCover(id, f.title)] : []).map(filmShape),
-    published: !!id || (own.length > 0 && !blank),
+    published: !!id,
     youtube: link ?? YOUTUBE_PLACEHOLDER,
   };
 };
@@ -137,15 +132,6 @@ const FALAKNAMA: [string, string][] = [
   ["Producer", "Aqib Khan"],
   [DOP, "Afzal"],
   [POST, "Afzal"],
-];
-// Fabindia: two films by one team.
-const FABINDIA: [string, string][] = [
-  ["Client", "Fabindia"],
-  ["Agency", FM],
-  ["Director", IZAAN],
-  ["Producer", "Sameer"],
-  [DOP, "Damandeep Singh"],
-  [POST, "Damandeep Singh"],
 ];
 
 /**
@@ -256,7 +242,6 @@ const FILMS: Film[] = [
   },
   {
     slug: "changa",
-    blank: true,
     title: "Changa",
     category: "Music video",
     duration: "3:52",
@@ -370,26 +355,6 @@ const FILMS: Film[] = [
       [POST, "Sandeep Khasariya"],
     ],
     source: "Corporate Videos/DBS Lifestyle  I  Corporate Film 2023  I  Freaky Mack Films - Freaky Mack (1080p, h264).mp4",
-  },
-  {
-    slug: "rudraprayag",
-    title: "Rudraprayag",
-    category: "Documentary",
-    duration: "3:47",
-    who: "Renew & Development Alternatives",
-    logline: "A short documentary for Renew and Development Alternatives about their work with communities in rural India.",
-    brief:
-      "A short film on Development Alternatives and its work in rural India, empowering communities through sustainable livelihoods, employment and grassroots solutions.",
-    idea:
-      "Real people, real stories: the film shows how these efforts are creating meaningful change in people’s lives. Izaan Khan directed, and Sandeep Khasariya shot and edited it.",
-    onScreen: "Made for Renew and Development Alternatives, and a companion to Soanbhadra, our longer documentary for Development Alternatives.",
-    credits: [
-      ["Client", "Renew & Development Alternatives"],
-      ["Director", IZAAN],
-      [DOP, "Sandeep Khasariya"],
-      [POST, "Sandeep Khasariya"],
-    ],
-    source: "Documentaries/Renew_Rudraprayag.mov",
   },
   {
     slug: "kashi",
@@ -559,16 +524,6 @@ const FILMS: Film[] = [
     ],
     source: "Ad. Films/Zykaz_Cafe_Square.mov.mp4",
   },
-  {
-    slug: "zykaz-interview",
-    blank: true,
-    title: "Zykaz Interview",
-    category: "Ad film",
-    duration: "0:32",
-    who: "Zykaz Clothing",
-    credits: [["Client", "Zykaz Clothing"]],
-    source: "Ad. Films/Zykaz_Interview_FinalCut.mov",
-  },
 
   // Corporate films
   {
@@ -593,28 +548,6 @@ const FILMS: Film[] = [
   },
 
   // Documentaries
-  {
-    slug: "soanbhadra",
-    title: "Soanbhadra",
-    category: "Documentary",
-    duration: "9:45",
-    who: "Development Alternatives",
-    logline: "A documentary for Development Alternatives. At 9:45, it’s the longest film on this site.",
-    brief:
-      "Development Alternatives works with rural communities across India on sustainable livelihoods, employment and grassroots solutions. It commissioned a documentary on that work.",
-    idea:
-      "Izaan Khan directed, with Ekta and Mallika producing. Afzal and Abhishek Mewati shared the camera, and Afzal and Izaan edited nearly ten minutes of film.",
-    onScreen: "Made for Development Alternatives, and a companion to Rudraprayag, our shorter film for Renew and Development Alternatives.",
-    credits: [
-      ["Client", "Development Alternatives"],
-      ["Agency", FM],
-      ["Director", IZAAN],
-      ["Producers", "Ekta & Mallika"],
-      [DOP, "Afzal & Abhishek Mewati"],
-      [POST, "Afzal & Izaan Khan"],
-    ],
-    source: "Documentaries/DA_Soanbhadra.mp4",
-  },
 
   // Event films
   {
@@ -658,20 +591,6 @@ const FILMS: Film[] = [
 
   // Fashion films
   {
-    slug: "pc-jeweller-sonalika-sahay",
-    blank: true,
-    title: "PC Jeweller × Sonalika Sahay",
-    category: "Fashion film",
-    duration: "0:46",
-    who: "PC Jeweller",
-    logline: "A fashion film for PC Jeweller with Sonalika Sahay.",
-    credits: [
-      ["Client", "PC Jeweller"],
-      ["Cast", "Sonalika Sahay"],
-    ],
-    source: "Fashion Films/PC Jeweller  I  Sonalika Sahay  I  Freaky Mack - Advertising Agency - Freaky Mack (1080p, h264) (1).mp4",
-  },
-  {
     slug: "noughtone",
     title: "NoughtOne",
     category: "Fashion film",
@@ -712,26 +631,6 @@ const FILMS: Film[] = [
     ],
     source: "Fashion Films/Film Harshita Gaur.mp4",
   },
-  {
-    slug: "fabindia-01",
-    title: "Fabindia — Film 01",
-    category: "Fashion film",
-    duration: "1:00",
-    who: "Fabindia",
-    logline: "A fashion film for Fabindia, the first of two.",
-    credits: FABINDIA,
-    source: "Fashion Films/Fabindia.mp4",
-  },
-  {
-    slug: "fabindia-02",
-    title: "Fabindia — Film 02",
-    category: "Fashion film",
-    duration: "0:58",
-    who: "Fabindia",
-    logline: "A fashion film for Fabindia, the second of two.",
-    credits: FABINDIA,
-    source: "Fashion Films/Fabindia 2.mp4",
-  },
 
   // Govt. ads
   {
@@ -754,16 +653,6 @@ const FILMS: Film[] = [
     logline: "A campaign film for the Government of Haryana on sexual harassment at the workplace.",
     credits: HARYANA,
     source: "Govt. Ads/Saxual Harrasment for Haryana Govt.mov",
-  },
-  {
-    slug: "voting-campaign",
-    title: "Voting Campaign",
-    category: "Govt. ad",
-    duration: "1:41",
-    who: "Government of Haryana",
-    logline: "A campaign film for the Government of Haryana, encouraging people to vote.",
-    credits: HARYANA,
-    source: "Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4",
   },
 
   // Short films
@@ -852,12 +741,11 @@ const FILMS: Film[] = [
 
 const ALL_PROJECTS: Project[] = FILMS.map(film);
 /**
- * The films on the site: those with a YouTube video, plus those with both stills and written content.
- * Their pages, the Work grid, the homepage six, "Film 03 of N" and Next up all use this list.
+ * The films on the site: those with a public YouTube video. Their pages, the Work grid, the homepage six,
+ * "Film 03 of N" and Next up all use this list. A film without one (The Last Presence, until its public
+ * link comes) stays in FILMS but isn't shown anywhere.
  */
 export const PROJECTS: Project[] = ALL_PROJECTS.filter((p) => p.published);
-/** Everything else waits, shown on /work by name only under "Publishing soon". */
-export const PUBLISHING_SOON = ALL_PROJECTS.filter((p) => !p.published).map(({ slug, title, category }) => ({ slug, title, category }));
 
 export const projectHref = (slug: string) => `/work/${slug}`;
 /** "Client · Year" (or whichever of the two the studio confirmed). */

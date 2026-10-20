@@ -147,11 +147,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/noughtone-show/02.jpg", width: 720, height: 1280, alt: "Model in blue racing separates walking" },
     { src: "/work/noughtone-show/03.jpg", width: 720, height: 1280, alt: "Model in a green bomber, audience behind" },
   ],
-  "pc-jeweller-sonalika-sahay": [
-    { src: "/work/pc-jeweller-sonalika-sahay/01.jpg", width: 1920, height: 1080, alt: "Bride seated on the sofa in full jewellery" },
-    { src: "/work/pc-jeweller-sonalika-sahay/02.jpg", width: 1920, height: 1080, alt: "Veiled portrait looking down" },
-    { src: "/work/pc-jeweller-sonalika-sahay/03.jpg", width: 1920, height: 1080, alt: "Cocktail rings, hand on brocade" },
-  ],
   "noughtone": [
     { src: "/work/noughtone/01.jpg", width: 1280, height: 720, alt: "Lone figure on the ridge at sunrise" },
     { src: "/work/noughtone/02.jpg", width: 1280, height: 720, alt: "Figure walking, mirrored in the water" },
@@ -162,16 +157,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/harshita-gaur/02.jpg", width: 1080, height: 1920, alt: "At the mirror holding the necklace" },
     { src: "/work/harshita-gaur/03.jpg", width: 1080, height: 1920, alt: "Close-up, hand at her face in a shaft of light" },
   ],
-  "fabindia-01": [
-    { src: "/work/fabindia-01/01.jpg", width: 720, height: 326, alt: "Couple laughing among marigold garlands" },
-    { src: "/work/fabindia-01/02.jpg", width: 720, height: 326, alt: "Couple in the arched doorway" },
-    { src: "/work/fabindia-01/03.jpg", width: 720, height: 326, alt: "Couple in close-up" },
-  ],
-  "fabindia-02": [
-    { src: "/work/fabindia-02/01.jpg", width: 720, height: 326, alt: "Couple stepping out of the orange archway" },
-    { src: "/work/fabindia-02/02.jpg", width: 720, height: 326, alt: "Couple laughing in close-up" },
-    { src: "/work/fabindia-02/03.jpg", width: 720, height: 326, alt: "Woman in a coral sari, portrait" },
-  ],
   "sex-sorted": [
     { src: "/work/sex-sorted/01.jpg", width: 1920, height: 820, alt: "Wide of the village square under the banyan, men and a cow" },
     { src: "/work/sex-sorted/02.jpg", width: 1920, height: 820, alt: "Two farmers talking in the green fields" },
@@ -181,11 +166,6 @@ export const STILLS: Record<string, Still[]> = {
     { src: "/work/sexual-harassment-haryana/01.jpg", width: 852, height: 362, alt: "Woman in a sari standing in the office" },
     { src: "/work/sexual-harassment-haryana/02.jpg", width: 852, height: 362, alt: "Woman in profile at her desk" },
     { src: "/work/sexual-harassment-haryana/03.jpg", width: 852, height: 362, alt: "Two colleagues talking over tea" },
-  ],
-  "voting-campaign": [
-    { src: "/work/voting-campaign/01.jpg", width: 848, height: 400, alt: "Village women and children walking up the lane" },
-    { src: "/work/voting-campaign/02.jpg", width: 848, height: 400, alt: "Two women in orange and purple dupattas" },
-    { src: "/work/voting-campaign/03.jpg", width: 848, height: 400, alt: "Woman and a boy sitting outside, cow behind" },
   ],
   "happy-republic-day": [
     { src: "/work/happy-republic-day/01.jpg", width: 1920, height: 1080, alt: "Wide of the balloon seller's cycle on the street" },

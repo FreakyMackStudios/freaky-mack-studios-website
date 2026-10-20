@@ -15,6 +15,8 @@ Paths are relative to the repo root.
 
 > **Content form applied (Oct 2026).** The client's filled-in form is now on the site: every film's client, credits and story (the form printed each film's answers under the *next* film's heading, so answers were matched by the details in each box), the homepage's six films, the address, WhatsApp, Instagram/YouTube links, the 24-hour reply time, the crew and Izaan's bio. Films the client filled in completely show their full story; partly filled and blank films show only what was given, with no placeholders. **Still open:** Kara Feel (asked for on the homepage, but no file), Film 39's "same as above" (read as the Republic Day team), "The Last Precence" (shown as "The Last Presence"), the founder quote, Vimeo/LinkedIn, budget ranges ("no fixed budget"), the legal details in section 1, stills and film links. Rows 1.1, 1.2, 1.4, 1.5, 1.7 and 1.8 (Instagram) below are done.
 
+> **Films on the site (Oct 2026).** Only films with a public YouTube video are shown (`src/content/youtube.ts`). At the studio's request, the seven films without one were removed: Fabindia Film 01 and 02, Voting Campaign, Rudraprayag, Soanbhadra, Zykaz Interview and PC Jeweller × Sonalika Sahay. The Last Presence (Teaser) stays in the data, hidden, until its public YouTube link comes (the sheet only had a private YouTube Studio link). There is no "Publishing soon" list any more.
+
 > **Stills and publishing (Oct 2026).** Three stills per film came in for 28 films (`public/work/<slug>/`, data in `src/content/stills.ts`, taken at each film's own resolution; burnt-in letterbox bars trimmed). A film is **published** only when it has both stills and written content: 26 films are live. The rest are listed by name only under **"Publishing soon"** on /work, with no page: 12 have content but no stills (their source files weren't on the Mac when the stills were pulled: pTron, India Fashion Awards, Albela, TOIFA Aftermovie, The Midnight Hour, Rudraprayag, Kashi, Falaknama — Film 01, BharatBenz × Dhingra Trucking, Soanbhadra, Nayi Soch Wali Azadi, The Last Presence — Teaser), 2 have stills but no written content (Changa, PC Jeweller × Sonalika Sahay), and Zykaz Interview has neither. Each one goes live by itself once the missing piece arrives.
 
 ---
@@ -125,7 +127,6 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `toifa-aftermovie` | TOIFA Aftermovie | Event film | `[Client]` | `[Year]` | 2:02 | 16:9 | `[Name]` | `Event Films/TOIFA_Aftermovie.mov` |
 | `the-midnight-hour` | The Midnight Hour | Short film | `[Client]` | `[Year]` | 3:11 | 16:9 | `[Name]` | `Short Films/The Midnight Hour.mp4` |
 | `dbs-lifestyle` | DBS Lifestyle | Corporate film | DBS Lifestyle | 2023 | 4:08 | 16:9 | `[Name]` | `Corporate Videos/DBS Lifestyle  I  Corporate Film 2023  I  Freaky Mack Films - Freaky Mack (1080p, h264).mp4` |
-| `rudraprayag` | Rudraprayag | Documentary | `[Client]` | `[Year]` | 3:47 | 16:9 | `[Name]` | `Documentaries/Renew_Rudraprayag.mov` |
 | `rock-it` | Rock.it | Ad film | Rock.it | `[Year]` | 1:44 | 2.39:1 | Izaan Khan | `Ad. Films/Rock.it  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4` |
 | `kashi` | Kashi | Short film | `[Client]` | `[Year]` | 4:29 | 16:9 | `[Name]` | `Short Films/Kashi_ColorGrade.m4v` |
 | `pkcc` | PKCC | Govt. ad | `[Client]` | `[Year]` | 2:27 | 16:9 | `[Name]` | `Govt. Ads/PKCC FINAL_1080p.mp4` |
@@ -139,20 +140,14 @@ Source: `src/app/_components/People.tsx`. Should match `/people` (section 7).
 | `falaknama-02` | Falaknama — Film 02 | Ad film | `[Client]` | `[Year]` | 0:30 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33 copy.mp4` |
 | `falaknama-03` | Falaknama — Film 03 | Ad film | `[Client]` | `[Year]` | 0:23 | 9:16 | `[Name]` | `Ad. Films/VIDEO-2026-02-26-21-26-33.mp4` |
 | `zykaz-cafe` | Zykaz Cafe | Ad film | Zykaz | `[Year]` | 0:35 | 4:3 | `[Name]` | `Ad. Films/Zykaz_Cafe_Square.mov.mp4` |
-| `zykaz-interview` | Zykaz Interview | Ad film | Zykaz | `[Year]` | 0:32 | 16:9 | `[Name]` | `Ad. Films/Zykaz_Interview_FinalCut.mov` |
 | `bharatbenz-dhingra-trucking` | BharatBenz × Dhingra Trucking | Corporate film | Dhingra Trucking | `[Year]` | 7:42 | 16:9 | `[Name]` | `Corporate Videos/Bharat Benz   Dhingra Trucking - DHINGRA TRUCKING (1080p, h264).mp4` |
-| `soanbhadra` | Soanbhadra | Documentary | `[Client]` | `[Year]` | 9:45 | 16:9 | `[Name]` | `Documentaries/DA_Soanbhadra.mp4` |
 | `bombay-times-fashion-week` | Bombay Times Fashion Week — Green Room | Event film | Bombay Times | 2020 | 3:13 | 16:9 | `[Name]` | `Event Films/Bombay Times Fashion Week  I  March 2020  I  Green Room  I  Film by Freaky Mack_720p.mp4` |
 | `sawe-international-excellence-awards` | SAWE International Excellence Awards | Event film | SAWE | `[Year]` | 1:24 | 16:9 | `[Name]` | `Event Films/SAWE International Excellence Awards  I  Dubai  I  Creative Partner - Freaky Mack.mp4` |
 | `noughtone-show` | NoughtOne Show | Event film | NoughtOne | `[Year]` | 0:54 | 9:16 | `[Name]` | `Event Films/NoughtOne Show.mp4` |
-| `pc-jeweller-sonalika-sahay` | PC Jeweller × Sonalika Sahay | Fashion film | PC Jeweller | `[Year]` | 0:46 | 16:9 | `[Name]` | `Fashion Films/PC Jeweller  I  Sonalika Sahay  I  Freaky Mack - Advertising Agency - Freaky Mack (1080p, h264) (1).mp4` |
 | `noughtone` | NoughtOne | Fashion film | NoughtOne | `[Year]` | 1:21 | 16:9 | `[Name]` | `Fashion Films/NoughtOne.mp4` |
 | `harshita-gaur` | Harshita Gaur | Fashion film | Harshita Gaur | `[Year]` | 0:52 | 9:16 | `[Name]` | `Fashion Films/Film Harshita Gaur.mp4` |
-| `fabindia-01` | Fabindia — Film 01 | Fashion film | Fabindia | `[Year]` | 1:00 | 16:9 | `[Name]` | `Fashion Films/Fabindia.mp4` |
-| `fabindia-02` | Fabindia — Film 02 | Fashion film | Fabindia | `[Year]` | 0:58 | 16:9 | `[Name]` | `Fashion Films/Fabindia 2.mp4` |
 | `sex-sorted` | Sex Sorted | Govt. ad | Haryana Government | `[Year]` | 2:32 | 16:9 | `[Name]` | `Govt. Ads/SEX SORTED whats app file_1080p.mp4` |
 | `sexual-harassment-haryana` | Sexual Harassment | Govt. ad | Haryana Government | `[Year]` | 2:49 | 2.35:1 | `[Name]` | `Govt. Ads/Saxual Harrasment for Haryana Govt.mov` |
-| `voting-campaign` | Voting Campaign | Govt. ad | Haryana Government | `[Year]` | 1:41 | 16:9 | `[Name]` | `Govt. Ads/Voting Campaign - Freaky Mack (480p, h264).mp4` |
 | `happy-republic-day` | Happy Republic Day | Short film | `[Client]` | `[Year]` | 2:19 | 16:9 | Izaan Khan | `Short Films/Happy Republic Day  I  Directed by Izaan Khan  I  Freaky Mack Productions - Freaky Mack (1080p, h264).mp4` |
 | `nayi-soch-wali-azadi` | Nayi Soch Wali Azadi | Short film | `[Client]` | `[Year]` | 3:58 | 4:3 | `[Name]` | `Short Films/Nayi Soch Wali Azadi_Final Cut.mp4` |
 | `s-and-s-trailer` | S&S — Trailer | Short film | `[Client]` | `[Year]` | 1:00 | 16:9 | `[Name]` | `Short Films/S&S_Trailer.mov` |

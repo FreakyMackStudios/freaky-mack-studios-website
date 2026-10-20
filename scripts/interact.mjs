@@ -317,7 +317,15 @@ const tb = await toggle.boundingBox();
 check(tb && tb.x + tb.width > 1440 - 40 && tb.y + tb.height > 900 - 40 && (await toggle.getAttribute("aria-checked")) === "true", "theme switch sits bottom-right, on (Dark)");
 // The circle is a plain CSS animation on the transition layer (no CSS variables or script-driven animation
 // there, which Safari handled unevenly: the light page popped in at once going to Light).
-const circleOn = () => page.evaluate(() => new Promise((res) => setTimeout(() => res(document.getAnimations().filter((a) => a.animationName === "fm-vt").map((a) => a.effect.pseudoElement)), 120)));
+// Polled, not read once at a fixed delay: on a cold start the browser can take a moment to snapshot the
+// page before the transition (and its circle) begins.
+const circleOn = () =>
+  page
+    .waitForFunction(() => {
+      const on = document.getAnimations().filter((a) => a.animationName === "fm-vt").map((a) => a.effect.pseudoElement);
+      return on.length ? on : null;
+    }, null, { timeout: 2000, polling: 16 })
+    .then((h) => h.jsonValue(), () => []);
 await toggle.click();
 const growOn = await circleOn();
 check(growOn.length === 1 && growOn[0] === "::view-transition-new(root)", `to Light: the new (light) page grows out of the switch as a CSS-animated circle (${growOn})`);
@@ -361,7 +369,7 @@ await page.getByRole("radio", { name: "Fashion films" }).click();
 await page.waitForTimeout(900); // leaving cards animate out, the rest glide into place
 const settled = await page.evaluate(() => [...document.querySelectorAll('section a[href^="/work/"]:not([href="/work/"])')].map((a) => getComputedStyle(a.parentElement).opacity));
 check(settled.every((o) => o === "1"), `filtered cards settle fully visible (${settled.join(", ")})`);
-check((await cards.count()) === 6 && allCount === 42 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 6 of ${allCount}, with no visible count`);
+check((await cards.count()) === 4 && allCount === 39 && !(await page.getByText(/in total/).count()), `Fashion films filter shows 4 of ${allCount}, with no visible count`);
 check(!(await page.getByRole("radio", { name: "Documentaries" }).count()) && (await page.getByRole("radio", { name: "Music videos" }).count()) === 1, "formats with no published film have no filter chip (Documentaries); Music videos now has films");
 await page.keyboard.press("ArrowRight");
 check((await page.getByRole("radio", { name: "Event films" }).getAttribute("aria-checked")) === "true", "arrow key moves the filter");
@@ -451,16 +459,11 @@ check(offWork.length === 0, `work cards: every cover is 16:9 (or 9:16 vertical) 
 await page.evaluate(() => scrollTo(0, 0));
 const workText = await page.evaluate(() => document.querySelector("main").innerText);
 check(!/\[(Client|Year|STILL)/.test(workText), "work cards show real stills and no [Client], [Year] or [ STILL ] placeholders");
-// Films with no public video and no finished write-up are listed by name only, under "Publishing soon", and
-// get no page. Films with a YouTube video are on the site.
-const soon = page.locator('section[aria-label="Publishing soon"]');
-const soonText = await soon.innerText();
-check(
-  ["Rudraprayag", "Zykaz Interview", "Soanbhadra", "PC Jeweller × Sonalika Sahay", "The Last Presence — Teaser"].every((n) => soonText.includes(n)) &&
-    !/Neeta Lulla|Albela|pTron/.test(soonText) && (await soon.locator("a").count()) === 0,
-  "Publishing soon: only the five films with no public video, by name, without links",
-);
-check((await page.request.get(`${base}/work/rudraprayag/`)).status() === 404 && (await page.request.get(`${base}/work/ptron/`)).status() === 200, "an unpublished film has no page; a film with a YouTube video does");
+// Only films with a public video are on the site: no "Publishing soon" list, and the films without one
+// (removed, or The Last Presence until its public link comes) have no page.
+check((await page.locator('section[aria-label="Publishing soon"]').count()) === 0 && !(await page.getByText(/Publishing soon/i).count()), "no Publishing soon list");
+const gone = await Promise.all(["fabindia-01", "fabindia-02", "voting-campaign", "rudraprayag", "soanbhadra", "zykaz-interview", "pc-jeweller-sonalika-sahay", "tlp-teaser"].map(async (s) => (await page.request.get(`${base}/work/${s}/`)).status()));
+check(gone.every((st) => st === 404) && (await page.request.get(`${base}/work/ptron/`)).status() === 200, `films without a video have no page; one with a video does (${gone.join(",")})`);
 check((await page.getByRole("link", { name: "Work" }).first().getAttribute("aria-current")) === "page", "nav marks Work active on a project page");
 await page.goto(`${base}/work/sang-tu-chalen/`, { waitUntil: "networkidle" });
 check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
