@@ -27,6 +27,12 @@ export const CONTACT = {
     "https://script.google.com/macros/s/AKfycbxMQOiT0qjLX2jbjlMRdNaEtNHGDPoQKpSOH0xWaazROUzB9Fw2vJj5P8bYvys4Vfod/exec",
 };
 
+/**
+ * Originals page: false shows "Coming soon" at /originals (kept out of search and the sitemap); true brings
+ * back the full page (hero, podcast, slate, pitch), parked in src/app/(site)/originals/_components/OriginalsFull.tsx.
+ */
+export const ORIGINALS_LIVE = false;
+
 /** The studio (content form, section 1). */
 export const STUDIO = {
   name: "Freaky Mack Studios Pvt. Ltd.",

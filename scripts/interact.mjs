@@ -489,19 +489,25 @@ await page.goto(`${base}/work/sang-tu-chalen/`, { waitUntil: "networkidle" });
 check((await page.locator('a[href^="/work/mcdonalds-chicken-mcwings"]').count()) > 0, "last project's Next up wraps to the first");
 
 console.log("Originals");
+// Under construction: /originals shows only "Coming soon", none of the parked page, and stays out of search.
 await page.goto(`${base}/originals/`, { waitUntil: "networkidle" });
-const pod = page.locator("#podcast");
-check((await pod.getByRole("heading", { name: /Coming\s+soon/ }).isVisible()) && (await pod.locator("li").count()) === 3, "Originals podcast: Coming soon heading and what-to-expect list");
-check((await pod.locator("button").count()) === 0 && !(await page.getByText(/Latest episode|Every episode|\[Guest\]/).count()), "Originals podcast: no player or episode placeholders");
-await pod.getByRole("link", { name: /Say hello/ }).click();
-await page.waitForURL((u) => new URL(u).pathname === "/", { timeout: 8000 }).catch(() => {});
+const soon = await page.evaluate(() => ({
+  heading: document.querySelector("main h1")?.innerText.replace(/\s+/g, " ").trim(),
+  hidden: !document.querySelector("#podcast") && !/On the slate|Films of our|Pitch an idea|\[ Poster \]/i.test(document.querySelector("main").innerText),
+  noindex: /noindex/.test(document.querySelector('meta[name="robots"]')?.content ?? ""),
+  links: [...document.querySelectorAll("main a")].map((a) => a.getAttribute("href").replace(/\/$/, "")),
+}));
+check(/^COMING SOON\.$/i.test(soon.heading ?? "") && soon.hidden && soon.noindex && soon.links.includes("/work") && soon.links.includes("/start-a-project"), `Originals: just "Coming soon" (not the page under construction), not indexed (${JSON.stringify(soon)})`);
+check(!(await (await page.request.get(`${base}/sitemap.xml`)).text()).includes("/originals"), "Originals is left out of the sitemap while it's coming soon");
+// "Say hello" from another page (/?hello=podcast#contact) lands on the homepage form with the bubbles.
+await page.goto(`${base}/?hello=podcast#contact`, { waitUntil: "load" });
 await page.waitForFunction(() => [...document.querySelectorAll("#contact [data-hint]")].every((h) => getComputedStyle(h).opacity === "1"), null, { timeout: 6000 }).catch(() => {});
 const fromOriginals = await page.evaluate(() => ({
   url: location.pathname + location.search + location.hash,
   shown: [...document.querySelectorAll("#contact [data-hint]")].filter((h) => getComputedStyle(h).opacity === "1").length,
   inView: (() => { const r = document.querySelector("#contact form").getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })(),
 }));
-check(fromOriginals.url === "/#contact" && fromOriginals.shown === 3 && fromOriginals.inView, `Originals' Say hello lands on the homepage form with the bubbles, and tidies the address (${JSON.stringify(fromOriginals)})`);
+check(fromOriginals.url === "/#contact" && fromOriginals.shown === 3 && fromOriginals.inView, `Say hello from another page lands on the homepage form with the bubbles, and tidies the address (${JSON.stringify(fromOriginals)})`);
 
 console.log("Start a project");
 await page.goto(`${base}/`, { waitUntil: "networkidle" });
