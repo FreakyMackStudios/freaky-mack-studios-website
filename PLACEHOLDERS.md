@@ -242,7 +242,7 @@ Hint text inside the form fields ("Hi, I'm…", "you@brand.com", "+91") is inten
 >   - **Still owed (YOU):** turn on Analytics in the Vercel project.
 > - Sharing: we don't sell or share data; the only exceptions are the providers that run the site: Vercel (hosting), Google (Sheets + email for enquiries) and, with consent, the two analytics tools.
 > - Retention: 12 months. Grievance officer: Izaan Khan, +91 93184 65829. Response: 7 to 14 days.
-> - Terms: freakymackstudios.com; courts in Mumbai, including the Bombay High Court.
+> - Terms: freakymack.com (the live domain, www.freakymack.com); courts in Mumbai, including the Bombay High Court.
 
 These are drafts under India's DPDP Act 2023. **A lawyer must review both before launch.**
 
@@ -258,7 +258,7 @@ These are drafts under India's DPDP Act 2023. **A lawyer must review both before
 | 10.8 | Client names and logos "appear with their permission" | `src/content/legal/terms.tsx:25` | Confirm the studio has permission to show every client name and logo on the site | CLIENT | |
 | 10.9 | `Grievance officer: [NAME]` | `privacy.tsx:37` | Person who handles data complaints (required under the DPDP Act) | CLIENT | |
 | 10.10 | `respond within [X] days` | `privacy.tsx:37` | Grievance response time. This is not the same [X] as 1.5. | CLIENT (with lawyer) | |
-| 10.11 | `[DOMAIN]` | `src/content/legal/terms.tsx:23` | The site's domain, e.g. freakymackstudios.com | YOU | |
+| 10.11 | `[DOMAIN]` | `src/content/legal/terms.tsx:23` | The site's domain: **freakymack.com** (done, Oct 2026) | YOU | Done |
 | 10.12 | `courts in [CITY]` | See 1.3 | Governing-law city | CLIENT (with lawyer) | |
 | 10.13 | `Last updated [DATE]` | See 1.9 | Date the text was finalised | YOU | |
 

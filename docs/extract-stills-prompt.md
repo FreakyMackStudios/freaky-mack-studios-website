@@ -1,6 +1,6 @@
 # Task: pull three stills from every Freaky Mack film
 
-You're working on Utkarsh's Mac. The Freaky Mack Studios website (freakymackstudios.com, a Next.js site) shows **three still frames for every film** on its Work page, its project pages and the homepage. Your job is to take those frames from the film files and hand back one tidy folder.
+You're working on Utkarsh's Mac. The Freaky Mack Studios website (freakymack.com, a Next.js site) shows **three still frames for every film** on its Work page, its project pages and the homepage. Your job is to take those frames from the film files and hand back one tidy folder.
 
 **The one rule that matters most: keep each still at the film's own resolution.** No scaling, no cropping, no "web size". A 4K film gives 4K stills, a 1080p film gives 1080p stills, and a 480p phone clip gives 480p stills. The site team makes any smaller copies later.
 

@@ -632,7 +632,7 @@ check(
 await page.goto(`${base}/terms/`, { waitUntil: "networkidle" });
 check((await page.locator('section[id^="t"]').count()) === 11, "Terms has 11 sections");
 const termsText = await page.locator("main").innerText();
-check(!/\[[A-Z][A-Z /]*\]/.test(termsText) && /freakymackstudios\.com/.test(termsText) && /Bombay High Court/.test(termsText) && /Last updated 20 October 2026/i.test(termsText), "Terms: every blank filled (domain, courts, date)");
+check(!/\[[A-Z][A-Z /]*\]/.test(termsText) && /freakymack\.com/.test(termsText) && !/freakymackstudios\.com/.test(termsText) && /Bombay High Court/.test(termsText) && /Last updated 20 October 2026/i.test(termsText), "Terms: every blank filled (domain, courts, date)");
 
 console.log("Cookie banner");
 {
