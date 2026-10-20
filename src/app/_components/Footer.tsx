@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ContactDetails } from "@/components/site/ContactDetails";
+import { CookieSettingsButton } from "@/components/site/CookieSettingsButton";
 import { Reveal } from "@/components/motion/Reveal";
 import { Lockup } from "@/components/site/Logo";
 import { SOCIAL } from "@/shared/config";
@@ -45,9 +46,10 @@ export function Footer() {
       <Reveal delay={0.1} amount={0.5} className="flex flex-col items-start justify-between gap-[10px] border-t border-[var(--line-2)] pt-[24px] text-[13px] text-[var(--muted)] md:flex-row md:items-center">
         <span>© 2026 Freaky Mack Studios. All rights reserved.</span>
         <span className={`${s.it} text-[16px]`}>The end. For now.</span>
-        <span className="flex gap-[16px]">
+        <span className="flex flex-wrap gap-x-[16px] gap-y-[6px]">
           <Link href="/privacy" className={s.link}>Privacy</Link>
           <Link href="/terms" className={s.link}>Terms</Link>
+          <CookieSettingsButton className={s.link} />
           <a href="#top" className={s.link}>Back to the top ↑</a>
         </span>
       </Reveal>

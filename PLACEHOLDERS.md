@@ -235,6 +235,15 @@ Hint text inside the form fields ("Hi, I'm…", "you@brand.com", "+91") is inten
 
 ## 10. Privacy `/privacy` and Terms `/terms`
 
+> **Filled in (20 Oct 2026), from the studio's answers sheet. No [brackets] are left on either page; the lawyer still reviews the wording before launch.**
+> - Last updated: 20 October 2026 (`LEGAL_UPDATED` in `src/components/site/LegalPage.tsx`).
+> - Analytics: Google Analytics + Vercel Analytics. Both run only after the visitor accepts in the new cookie banner (`src/components/site/CookieBanner.tsx`), and "Cookie settings" in every footer changes the choice. The cookies section uses the "analytics cookies with a banner" wording.
+>   - **Still owed (YOU):** the GA4 measurement ID (`G-…`), set as `NEXT_PUBLIC_GA_ID` in Vercel. Until then, Google Analytics stays off.
+>   - **Still owed (YOU):** turn on Analytics in the Vercel project.
+> - Sharing: we don't sell or share data; the only exceptions are the providers that run the site: Vercel (hosting), Google (Sheets + email for enquiries) and, with consent, the two analytics tools.
+> - Retention: 12 months. Grievance officer: Izaan Khan, +91 93184 65829. Response: 7 to 14 days.
+> - Terms: freakymackstudios.com; courts in Mumbai, including the Bombay High Court.
+
 These are drafts under India's DPDP Act 2023. **A lawyer must review both before launch.**
 
 | # | Placeholder | Where | Purpose | Supplied by | Answer |
