@@ -20,6 +20,8 @@ export const COMPANIES: Company[] = [
     what: "The luxury events company",
     status: "live",
     url: "https://zellarinternational.com/",
+    // Its homepage at 1440×900 (Oct 2026).
+    shot: { src: "/companies/zellar-international.webp", width: 1440, height: 900 },
   },
   {
     key: "luxora",

@@ -36,16 +36,17 @@ function Status({ status }: { status: Company["status"] }) {
 /** A live site: its homepage screenshot in a browser frame, or until there is one, its name set in the frame. */
 function SiteThumb({ c }: { c: Company }) {
   return (
-    <div className="flex aspect-[16/10] flex-col overflow-hidden rounded-[22px] border border-[var(--line-2)] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
+    <div className="flex flex-col overflow-hidden rounded-[22px] border border-[var(--line-2)] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
       <div aria-hidden="true" className="flex h-[34px] shrink-0 items-center gap-[6px] border-b border-[#e4e4e0] bg-[#f4f4f1] px-[14px]">
         <span className="h-[9px] w-[9px] rounded-full bg-[#ff5f57]" />
         <span className="h-[9px] w-[9px] rounded-full bg-[#febc2e]" />
         <span className="h-[9px] w-[9px] rounded-full bg-[#28c840]" />
         <span className="ml-[10px] truncate rounded-full bg-white px-[12px] py-[2px] text-[11px] text-[#5c5c5c]">{c.url && displayUrl(c.url)}</span>
       </div>
-      <div className="relative flex-1">
+      {/* The page area is 16:10, the shape of the screenshot (1440×900), so none of it is cropped. */}
+      <div className="relative aspect-[16/10]">
         {c.shot ? (
-          <Image src={c.shot.src} alt={`${c.name}'s website`} fill sizes="(min-width: 1024px) 600px, 100vw" className="object-cover object-top" />
+          <Image src={c.shot.src} alt={`${c.name}'s website: its homepage`} fill sizes="(min-width: 1024px) 600px, 100vw" className="object-cover object-top" />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-[10px] px-[24px] text-center text-[#0a0a0a]">
             <span className="text-[clamp(26px,3.4vw,44px)] leading-[1] font-extrabold tracking-[-0.03em] uppercase">{c.name}</span>

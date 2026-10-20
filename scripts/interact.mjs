@@ -697,13 +697,13 @@ console.log("Sister companies");
     const zellar = main.querySelector('a[href="https://zellarinternational.com/"]');
     return {
       active: document.querySelector('header nav a[aria-current="page"]')?.textContent.trim(),
-      zellar: zellar && { target: zellar.target, rel: zellar.rel, live: /Live/.test(zellar.textContent) },
+      zellar: zellar && { target: zellar.target, rel: zellar.rel, live: /Live/.test(zellar.textContent), shot: (() => { const i = zellar.querySelector('img[src*="zellar-international"]'); return !!i && i.complete && i.naturalWidth === 1440 && i.alt.length > 10; })() },
       luxora: /House of Luxora/.test(main.innerText) && /Luxury wedding organiser/.test(main.innerText) && /Coming soon/i.test(main.innerText) && /under construction/i.test(main.innerText),
       luxoraLinked: [...main.querySelectorAll("a")].some((a) => /Luxora/.test(a.textContent)),
       footer: !!document.querySelector('footer a[href^="/sister-companies"]'),
     };
   });
-  check(/Sister companies/.test(sc.active ?? "") && sc.zellar?.target === "_blank" && /noopener/.test(sc.zellar.rel) && sc.zellar.live && sc.luxora && !sc.luxoraLinked && sc.footer, `Sister companies: in the menu and footer; Zellar is live and opens its site; House of Luxora is coming soon, unlinked (${JSON.stringify(sc)})`);
+  check(/Sister companies/.test(sc.active ?? "") && sc.zellar?.target === "_blank" && /noopener/.test(sc.zellar.rel) && sc.zellar.live && sc.zellar.shot && sc.luxora && !sc.luxoraLinked && sc.footer, `Sister companies: in the menu and footer; Zellar is live, shows its homepage and opens its site; House of Luxora is coming soon, unlinked (${JSON.stringify(sc)})`);
   // 1024px: the five chapters fit on one line beside the logo and the button.
   await page.setViewportSize({ width: 1024, height: 768 });
   const fit = await page.evaluate(() => {
