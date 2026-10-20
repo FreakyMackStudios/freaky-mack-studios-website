@@ -879,16 +879,60 @@ console.log("Motion (other pages)");
   const h1 = await sp.evaluate(() => getComputedStyle(document.querySelector("h1").closest("[data-reveal]")).opacity);
   check(h1 === "1", "People hero plays in on load");
   // Behind-the-scenes photos (src/content/bts.ts): each page's photos load, at a real size, with alt text.
-  for (const [r, want] of [["/studio/", 9], ["/people/", 1], ["/", 1], ["/start-a-project/", 1], ["/thanks/", 1], ["/missing-page/", 1]]) {
+  for (const [r, want] of [["/studio/", 8], ["/people/", 1], ["/", 1], ["/start-a-project/", 1], ["/thanks/", 1], ["/missing-page/", 1]]) {
     await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
     const shots = await sp.evaluate(async () => {
-      const imgs = [...document.querySelectorAll('img[src*="/bts/"]')];
+      // Photos people (and screen readers) get; a slideshow's looped copies are hidden and don't count.
+      const imgs = [...document.querySelectorAll('img[src*="/bts/"]')].filter((i) => !i.closest('[aria-hidden="true"]'));
       for (const i of imgs) { i.loading = "eager"; i.scrollIntoView({ block: "center" }); await i.decode().catch(() => {}); }
       return imgs.map((i) => ({ ok: i.naturalWidth > 0 && i.getBoundingClientRect().width > 60, alt: i.alt.length > 10 }));
     });
     check(shots.length === want && shots.every((x) => x.ok && x.alt), `${r}: ${want} behind-the-scenes photo${want > 1 ? "s" : ""} load at a real size, with alt text (${shots.length} found)`);
   }
   await sp.setViewportSize({ width: 1440, height: 900 });
+  // Studio "More from set": the crew-at-the-camera photos drift left to right, and Pause stops them.
+  {
+    const rp = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
+    await rp.goto(`${base}/studio/`, { waitUntil: "networkidle" });
+    // The hero plays the behind-the-scenes loop: silent, looping, inline, behind the headline.
+    await rp.waitForTimeout(1500);
+    const loop = await rp.evaluate(() => {
+      const v = document.querySelector('section[aria-label="The studio"] video');
+      const h1 = document.querySelector("h1").getBoundingClientRect();
+      const r = v?.getBoundingClientRect();
+      return v && { muted: v.muted, loop: v.loop, inline: v.playsInline, playing: !v.paused && v.currentTime > 0, src: v.currentSrc.split("/").pop(), behind: r.top <= h1.top && r.bottom >= h1.bottom, color: getComputedStyle(document.querySelector("h1")).color };
+    });
+    check(loop && loop.muted && loop.loop && loop.inline && loop.playing && /studio-bts-loop\.(webm|mp4)$/.test(loop.src) && loop.behind && loop.color === "rgb(255, 255, 255)", `Studio hero: the BTS video plays silently behind the headline (${JSON.stringify(loop)})`);
+    check(!(await rp.getByText("[Year]").count()), "Studio: the old on-set photo and its [Year] sticker are gone");
+    // Phones play the vertical cut instead.
+    const ph = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, reducedMotion: "no-preference" });
+    await ph.goto(`${base}/studio/`, { waitUntil: "networkidle" });
+    await ph.waitForTimeout(1500);
+    const tall = await ph.evaluate(() => { const v = document.querySelector('section[aria-label="The studio"] video'); return { src: v.currentSrc.split("/").pop(), w: v.videoWidth, h: v.videoHeight, playing: !v.paused }; });
+    check(/studio-bts-loop-mobile\.(webm|mp4)$/.test(tall.src) && tall.h > tall.w && tall.playing, `Studio hero on a phone: the vertical BTS clip plays (${JSON.stringify(tall)})`);
+    await ph.close();
+    const track = rp.getByRole("list", { name: "Photos from set" });
+    await rp.getByRole("region", { name: "More from set" }).evaluate((el) => el.scrollIntoView({ block: "center" }));
+    await rp.mouse.move(5, 5); // off the slideshow, so hover doesn't pause it
+    const x = () => track.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
+    const a1 = await x();
+    await rp.waitForTimeout(1200);
+    const a2 = await x();
+    const photos = await track.evaluate((el) => [...el.querySelectorAll("li:not([aria-hidden]) img")].map((i) => i.getAttribute("src")));
+    check(a2 > a1 && photos.length === 8 && photos.every((src) => /set-reel-0[1-8]/.test(src)), `Studio slideshow: the 8 crew photos drift left to right (${Math.round(a1)} → ${Math.round(a2)}px)`);
+    await rp.getByRole("button", { name: "Pause slideshow" }).click();
+    await rp.mouse.move(5, 5);
+    const p1 = await x();
+    await rp.waitForTimeout(800);
+    check(Math.abs((await x()) - p1) < 1 && (await rp.getByRole("button", { name: "Play slideshow" }).getAttribute("aria-pressed")) === "true", "Studio slideshow: Pause stops it");
+    await rp.emulateMedia({ reducedMotion: "reduce" });
+    await rp.waitForTimeout(200);
+    const still = await track.evaluate((el) => ({ anim: getComputedStyle(el).animationName, copies: [...el.querySelectorAll("li[aria-hidden]")].filter((li) => getComputedStyle(li).display !== "none").length }));
+    check(still.anim === "none" && still.copies === 0, `Studio slideshow: stands still with reduced motion (${JSON.stringify(still)})`);
+    const over = await rp.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+    check(!over, "Studio slideshow doesn't make the page scroll sideways");
+    await rp.close();
+  }
   // Team photos: every crew member (and the founder) has a loaded portrait; no "[ PHOTO ]" left.
   for (const r of ["/people/", "/"]) {
     await sp.goto(`${base}${r}`, { waitUntil: "networkidle" });
