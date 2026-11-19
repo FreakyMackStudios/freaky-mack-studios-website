@@ -90,11 +90,6 @@
 .reelCard { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .reelCard:hover { transform: scale(1.02); }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-8deg); }
-  50% { transform: translateY(-22px) rotate(4deg); }
-}
-.blob { animation: float 6s ease-in-out infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 18s linear infinite; }
 @keyframes marquee {
@@ -128,7 +123,7 @@
 .root[data-cinema="away"] [data-exit="fade"] { transform: scale(0.96); opacity: 0; filter: blur(8px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob, .spin, .marquee, .eq span { animation: none; }
+  .spin, .marquee, .eq span { animation: none; }
   .root[data-cinema="away"] [data-exit] { transform: none; filter: none; opacity: 0; transition: opacity 0.2s ease; }
   .root [data-exit] { transition: opacity 0.2s ease; }
 }

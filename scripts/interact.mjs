@@ -828,20 +828,19 @@ console.log("Motion (homepage)");
   mp.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await mp.goto(`${base}/`, { waitUntil: "networkidle" });
   await mp.waitForTimeout(1500);
-  // Drag the blob mark far across the page; it follows, then springs back on release.
-  const mark = mp.locator("section#top div.cursor-grab").first();
-  const home = await mark.boundingBox();
-  await mp.mouse.move(home.x + home.width / 2, home.y + home.height / 2);
-  await mp.mouse.down();
-  await mp.mouse.move(home.x + 700, home.y + 420, { steps: 12 });
-  await mp.waitForTimeout(150);
-  const held = await mark.boundingBox();
-  check(Math.abs(held.x - home.x) > 500 && Math.abs(held.y - home.y) > 300, `blob follows the drag (moved ${Math.round(held.x - home.x)}, ${Math.round(held.y - home.y)})`);
-  await mp.mouse.up();
-  await mp.mouse.move(5, 5); // off the mark, so its hover lift ends too
-  await mp.waitForTimeout(1600);
-  const back = await mark.boundingBox();
-  check(Math.abs(back.x - home.x) < 2 && Math.abs(back.y - home.y) < 2, `blob springs back on release (off by ${Math.round(back.x - home.x)}, ${Math.round(back.y - home.y)})`);
+  // The floating logo mark is gone from the top of every page (the header carries the full logo instead).
+  // (Its own tab: the 404 page's expected "Not Found" isn't a page error.)
+  const fp = await ctx.newPage();
+  const floating = [];
+  for (const r of ["/", "/work/", "/people/", "/originals/", "/thanks/", "/missing-page/"]) {
+    await fp.goto(`${base}${r}`, { waitUntil: "load" });
+    const n = await fp.evaluate(() => [...document.querySelectorAll("main svg[aria-hidden='true'], main div.cursor-grab")].filter((el) => el.closest(".cursor-grab") || (el.getAttribute("viewBox") === "0 0 602.06 277.32" && getComputedStyle(el).opacity !== "0" && parseFloat(getComputedStyle(el).opacity) > 0.5)).length);
+    if (n) floating.push(`${r}: ${n}`);
+  }
+  check(floating.length === 0, `no floating logo mark at the top of any page${floating.length ? ` (${floating.join(", ")})` : ""}`);
+  await fp.close();
+  await mp.goto(`${base}/`, { waitUntil: "networkidle" });
+  await mp.waitForTimeout(1500);
   // The showreel is straight, and grows in place while the page scrolls until it covers ~70% of the window.
   const reel = mp.getByRole("button", { name: "Open the showreel" });
   const tilt = await reel.evaluate((el) => getComputedStyle(el).transform);

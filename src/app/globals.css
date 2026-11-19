@@ -27,6 +27,8 @@ html[data-theme="light"] {
   --next-hover: #ecece8;
   --ghost: #f1f1ee;
   --error: #b42318;
+  /* The logo's mark: brand blue on light pages, white (the text colour) on dark, as in the brand file. */
+  --logo-mark: #0f42c0;
   color-scheme: light;
 }
 html[data-theme="dark"] {
@@ -53,6 +55,7 @@ html[data-theme="dark"] {
   --next-hover: #1f1f1e;
   --ghost: #161615;
   --error: #ff8a80;
+  --logo-mark: currentColor;
   color-scheme: dark;
 }
 

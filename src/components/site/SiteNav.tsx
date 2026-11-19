@@ -10,17 +10,16 @@ import s from "./site.module.css";
 import { PX } from "./ui";
 
 /**
- * Shared header (design/boards/SiteNav.dc.html). The active item comes from the URL. Between 1024 and 1279px
- * the five chapters sit a little tighter, without their numbers, so they fit beside the logo and the button.
+ * Shared header (design/boards/SiteNav.dc.html). The active item comes from the URL. The logo is the mark on its
+ * own. Between 1024 and 1279px the five chapters sit a little tighter, without their numbers.
  */
 export function SiteNav() {
   const active = activeFor(usePathname());
   const onContact = active === "contact";
   return (
     <Reveal as="header" onMount from={{ y: -24 }} duration={0.8} className={`flex h-[72px] shrink-0 items-center justify-between lg:h-[96px] ${PX}`}>
-      <Link href="/" aria-label="Freaky Mack Studios home" className={`${s.link} flex items-center gap-[14px]`}>
-        <Mark className="h-[32px] w-[48px] shrink-0" />
-        <span className="text-[14px] font-extrabold tracking-[0.1em] whitespace-nowrap uppercase">Freaky Mack</span>
+      <Link href="/" aria-label="Freaky Mack Studios home" className={`${s.link} flex items-center`}>
+        <Mark brand alignLeft className="h-[30px] w-[65px] shrink-0 lg:h-[36px] lg:w-[78px]" />
       </Link>
       <nav aria-label="Main" className="hidden items-center gap-[18px] text-[14px] font-medium whitespace-nowrap lg:flex xl:gap-[32px] xl:text-[15px]">
         {NAV_ITEMS.map((it) => (

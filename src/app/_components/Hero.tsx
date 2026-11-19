@@ -2,7 +2,6 @@
 
 import { motion, useScroll } from "framer-motion";
 import { useRef, type CSSProperties } from "react";
-import { DraggableMark } from "@/components/motion/DraggableMark";
 import { EASE, Reveal, RevealItem } from "@/components/motion/Reveal";
 import { useSmoothScrollValue } from "@/components/motion/useScrollMotion";
 import s from "../home.module.css";
@@ -31,12 +30,6 @@ export function Hero({
       id="top"
       className={`relative flex shrink-0 flex-col items-center pt-[128px] pb-[72px] text-center lg:pt-[140px] lg:pb-[120px] ${PX}`}
     >
-      <div data-exit="left" className="pointer-events-none absolute inset-0 z-10" style={{ "--exit-delay": "0.12s" } as CSSProperties}>
-        <DraggableMark
-          className="pointer-events-auto absolute top-[24px] left-[12px] h-[56px] w-[84px] lg:top-[96px] lg:left-[148px] lg:h-[112px] lg:w-[168px]"
-          imgClassName={`${s.blob} opacity-90`}
-        />
-      </div>
       <div data-exit="right" className="pointer-events-none absolute inset-0" style={{ "--exit-delay": "0.12s" } as CSSProperties}>
       <Reveal
         onMount

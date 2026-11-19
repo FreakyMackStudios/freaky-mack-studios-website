@@ -12,9 +12,8 @@ export function Nav() {
   return (
     <Reveal as="header" onMount from={{ y: -24 }} duration={0.8} className={`flex h-[72px] shrink-0 items-center justify-between lg:h-[96px] ${PX}`}>
       <div data-exit="left">
-        <a href="#top" className={`${s.link} flex items-center gap-[14px]`} aria-label="Freaky Mack Studios home">
-          <Mark className="h-[32px] w-[48px] shrink-0" />
-          <span className="text-[14px] font-extrabold tracking-[0.1em] whitespace-nowrap uppercase">Freaky Mack</span>
+        <a href="#top" className={`${s.link} flex items-center`} aria-label="Freaky Mack Studios home">
+          <Mark brand alignLeft className="h-[30px] w-[65px] shrink-0 lg:h-[36px] lg:w-[78px]" />
         </a>
       </div>
       <nav data-exit="up" aria-label="Chapters" className="hidden items-center gap-[18px] text-[14px] font-medium whitespace-nowrap lg:flex xl:gap-[32px] xl:text-[15px]">

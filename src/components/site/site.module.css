@@ -32,11 +32,6 @@
 .next { transition: background 0.3s ease; }
 .next:hover { background: var(--next-hover); }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-8deg); }
-  50% { transform: translateY(-22px) rotate(4deg); }
-}
-.blob { animation: float 6s ease-in-out infinite; }
 
 @keyframes bar {
   0% { transform: scaleY(0.3); }
@@ -64,7 +59,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob, .eq span { animation: none; }
+  .eq span { animation: none; }
 }
 
 /* Studio "More from set" slideshow: one long row of photos (the set twice) drifting left to right for ever.
