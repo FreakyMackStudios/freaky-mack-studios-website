@@ -1,4 +1,4 @@
-import { LOCKUP, MARK, type LogoArt } from "./logo-paths";
+import { LOCKUP, LOCKUP_WIDE, MARK, type LogoArt } from "./logo-paths";
 
 type Props = {
   className?: string;
@@ -44,3 +44,5 @@ function LogoSvg({ art, className = "", title, alignLeft, brand = false }: Props
 export const Mark = (props: Props) => <LogoSvg art={MARK} {...props} />;
 /** The stacked logo: mark, FREAKY MACK STUDIOS and the tagline. */
 export const Lockup = (props: Props) => <LogoSvg art={LOCKUP} {...props} />;
+/** The side-by-side logo: mark, then FREAKY MACK STUDIOS over the tagline (the header). */
+export const LockupWide = (props: Props) => <LogoSvg art={LOCKUP_WIDE} {...props} />;
