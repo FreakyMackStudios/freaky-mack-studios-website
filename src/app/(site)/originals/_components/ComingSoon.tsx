@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { BTN_ACCENT, BTN_OUTLINE } from "@/components/site/buttons";
-import { DraggableMark } from "@/components/motion/DraggableMark";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
-import s from "@/components/site/site.module.css";
 import { AccentWord, H1, Intro, Kicker, PX } from "@/components/site/ui";
 
 /** What /originals shows while the full page is under construction (src/shared/config.ts: ORIGINALS_LIVE). */
@@ -25,7 +23,6 @@ export function ComingSoon() {
       >
         03
       </RevealItem>
-      <DraggableMark className="relative h-[84px] w-[126px] lg:h-[120px] lg:w-[180px]" imgClassName={s.blob} />
       <RevealItem className="relative">
         <Kicker>Chapter 03 — Originals</Kicker>
       </RevealItem>

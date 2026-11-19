@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Reveal } from "@/components/motion/Reveal";
-import { Mark } from "./Logo";
+import { LockupWide } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 import { NAV_ITEMS, activeFor } from "./nav-items";
 import s from "./site.module.css";
@@ -18,9 +18,8 @@ export function SiteNav() {
   const onContact = active === "contact";
   return (
     <Reveal as="header" onMount from={{ y: -24 }} duration={0.8} className={`flex h-[72px] shrink-0 items-center justify-between lg:h-[96px] ${PX}`}>
-      <Link href="/" aria-label="Freaky Mack Studios home" className={`${s.link} flex items-center gap-[14px]`}>
-        <Mark className="h-[32px] w-[48px] shrink-0" />
-        <span className="text-[14px] font-extrabold tracking-[0.1em] whitespace-nowrap uppercase">Freaky Mack</span>
+      <Link href="/" aria-label="Freaky Mack Studios home" className={`${s.link} flex items-center`}>
+        <LockupWide brand alignLeft className="h-[30px] w-[243px] shrink-0 lg:h-[32px] lg:w-[259px] xl:h-[40px] xl:w-[324px]" />
       </Link>
       <nav aria-label="Main" className="hidden items-center gap-[18px] text-[14px] font-medium whitespace-nowrap lg:flex xl:gap-[32px] xl:text-[15px]">
         {NAV_ITEMS.map((it) => (

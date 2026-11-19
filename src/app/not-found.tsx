@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteShell } from "@/components/site/SiteShell";
 import { BTN_ACCENT, BTN_OUTLINE } from "@/components/site/buttons";
-import { DraggableMark } from "@/components/motion/DraggableMark";
 import { Reveal, RevealItem } from "@/components/motion/Reveal";
 import s from "@/components/site/site.module.css";
 import { AccentWord, H1, Intro, Kicker, PX } from "@/components/site/ui";
@@ -35,7 +34,6 @@ export default function NotFound() {
         >
           404
         </RevealItem>
-        <DraggableMark className="relative h-[84px] w-[126px] lg:h-[120px] lg:w-[180px]" imgClassName={s.blob} />
         <RevealItem className="relative">
           <Kicker>Error 404 — scene missing</Kicker>
         </RevealItem>

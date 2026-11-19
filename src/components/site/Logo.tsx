@@ -1,4 +1,4 @@
-import { LOCKUP, MARK, type LogoArt } from "./logo-paths";
+import { LOCKUP, LOCKUP_WIDE, MARK, type LogoArt } from "./logo-paths";
 
 type Props = {
   className?: string;
@@ -6,13 +6,18 @@ type Props = {
   title?: string;
   /** Pin the artwork to the left of its box (like object-position: left). */
   alignLeft?: boolean;
+  /**
+   * Draw the mark in the logo colour (--logo-mark: the brand blue on light pages, white on dark), as in the
+   * brand file. Off, the whole logo takes the current text colour (for faint watermarks and inverse slabs).
+   */
+  brand?: boolean;
 };
 
 /**
- * The client's official logo as inline vector art. It is drawn in the current text colour, so it is
- * white on the dark page, black on the light page and flips inside inverse slabs, with no CSS inversion.
+ * The client's official logo as inline vector art (FMS_Logo.pdf). The lettering is drawn in the current
+ * text colour, so it is black on the light page, white on the dark page and flips inside inverse slabs.
  */
-function LogoSvg({ art, className = "", title, alignLeft }: Props & { art: LogoArt }) {
+function LogoSvg({ art, className = "", title, alignLeft, brand = false }: Props & { art: LogoArt }) {
   return (
     <svg
       viewBox={`0 0 ${art.w} ${art.h}`}
@@ -23,14 +28,21 @@ function LogoSvg({ art, className = "", title, alignLeft }: Props & { art: LogoA
       focusable="false"
     >
       {title && <title>{title}</title>}
-      {art.d.map((d, i) => (
+      <g fill={brand ? "var(--logo-mark, currentColor)" : undefined}>
+        {art.mark.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
+      </g>
+      {art.text.map((d, i) => (
         <path key={i} d={d} />
       ))}
     </svg>
   );
 }
 
-/** The blob mark on its own. */
+/** The mark on its own: a slash, an arch and a smiling circle. */
 export const Mark = (props: Props) => <LogoSvg art={MARK} {...props} />;
-/** Mark with FREAKY MACK / STUDIOS underneath. */
+/** The stacked logo: mark, FREAKY MACK STUDIOS and the tagline. */
 export const Lockup = (props: Props) => <LogoSvg art={LOCKUP} {...props} />;
+/** The side-by-side logo: mark, then FREAKY MACK STUDIOS over the tagline (the header). */
+export const LockupWide = (props: Props) => <LogoSvg art={LOCKUP_WIDE} {...props} />;

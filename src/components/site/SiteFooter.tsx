@@ -21,7 +21,7 @@ export function SiteFooter() {
     >
       <Reveal amount={0.3} className="flex flex-col items-start justify-between gap-[48px] lg:flex-row">
         <div className="flex max-w-[360px] min-w-0 flex-col gap-[20px] lg:max-w-[300px]">
-          <Lockup title="Freaky Mack Studios" alignLeft className="h-[118px] w-[150px]" />
+          <Lockup brand title="Freaky Mack Studios — we make films worth finishing" alignLeft className="h-[112px] w-[232px]" />
           <p className="m-0 text-[15px] leading-[1.6] text-[var(--muted)]">
             A home for filmmakers, creators and ideas that deserve to become films.
           </p>
