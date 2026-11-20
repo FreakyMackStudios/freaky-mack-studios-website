@@ -42,7 +42,7 @@ function LogoSvg({ art, className = "", title, alignLeft, brand = false }: Props
 
 /** The mark on its own: a slash, an arch and a smiling circle. */
 export const Mark = (props: Props) => <LogoSvg art={MARK} {...props} />;
-/** The stacked logo: mark, FREAKY MACK STUDIOS and the tagline. */
+/** The stacked logo: the mark over FREAKY MACK STUDIOS. */
 export const Lockup = (props: Props) => <LogoSvg art={LOCKUP} {...props} />;
-/** The side-by-side logo: mark, then FREAKY MACK STUDIOS over the tagline (the header). */
+/** The side-by-side logo: the mark, then FREAKY MACK STUDIOS (the header). */
 export const LockupWide = (props: Props) => <LogoSvg art={LOCKUP_WIDE} {...props} />;
